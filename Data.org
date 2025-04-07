@@ -1,0 +1,47 @@
+#+title: Data
+#+PROPERTY:header-args python :results output drawer :eval never-export :session *IO* :exports both :python ./bin/python3
+
+* Creating virtual environment
+
+#+begin_src sh
+# python3 -m venv .
+# source ~/Documents/Input-Output_OECD/bin/activate
+# pip3 install beaapi-0.0.2-py3-none-any.whl
+#+end_src
+
+
+* Importing packages and retriving API
+
+#+begin_src python
+import os
+from dotenv import load_dotenv
+import pandas as pd
+import beaapi
+from IPython.display import display
+
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Retrieve the API key
+beakey = os.getenv("BEA_API_KEY")
+
+
+IDs = beaapi.get_parameter_values(beakey, 'InputOutput', 'TableID')
+Years = beaapi.get_parameter_values(beakey, 'InputOutput', 'Year')
+#+end_src
+
+#+RESULTS:
+:results:
+:end:
+
+#+begin_src python
+import iopy
+oecd = iopy.OECD(version='2021', year=2018, refresh=False)
+
+
+#+end_src
+
+#+RESULTS:
+:results:
+:end:
