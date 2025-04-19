@@ -1,0 +1,46 @@
+#+title: TODOs
+
+
+* Design
+
+- Separação entre variáveis globais de customização  e funções
+- Cada categoria de plot deve ser gerado por funções diferentes
+  - Facilita debugar e (futuramente) empacotar
+  - Cada função deve conseguir gerar outputs isolados
+    - Primeiro precisamos definir quais resultados vamos mostrar para gerar os PDFs/svgs, etc
+- Funções principais:
+  - =prepare_data= :: Similar ao script que gera dados escalares
+    - Principal diferença é que estou gerando algumas outras inforações
+  - =decompose_growth= :: Calcula a decomposição do crescimento a partir de diferentes methodologias
+  - =group_plots= :: gera os relatórios individualizados em PDF
+    - Essa função deve funcionar tanto para países em isolados quanto em grupos de países
+      - É considerado um grupo se o respectivo item da lista tiver mais de uma observação
+      - Os gráficos são diferentes se gerados para grupos ou não
+        - Em geral, os gráficos de países isolados são mais detalhados
+
+
+
+* Planned, but not implemented
+
+** TODO Incluir compilação das matrizes no pipeline
+
+- Se conseguirmos gerar tudo de forma standalone (incluindo baixar xmls), tornamos mais reprodutível
+
+** TODO Gerar tabelas comparativas
+
+- A ideia serie fazer algumas tabelas como no artigo do Fevereiro
+
+* FIXMEs
+
+** TODO [#A] Cotribuição do setor externo (CDX e X) não está correta
+
+- CDX a partir do método das exportações líquidas e do método da atribuição coincidem
+
+** TODO [#B] Defini um limitador para a variação de estoques nos boxplots
+
+- Isso porque é o componente com maior variabilidade, distorcendo os eixos se deixado sem o limitador
+  - Uma alternativa seria colocar como um subplot dentro do plot principal
+- Para alguns países, o limitador é muito baixo, fazendo com que apenas a parte da cauda inferior esteja visível
+
+** TODO [#C] Gráficos de área tem partes transparentes na presença de valores negativos
+** TODO [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade

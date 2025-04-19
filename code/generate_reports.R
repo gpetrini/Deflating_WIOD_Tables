@@ -10,6 +10,9 @@ results <- prepare_data()
 decomp <- decompose_growth()
 
 
-single_plots()
-
-
+group_plots(
+  data = decomp,
+  IO = results,
+  groups = all_groups,
+  verbose = FALSE
+)

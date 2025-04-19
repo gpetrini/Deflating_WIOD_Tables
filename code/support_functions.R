@@ -411,85 +411,70 @@ decompose_growth <- function(data_base = results) {
 
 }
 
-single_plots <- function(
-                           data = decomp,
-                           IO = results
-                           ) {
+get_tidy <- function(data = decomp) {
+    countries <- names(data)
 
-  countries <- names(data)
+    methods <- names(data[[1]])
 
-  methods <- names(data[[1]])
-
-  expenditures_dom <- c("C", "I", "G", "E")
-  expenditures <- c(expenditures_dom, "X", "CDX", "CDD")
-  vars <- c(expenditures, "GDP")
-
-  plotW     <- 16     # plot window width
-  plotH     <- 12     # plot window height
-
-  for (country in countries) {
-    pdf(
-      paste0("../reports/", country, ".pdf"),
-      width = plotW, height = plotH
-    )
-    sngl <- data[[country]]
     df <- data.frame()
+    for (country in countries) {
+        sngl <- data[[country]]
 
-    ## NOTE: Making it tiddy
-    for (meth in methods) {
-      tmp <- sngl[[meth]] |>
-        timetk::tk_tbl(rename_index = "Time") |>
-        rownames_to_column()
-      tmp <- tmp |>
-        select(Time, all_of(vars)) |>
-        mutate(Method = as.factor(meth))
-      df <- rbind(df, tmp)
+        ## NOTE: Making it tiddy
+        for (meth in methods) {
+            tmp <- sngl[[meth]] |>
+                timetk::tk_tbl(rename_index = "Time") |>
+                rownames_to_column()
+            tmp <- tmp |>
+                select(Time, all_of(vars)) |>
+                mutate(Method = as.factor(meth)) |>
+                mutate(ISO = country) |>
+                mutate(ISO = as.factor(ISO))
+            df <- rbind(df, tmp)
+        }
     }
 
     df <- df |>
-      pivot_longer(cols = !c(Time, Method), names_to = "Variable", values_to = "Contribution") |>
+      pivot_longer(cols = !c(Time, Method, ISO), names_to = "Variable", values_to = "Contribution") |>
       mutate(Variable = as.factor(Variable))
 
-    ## Across methods
-    p <- df |>
-      filter(Variable != "GDP") |>
-      group_by(Time, Variable) |>
-      ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
-      geom_col(
-        ## width = 0.6,
-        color = "black",
-        position = "dodge"
-      ) +
-      geom_point(
-        data = df |> filter(Variable == "GDP"),
-        aes(x = Time, y = Contribution),
-        color = "black"
-      ) +
-      facet_wrap(~Method, scales = "free_y") +
-      labs(
-        title = paste0("Growth decompostion across different method for ", country),
-        x = NULL, y = NULL, fill = NULL,
-        caption = "Authors' own elaboration",
-      ) +
-      scale_color_ipsum() +
-      scale_fill_ipsum() +
-      theme_ipsum(grid="XY", base_family = "sans")
+    return(df)
+}
 
-    print(p)
+get_imp <- function(IO = results) {
+
+    countries <- names(IO)
 
 
-    ## Contribution of external sector and exports
+    df <- data.frame()
 
-    ## FIXME: For the attribution method, use exports instead of CDX
+    for (country in countries) {
+      tmp <- IO[[country]][["m"]] |>
+        timetk::tk_tbl(rename_index = "Time") |>
+        rename(Average = Total) |>
+        pivot_longer(cols = !c(Time), names_to = "Variable", values_to = "Coefficient") |>
+        mutate(ISO = country) |>
+        mutate(ISO = as.factor(ISO))
+
+      df <- rbind(df, tmp)
+    }
+    return(df)
+}
+
+plot_external_contrib <- function(df, group = NULL, countries = NULL, grouped, ...) {
+
+  ## FIXME: There might be some errors with the input data and with the area plot as well
+
+  tag <- group
+
     p <- df |>
       filter(Variable %in% c("CDX", "X")) |>
       group_by(Time, Variable) |>
       ggplot(aes(x = Time, y = Contribution, color = Method)) +
       geom_line(linewidth = 1.2) +
-      facet_wrap(~ Variable, ncol = 1) +
       geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
       labs(
-        title = paste0("Contribution of external sector across different method for ", country),
+        title = paste0("Contribution of external sector (CDX and X) across different method for ", tag),
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
       ) +
@@ -497,10 +482,15 @@ single_plots <- function(
       scale_fill_ipsum() +
       theme_ipsum(grid="XY", base_family = "sans")
 
+  if (grouped) {
+    p <- p +
+      facet_grid(rows = vars(Variable), cols = vars(ISO), scales = "free_y")
+  } else {
+    p <- p +
+      facet_wrap(~ Variable, ncol = 1)
+  }
+
     print(p)
-
-    ## TODO Stacked bar plot accross methods (Plot)
-
 
     p <- df |>
       filter(Variable %in% c("CDD", "CDX")) |>
@@ -509,7 +499,7 @@ single_plots <- function(
       ## FIXME: Add GDP growth?
       facet_wrap(~Method, ncol = 1) +
       labs(
-        title = paste0("Domestic (CDD) and external (CDX) demand contribution across different methods for ", country),
+        title = paste0("Domestic (CDD) and external (CDX) demand contribution across different methods for ", tag),
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
       ) +
@@ -517,40 +507,146 @@ single_plots <- function(
       scale_fill_ipsum() +
       theme_ipsum(grid = "XY", base_family = "sans")
 
+  if (grouped) {
+    p <- p +
+      facet_wrap(~ ISO, scales = "free_y")
+  } else {
+    p <- p +
+      facet_wrap(~Method, ncol = 1)
+  }
+
     print(p)
+}
 
-    ## TODO Accross methods (Table)
+report_import_coeff <- function(countries, group = FALSE, IO = results, grouped, ...) {
 
-    ## Accross variables (Plot)
+
+  imp <- get_imp(IO)
+
+  if (!is.null(group)) {
+    tag <- group
+  } else {
+    tag <- countries
+  }
+
+
+
+  df <- imp |>
+    filter(ISO %in% countries) |>
+    mutate( type=ifelse(Variable =="Average","Average","Individual"))
 
     p <- df |>
-      filter(Variable != "GDP") |>
-      group_by(Time, Variable) |>
-      ggplot(aes(x = Time, y = Contribution, fill = Method)) +
-      ## FIXME: Increase the space between groups
-      geom_col(color = "black", position = "dodge") +
-      facet_wrap(~Variable, scales = "free_y") +
+      select(!Time) |>
+      ggplot(aes(y=Coefficient, x=Variable, fill=type)) +
+      geom_boxplot() +
+      scale_fill_manual(values=c("#69b3a2", "grey")) +
+      scale_alpha_manual(values=c(1,0.1)) +
+      coord_cartesian(ylim = c(0, 0.425)) +  ## NOTE: Because inventories is very volatile
       labs(
-        title = paste0("Growth decompostion across different methods for ", country),
+        title = paste0("Import coefficient boxplot across different expenditures for ", tag),
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
-      ) +
-      scale_color_ipsum() +
-      scale_fill_ipsum() +
+        ) +
       theme_ipsum(grid="XY", base_family = "sans")
 
+  if (grouped) {
+    p <- p +
+      facet_wrap(~ ISO, scales = "free_y")
+  }
+
     print(p)
-    ## TODO Accross variables (Table)
-    ## Lollipop plot and line diff
 
-    for (meth in methods) {
-      others <- setdiff(methods, meth)
+    p <- df |>
+      ggplot(aes(x = Time, y = Coefficient, color = Variable)) +
+      geom_bump(size = 2) +
+      facet_wrap(~ Variable, scales = "free_y") +
+      geom_point(size = 6) +
+      scale_color_brewer(palette = "Paired") +
+      labs(
+        title = paste0("Import coefficient time series across different expenditures for ", tag),
+        x = NULL, y = NULL, fill = NULL,
+        caption = "Authors' own elaboration",
+        ) +
+      theme_ipsum(grid="XY", base_family = "sans")
 
-      base_df <- df |>
-        filter(Method == meth) |>
-        select(Contribution)
+  if (grouped) {
+    p <- p +
+      facet_wrap(~ ISO, scales = "free_y")
+  }
 
-      for (alt in others) {
+    print(p)
+
+    ## TODO Table of import coeficients?
+
+  if (is.null(group)) {
+    tex_imp <- IO[[countries]][["m"]] |>
+      as.data.frame() |>
+      select(!Total) |>
+      rownames_to_column(var = "Year") |>
+      mutate(Year = forcats::fct_rev(as.factor(lubridate::year(Year))))
+
+    grob_imp <- gridExtra::tableGrob(
+                             formatC(tex_imp |> as.matrix(),
+                                     digits = 3, format = "g"
+                                     )
+                           )
+
+
+    tab_title <- paste0("Import coefficients for ", tag)
+
+    tabs <- wrap_plots(grob_imp) +
+      plot_annotation(title = tab_title)
+
+
+    print(tabs)
+
+    tex_tbl <- tex_imp |>
+      kableExtra::kable(
+                    digits = 3,
+                    format = "latex", booktabs = TRUE, escape = FALSE, longtable = TRUE,
+                    caption = tab_title,
+                    label = "TAB-IMP-MCOEFF"
+                  )
+
+    fname <- paste0("../tabs/", countries, "_Import_Coefficients.tex")
+
+    writeLines(tex_tbl, fname)
+  }
+}
+
+plot_differenteces <- function(df, group = NULL, countries = NULL, methods, grouped, ...) {
+
+
+
+
+  tag <- group
+
+  for (meth in methods) {
+    others <- setdiff(methods, meth)
+
+    base_df <- df |>
+      filter(Method == meth) |>
+      select(Contribution)
+
+    tmp_vars <- df |>
+      filter(Variable != "GDP") |>
+      filter(Variable != "CDD") |>
+      select(Variable) |>
+      unique() |>
+      unlist(use.names = FALSE) |>
+      as.character()
+
+    for (alt in others) {
+
+      for (vrbl in tmp_vars) {
+
+        if (!grouped) {
+          vrbl <- tmp_vars
+          subtitle <- "Considering all variables "
+        } else {
+          subtitle <- paste0("Considering only ", vrbl, " ")
+        }
+
         alt_df <- df |>
           filter(Method %in% c(meth, alt)) |>
           filter(Variable != "GDP") |>
@@ -559,13 +655,14 @@ single_plots <- function(
           select(!Time)
 
         p <- alt_df |>
+          filter(Variable %in% vrbl) |>
           ggplot(aes(x=Contribution,y=Year)) +
           geom_line(aes(group=Year), color="#E7E7E7", linewidth=3.5) +
           geom_point(aes(color=Method), size=3) +
           geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
-          facet_wrap(~Variable, scales = "free_x") +
           labs(
-            title = paste0("Difference between ", alt, " and ", meth, " methods for ", country),
+            title = paste0("Difference between ", alt, " and ", meth, " methods for ", tag),
+            subtitle = subtitle,
             x = NULL, y = NULL, fill = NULL,
             caption = "Authors' own elaboration",
             ) +
@@ -574,6 +671,14 @@ single_plots <- function(
           scale_fill_ipsum() +
           theme_ipsum(grid="XY", base_family = "sans")
 
+        if (grouped) {
+          p <- p +
+            facet_wrap(~ISO, scales = "free_x")
+        } else {
+          p <- p +
+            facet_wrap(~Variable, scales = "free_x")
+        }
+
         print(p)
 
 
@@ -581,6 +686,7 @@ single_plots <- function(
           filter(Method %in% c(meth, alt)) |>
           filter(Variable != "GDP") |>
           filter(Variable != "CDD") |>
+          filter(Variable %in% vrbl) |>
           drop_na() |>
           pivot_wider(names_from = Method, values_from = Contribution) |>
           rename(Base = !!sym(meth)) |>
@@ -588,6 +694,8 @@ single_plots <- function(
 
         cols_list <- c("palegreen3", "indianred1")
         val_list <- setNames(cols_list, c(meth, alt))
+
+
 
         p <- alt_df |>
           ggplot(aes(x = Time)) +
@@ -602,10 +710,9 @@ single_plots <- function(
           ) +
           scale_color_manual(values = val_list) +
           geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-          facet_wrap(~Variable, scales = "free_y") +
           labs(
-            title = paste0("Difference between ", alt, " and ", meth, " methods for ", country),
-            subtitle = ("(+) denotes overestimation, (-) denotes underestimation"),
+            title = paste0("Difference between ", alt, " and ", meth, " methods for ", tag),
+            subtitle = paste0(subtitle, "(+) denotes overestimation, (-) denotes underestimation"),
             x = NULL, y = NULL, fill = NULL,
             caption = "Authors' own elaboration",
             ) +
@@ -614,112 +721,185 @@ single_plots <- function(
           ## scale_fill_ipsum() +
           theme_ipsum(grid="XY", base_family = "sans")
 
+
+        if (grouped) {
+          p <- p +
+            facet_wrap(~ISO, scales = "free_x")
+        } else {
+          p <- p +
+            facet_wrap(~Variable, scales = "free_x")
+        }
+
         print(p)
 
+        if (!grouped) {
+          break
+        }
+
       }
+
+
+
+
+
+    }
+  }
+}
+
+plot_decomp <- function(df, group = NULL, countries = NULL, methods, grouped, ...) {
+
+  tag <- group
+
+  for (meth in methods) {
+    if (!grouped) {
+      meth <- methods
+      title <- paste0("Growth decompostion across different method for ", tag)
+      subtitle <- ""
+    } else {
+      title <- paste0("Growth decompostion across different countries of ", tag)
+      subtitle <- paste0("Using ", meth, " method")
     }
 
-    ## Distribution of import coeficients
+    ## Across methods
 
 
-    imp <- IO[[country]][["m"]] |>
-      as_tibble() |>
-      rename(Average = Total) |>
-      pivot_longer(cols = everything(), names_to = "Variable", values_to = "Coefficient")
-
-
-
-    ## p <- imp |>
-    ##   ggplot(aes(x=Coefficient, y=Variable, fill=Variable)) +
-    ##   geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +
-    ##   labs(
-    ##     title = paste0("Import coefficient distribution across different expenditures for ", country),
-    ##     x = NULL, y = NULL, fill = NULL,
-    ##     caption = "Authors' own elaboration",
-    ##     ) +
-    ##   scale_color_ipsum() +
-    ##   scale_fill_ipsum() +
-    ##   theme_ipsum(grid="XY", base_family = "sans")
-
-    ## print(p)
-
-
-    p <- imp |>
-      mutate( type=ifelse(Variable =="Average","Average","Individual")) |>
-      ggplot(aes(y=Coefficient, x=Variable, fill=type)) +
-      geom_boxplot() +
-      scale_fill_manual(values=c("#69b3a2", "grey")) +
-      scale_alpha_manual(values=c(1,0.1)) +
-      coord_cartesian(ylim = c(0, 0.425)) +  ## NOTE: Because inventories is very volatile
+    p <- df |>
+      filter(Variable != "GDP") |>
+      filter(Method %in% meth) |>
+      group_by(Time, Variable) |>
+      ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
+      geom_col(
+        ## width = 0.6,
+        color = "black",
+        position = "dodge"
+      ) +
+      geom_point(
+        data = df |> filter(Variable == "GDP"),
+        aes(x = Time, y = Contribution),
+        color = "black"
+      ) +
       labs(
-        title = paste0("Import coefficient boxplot across different expenditures for ", country),
+        title = title,
+        subtitle = subtitle,
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
         ) +
-      theme_ipsum(grid="XY", base_family = "sans")
+      scale_color_ipsum() +
+      scale_fill_ipsum() +
+      theme_ipsum(grid = "XY", base_family = "sans")
+
+
+    if (!grouped) {
+      p <- p +
+        facet_wrap(~Method, scales = "free_y")
+    } else {
+      p <- p +
+        facet_wrap(~ISO, scales = "free_y")
+    }
 
     print(p)
 
+    if (!grouped) {
+      break
+    }
+  }
 
-    bump <- IO[[country]][["m"]] |>
-      timetk::tk_tbl(rename_index = "Time") |>
-      rename(Average = Total) |>
-      pivot_longer(cols = !c(Time), names_to = "Variable", values_to = "Coefficient")
 
-    p <- bump |>
-      ggplot(aes(x = Time, y = Coefficient, color = Variable)) +
-      geom_bump(size = 2) +
-      facet_wrap(~ Variable, scales = "free_y") +
-      geom_point(size = 6) +
-      scale_color_brewer(palette = "Paired") +
+  tmp_vars <- df |>
+    select(Variable) |>
+    unique() |>
+    unlist(use.names = FALSE) |>
+    as.character()
+
+  for (vrbl in tmp_vars) {
+
+    if (!grouped) {
+      vrbl <- tmp_vars
+      subtitle <- "Considering all variables"
+    } else {
+      subtitle <- paste0("Considering only ", vrbl)
+    }
+
+    ## Accross variables (Plot)
+
+    p <- df |>
+      filter(Variable %in% vrbl) |>
+      group_by(Time, Variable) |>
+      ggplot(aes(x = Time, y = Contribution, fill = Method)) +
+      ## FIXME: Increase the space between groups
+      geom_col(color = "black", position = "dodge") +
       labs(
-        title = paste0("Import coefficient time series across different expenditures for ", country),
+        title = paste0("Growth decompostion across different methods for ", tag),
+        subtitle = subtitle,
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
         ) +
+      scale_color_ipsum() +
+      scale_fill_ipsum() +
       theme_ipsum(grid="XY", base_family = "sans")
+
+    if (!grouped) {
+      p <- p +
+        facet_wrap(~Variable, scales = "free_y")
+    } else {
+      p <- p +
+        facet_wrap(~ISO, scales = "free_y")
+    }
 
     print(p)
 
-    ## TODO Table of import coeficients?
+    if(!grouped) {
 
-    tex_imp <- IO[[country]][["m"]] |>
-      as.data.frame() |>
-      select(!Total) |>
-      rownames_to_column(var = "Year") |>
-      mutate(Year = forcats::fct_rev(as.factor(lubridate::year(Year))))
+      break
+    }
 
-    grob_imp <- gridExtra::tableGrob(
-                             formatC(tex_imp |> as.matrix(),
-                                     digits = 3, format = "g"
-                                     )
-                           )
-
-
-    tab_title <- paste0("Import coefficients for ", country)
-
-  tabs <- wrap_plots(grob_imp) +
-    plot_annotation(title = tab_title)
-
-
-    print(tabs)
-
-    tex_tbl <- tex_imp |>
-      kableExtra::kable(
-                    digits = 3,
-                    format = "latex", booktabs = TRUE, escape = FALSE, longtable = TRUE,
-                    caption = tab_title,
-                    label = "TAB-IMP-MCOEFF"
-                  )
-
-    fname <- paste0("../tabs/", country, "_Import_Coefficients.tex")
-    writeLines(tex_tbl, fname)
-
-
-
-    dev.off()
   }
 
 
 
+
 }
+
+group_plots <- function(
+                        data = decomp,
+                        IO = results,
+                        groups = country_groups,
+                        verbose = FALSE,
+                        ...
+                        ) {
+
+  methods <- names(data[[1]])
+
+  all_data <- get_tidy(data = data)
+
+  for (group in names(groups)) {
+
+    group_tag <- group
+    countries <- groups[[group]]
+    if (length(countries) > 1) {
+      grouped <- TRUE
+    } else {
+      grouped <- FALSE
+    }
+    pdf(
+      paste0("../reports/", group_tag, ".pdf"),
+      width = plotW, height = plotH
+    )
+    df <- all_data |>
+      filter(ISO %in% countries)
+
+    plot_decomp(df, group = group, countries = countries, methods, grouped = grouped)
+
+    if ((grouped && verbose) || !(grouped)) {
+      plot_differenteces(df, group = group, countries = countries, methods, grouped = grouped)
+    }
+
+    plot_external_contrib(df = df, group = group, countries = countries, grouped = grouped)
+
+    report_import_coeff(group = group, IO = IO, countries = countries, grouped = grouped)
+
+    dev.off()
+
+  }
+}
+
