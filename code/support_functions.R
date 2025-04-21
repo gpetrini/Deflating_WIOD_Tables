@@ -338,9 +338,7 @@ decompose_growth <- function(data_base = results) {
 
     df[,"M"] <- (lag(mAvg) * lag(DA) * gM[["Total"]]) * (-1)
 
-    ## @DOUG: FIXME Faz sentido essa ser a contriguição do setor externo?
-    df[,"CDX"] <- tmp_CDX + df[, "M"]
-    ## NOTE: As a workaround
+    df[,"CDX"] <- tmp_CDX + df[, "M"] ## NOTE: As a workaround
 
 
     df <- df |>
@@ -355,32 +353,31 @@ decompose_growth <- function(data_base = results) {
 
     df <- NULL
 
-    # Attribution method
+                                        # Attribution method
 
     df <- df_gY |>
       as_tibble()
 
 
-    tmp_CDX <- 0
+    tmp_CDD <- 0
+
     for (v in vars) {
       df[, v] <- lag(wei[[v]]) * grw[[v]] - lag(m_wei[[v]]) * m_grw[[v]]
-      tmp_CDX <- tmp_CDX + (- lag(m_wei[[v]]) * m_grw[[v]])
+      tmp_CDD <- tmp_CDD + lag(wei[[v]]) * grw[[v]]
     }
 
-    ## @DOUG: FIXME Faz sentido essa ser a contriguição do setor externo?
-    ## |- Por alguma razão, está gerando resultados idêndicos ao NX
-    df[, "CDX"] <- lag(wei[["X"]]) * grw[["X"]] + tmp_CDX
+    df[, "CDD"] <-  tmp_CDD - lag(wei[["X"]]) * grw[["X"]]
 
 
     df <- df |>
       mutate(Total = rowSums(across(all_of(vars)))) |>
-      mutate(CDD = Total - CDX) ## NOTE: as a workaround
+      mutate(CDX = X)  ## NOTE: as a workaround
 
     df <- xts(df, order.by = dates)
 
     tmp[[country]][["Attribution"]] <- df
 
-    # Net Exports Method
+                                        # Net Exports Method
 
 
     df <- df_gY |>
