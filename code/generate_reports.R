@@ -1,4 +1,4 @@
-### Compilação das NIOT ### 
+### Compilação das NIOT ###
 ### FIXME: Adjust the call to compile the databse
 
 source("./global_variables.R")

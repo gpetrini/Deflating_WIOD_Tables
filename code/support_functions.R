@@ -313,7 +313,6 @@ decompose_growth <- function(data_base = results) {
                                         # Average Import Content
 
 
-    ## mAvg <- (data[["M"]] / data[["Ft"]])[,"Total"] |>
     mAvg <- (data[["M"]][, "Total"] / (data[["Ft"]][,"Total"]))
     gM <- (diff(mAvg) / lag(mAvg)) |>
       as_tibble()
