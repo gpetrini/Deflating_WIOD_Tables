@@ -1,6 +1,4 @@
-
 library(tidyverse)
-## @DOUG: xts substitui lag do r-base
 library(xts)
 library(ggridges)
 library(viridis)
