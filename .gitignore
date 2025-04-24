@@ -1,0 +1,10 @@
+*.*
+
+!*.gitkeep
+!*.gitignore
+!*.org
+!*.R
+# !*.csv
+!*.txt
+
+Meetings.org
