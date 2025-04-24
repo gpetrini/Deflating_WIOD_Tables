@@ -55,10 +55,10 @@ done
 #+END_SRC
 
 #+RESULTS:
-- [[file:./R/deflate_tables.R::82]][Line 82] ::
-- [[file:./R/generate_reports.R::2]][Line 2] :: : Adjust the call to compile the databse
-- [[file:./R/support_functions.R::460]][Line 460] :: : There might be some errors with the input data and with the area plot as well
-- [[file:./R/support_functions.R::493]][Line 493] :: : Add GDP growth?
-- [[file:./R/support_functions.R::823]][Line 823] :: : Increase the space between groups
-- [[file:./R/tmp.R::290]][Line 290] :: : Creates a wrapper that gets from the csv subbolfolder
-- [[file:./R/tmp.R::364]][Line 364] :: : Creates a wrapper that gets from the csv subbolfolder
+- [[file:./code/deflate_tables.R::82]][Line 82] ::
+- [[file:./code/generate_reports.R::2]][Line 2] :: : Adjust the call to compile the databse
+- [[file:./code/support_functions.R::460]][Line 460] :: : There might be some errors with the input data and with the area plot as well
+- [[file:./code/support_functions.R::493]][Line 493] :: : Add GDP growth?
+- [[file:./code/support_functions.R::823]][Line 823] :: : Increase the space between groups
+- [[file:./code/tmp.R::290]][Line 290] :: : Creates a wrapper that gets from the csv subbolfolder
+- [[file:./code/tmp.R::364]][Line 364] :: : Creates a wrapper that gets from the csv subbolfolder
