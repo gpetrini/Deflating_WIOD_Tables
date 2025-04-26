@@ -457,6 +457,26 @@ get_imp <- function(IO = results) {
   return(df)
 }
 
+
+get_dGDP <- function(IO = results) {
+
+  countries <- names(IO)
+
+
+  df <- data.frame()
+
+  for (country in countries) {
+    tmp <- IO[[country]][["g"]] |>
+      timetk::tk_tbl(rename_index = "Time") |>
+      select(Time, GDP) |>
+      mutate(ISO = country) |>
+      mutate(ISO = as.factor(ISO))
+
+    df <- rbind(df, tmp)
+  }
+  return(df)
+}
+
 plot_external_contrib <- function(df, group = NULL, countries = NULL, grouped, ...) {
 
   ## FIXME: There might be some errors with the input data and with the area plot as well
@@ -519,6 +539,12 @@ report_import_coeff <- function(countries, group = FALSE, IO = results, grouped,
 
   imp <- get_imp(IO)
 
+  dGDP <- get_dGDP(IO) |>
+    drop_na() |>
+    filter(ISO %in% countries)
+
+  ## browser()
+
   if (!is.null(group)) {
     tag <- group
   } else {
@@ -526,10 +552,51 @@ report_import_coeff <- function(countries, group = FALSE, IO = results, grouped,
   }
 
 
+  df_path <- imp |>
+    pivot_wider(names_from = "Variable", values_from = "Coefficient") |>
+    left_join(dGDP, by = join_by(Time, ISO)) |>
+    drop_na()
+
+  df_path <- df_path |>
+    pivot_longer(
+      cols = -c(Time, GDP, ISO),  # Keep GDP and Year as columns
+      names_to = "Variable",
+      values_to = "Value"
+    )
+
+
+
+    p <- df_path |>
+      ggplot(aes(y=Value, x=GDP, color = ISO)) +
+      geom_path(
+        lineend = "round",   # Smoother line ends
+        linejoin = "round",  # Smoother path joints
+        arrow = arrow(
+          type = "closed",   # Solid arrowhead
+          length = unit(0.2, "inches"),
+          ends = "last"
+          )
+        ) +
+      geom_point(size = 1.5) +
+      facet_wrap(~ Variable, scales = "free_y")
+    labs(
+      title = paste0("Import coefficient vs GDP growth ", tag),
+      subtitle = "Arrow indicates the direction of time",
+      x = NULL, y = NULL, fill = NULL,
+      caption = "Authors' own elaboration",
+      ) +
+      theme_ipsum(grid="XY", base_family = "sans")
+
+    print(p)
+
+
+
+
 
   df <- imp |>
     filter(ISO %in% countries) |>
     mutate( type=ifelse(Variable =="Average","Average","Individual"))
+
 
   p <- df |>
     select(!Time) |>
