@@ -639,7 +639,9 @@ report_import_coeff <- function(countries, group = FALSE, IO = results, grouped,
 
   print(p)
 
-  ## TODO Table of import coeficients?
+
+
+  ## FIXME Table of import coeficients?
 
   if (is.null(group)) {
     tex_imp <- IO[[countries]][["m"]] |>

@@ -26,9 +26,15 @@
 
 - Se conseguirmos gerar tudo de forma standalone (incluindo baixar xmls), tornamos mais reprodutível
 
-** TODO Gerar tabelas comparativas
 
-- A ideia serie fazer algumas tabelas como no artigo do Fevereiro
+
+
+** WAIT Scatter plot matrices
+** WAIT GDP vs Contribution and geom path for time
+
+- This might be a way to show ciclicality of components
+
+
 
 * FIXMEs
 
@@ -57,8 +63,14 @@ done
 #+RESULTS:
 - [[file:./code/deflate_tables.R::82]][Line 82] ::
 - [[file:./code/generate_reports.R::2]][Line 2] :: : Adjust the call to compile the databse
-- [[file:./code/support_functions.R::460]][Line 460] :: : There might be some errors with the input data and with the area plot as well
-- [[file:./code/support_functions.R::493]][Line 493] :: : Add GDP growth?
-- [[file:./code/support_functions.R::823]][Line 823] :: : Increase the space between groups
+- [[file:./code/support_functions.R::482]][Line 482] :: : There might be some errors with the input data and with the area plot as well
+- [[file:./code/support_functions.R::515]][Line 515] :: : Add GDP growth?
+- [[file:./code/support_functions.R::644]][Line 644] ::  Table of import coeficients?
+- [[file:./code/support_functions.R::894]][Line 894] :: : Increase the space between groups
+- [[file:./code/support_functions.R::1042]][Line 1042] :: : Add as another table
+- [[file:./code/support_functions.R::1113]][Line 1113] :: : Format the numbers
+- [[file:./code/support_functions.R::1125]][Line 1125] :: : Check if there is a way to post remove the Normalize
+- [[file:./code/support_functions.R::1141]][Line 1141] :: : Define a grouping scheme if countries > 1
+- [[file:./code/support_functions.R::1273]][Line 1273] :: : Aparently, it is not working
 - [[file:./code/tmp.R::290]][Line 290] :: : Creates a wrapper that gets from the csv subbolfolder
 - [[file:./code/tmp.R::364]][Line 364] :: : Creates a wrapper that gets from the csv subbolfolder
