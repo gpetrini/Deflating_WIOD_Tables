@@ -1171,10 +1171,23 @@ tabulate_metrics <- function(
           ) |>
             stringr::str_remove_all(" ")
 
-          gt_obj |>
-            gt::gtsave(
-                  filename = tmp_name, path = tabs
-                )
+          body_name <- paste0(
+            tabs,
+            "/", ## NOTE: For some reason, it treats docx/tex files differently
+            "Body_",
+            fname,
+            ".tex"
+          ) |>
+            stringr::str_remove_all(" ")
+
+          ## ## FIXME: Possible export the body only
+          ## gt_obj |>
+          ##   gt::gtsave(
+          ##         filename = tmp_name, path = tabs
+          ##       )
+          ## tmp_body <- gt_obj |>
+          ##   gt::extract_body(output = "latex")
+
         }
 
         if ("png" %in% extension) {
