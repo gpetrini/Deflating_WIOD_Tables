@@ -6,6 +6,8 @@ library(hrbrthemes)
 library(ggbump)
 library(patchwork)
 library(ggh4x)
+library(TSdist)
+library(gt)
 
 prepare_data <- function(data_base = NIOTs) {
 
@@ -854,6 +856,312 @@ plot_decomp <- function(df, group = NULL, countries = NULL, methods, grouped, ..
 
 }
 
+
+calculate_metrics <- function(
+                              data,
+                              countries,
+                              probs = c(0.1, 0.25, 0.5, 0.75, 0.9),
+                              digits = 4L,
+                              ...
+                              ) {
+  accuracy <- 10^(-digits)
+
+  res_df <- data.frame()
+
+  for (country in countries) {
+                                        # 1. Prepare clean data (same as before)
+  clean_data <- data |>
+    filter(ISO == country) |>
+    mutate(Contribution = as.numeric(Contribution)) |>
+    group_by(Variable, Method) |>
+    summarise(Contribution = list(na.omit(Contribution)), .groups = "drop")
+
+                                        # 2. Get unique methods and variables
+  methods <- unique(clean_data$Method)
+  variables <- unique(clean_data$Variable)
+
+                                        # 3. Build nested structure with FLIPPED hierarchy
+  results <- map(methods, function(ref_method) {  # First level: methods
+    method_data <- filter(clean_data, Method == ref_method)
+
+    map(variables, function(var) {  # Second level: variables
+      var_data <- filter(method_data, Variable == var)
+
+      ref_series <- var_data |>
+        pull(Contribution) |>
+        pluck(1) |>
+        unlist(use.names = FALSE) |>
+        na.omit() |>
+        as.vector()
+
+      alt_methods <- setdiff(methods, ref_method)
+
+                                        # Calculate metrics for each alternative method
+      metrics <- map(alt_methods, function(alt_method) {
+        alt_series <- clean_data |>
+          filter(Variable == var, Method == alt_method) |>
+          pull(Contribution) |>
+          pluck(1) |>
+          unlist(use.names = FALSE) |>
+          na.omit() |>
+          as.vector()
+
+        quantile_ref <- quantile(ref_series, probs = probs, na.rm = TRUE)
+        quantile_alt <- quantile(alt_series, probs = probs, na.rm = TRUE)
+        quantile_res <- mean(abs(quantile_ref - quantile_alt))
+
+
+        tmp <- tibble(
+          !!sym("Euclidean Distance") := TSdist::EuclideanDistance(ref_series, alt_series),
+          MAE = mean(abs(ref_series - alt_series)),
+          MAD = max(abs(ref_series - alt_series)),
+          MAPE = mean(abs(ref_series - alt_series)/abs(ref_series)),
+          !!sym("Cross-Correlation Distance") := TSdist::CCorDistance(ref_series, alt_series),
+          !!sym("Sign Divergence Rate") := mean(sign(ref_series) != sign(alt_series), na.rm = TRUE),
+          ## !!sym("Standard Deviation Percent Rate") := (sd(alt_series) / sd(ref_series)) - 1,
+          !!sym("Difference in Autocorrelation") := TSdist::ACFDistance(ref_series, alt_series),
+          !!sym("Mean Absolute Quantile Differences") := round(quantile_res, digits = digits)
+        )
+        return(tmp)
+      }) |> set_names(alt_methods)
+
+                                        # Convert to matrix
+      metric_names <- names(metrics[[1]])
+      matrix(
+        unlist(metrics),
+        nrow = length(metric_names),
+        byrow = FALSE,
+        dimnames = list(metric_names, alt_methods)
+      )
+    }) |> set_names(variables)
+  }) |> set_names(methods)
+
+
+
+  pivot_tbl <- imap_dfr(results, function(second_level, reference_name) {
+    imap_dfr(second_level, function(df, variable_name) {
+
+      df |>
+        as.data.frame() |>
+        tibble::rownames_to_column("Measure") |>
+        pivot_longer(-Measure, names_to = "Method", values_to = "Differences") |>
+        mutate(Variable = variable_name, Reference = reference_name)
+    }
+    )
+  }) |>
+    relocate(Measure, Method, Reference, Variable, Differences) |>
+    mutate(ISO = country) |>
+    mutate(across(where(is.character), as.factor))
+
+    res_df <- bind_rows(res_df, pivot_tbl)
+  }
+
+  return(res_df)
+}
+
+tabulate_metrics <- function(
+                             df,
+                             ft_size = 20,
+                             inline_print = TRUE,
+                             target_var = "CDX",
+                             target_ref = "Net Exports",
+                             extension = c(
+                               ".docx", ".tex",
+                               ".pdf", ".png"
+                             ),
+                             norm_meth = "Import Content",
+                             ## FIXME: Add as another table
+                             tabs = "../tabs",
+                             figs = "../figs",
+                             ...
+                             ) {
+
+  all_countries <- df |>
+    select(ISO) |>
+    unique() |>
+    unlist(use.names = FALSE) |>
+    as.vector()
+
+  if (is.null(target_ref)) {
+    all_refs <- target_ref <- df |>
+      select(Reference) |>
+      unique() |>
+      unlist(use.names = FALSE) |>
+      as.vector()
+  } else {
+    all_refs <- target_ref
+  }
+
+  if (is.null(target_var)) {
+
+    ## NOTE: If not specified, use all
+    target_var <- df |>
+      select(Variable) |>
+      unique() |>
+      unlist(use.names = FALSE) |>
+      as.vector()
+  }
+
+  for (country in all_countries) {
+    for (ref in all_refs) {
+      for (cur_var in target_var) {
+
+        fname <- paste0(country, "_", ref, "_", cur_var)
+        tmp_title <- paste0(
+          "Dissimilarity measures in respect to ",
+          ref, " method"
+        )
+
+      tmp_df <- df |>
+        filter(ISO == country) |>
+        filter(Reference == ref) |>
+        filter(Variable == cur_var) |>
+        select(!c(Variable, ISO, Reference)) |>
+        pivot_wider(
+          names_from = Method,
+          values_from = Differences
+        ) |>
+        mutate(across(-Measure,
+                      ~ . / !!sym(norm_meth),
+                      .names = "{.col} Normalized")) %>%
+        select(Measure,
+               !ends_with("Normalized"),  # Select all non-normalized columns
+               ends_with("Normalized"),    # Then select normalized columns
+               everything())
+
+        gt_obj <- tmp_df |>
+          gt::gt() |>
+          gt::tab_header(
+            title = tmp_title,
+            subtitle = "Lower values indicates lower dissimilarity to the reference"
+          ) |>
+          gt::tab_footnote(
+            footnote = paste0(
+              "MAE: Mean Absolute Error; MAD: Maximum Absolute Difference;",
+              "MAPE: Mean Absolute Percentage Error."
+            )
+          ) |>
+          ## FIXME: Format the numbers
+          gt::tab_options(
+            table.font.size = ft_size
+          ) |>
+          fmt_number() |>
+          gt::tab_spanner(
+                label = paste0("Divergence in respect to ", target_ref),
+                columns = !contains(c("Normalized", "Measure")),
+                id = "unorm"
+              ) |>
+          gt::tab_spanner(
+                label = paste0("Divergence norm. by ", norm_meth),
+                ## FIXME: Check if there is a way to post remove the Normalize
+                columns = contains("Normalized"),
+                id = "norm"
+              ) |>
+          gt::tab_spanner(
+                label = paste0(country),
+                spanners = c("unorm", "norm"),
+                id = "ISO"
+              ) |>
+          cols_label(
+            .list = lapply(names(tmp_df), function(col) {
+              gsub(" Normalized", "", col)  # Removes "_Normalized"
+                                        # Alternative: gsub("Normalized", "", col) for any position
+            }) %>%
+              setNames(names(tmp_df))
+          )
+        ## FIXME: Define a grouping scheme if countries > 1
+
+        if (inline_print) {
+          gt_obj |>
+            gt::as_gtable(plot = TRUE)
+        }
+
+        if (".docx" %in% extension) {
+
+          tmp_name <- paste0(
+            tabs,
+            "/", ## NOTE: For some reason, it treats docx/tex files differently
+            fname,
+            ".docx"
+          ) |>
+            stringr::str_remove_all(" ")
+
+          gt_obj |>
+            gt::gtsave(
+                  filename = tmp_name, path = tabs
+                )
+        }
+
+
+        if (".tex" %in% extension) {
+          tmp_name <- paste0(
+            tabs,
+            "/", ## NOTE: For some reason, it treats docx/tex files differently
+            fname,
+            ".tex"
+          ) |>
+            stringr::str_remove_all(" ")
+
+          gt_obj |>
+            gt::gtsave(
+                  filename = tmp_name, path = tabs
+                )
+        }
+
+        if ("png" %in% extension) {
+
+          tmp_name <- paste0(
+            fname,
+            ".png"
+          ) |>
+            stringr::str_remove_all(" ")
+
+          gt_obj |>
+            gt::gtsave(
+                  filename = tmp_name, path = figs,
+                  vwidth = 1080,
+                  quiet = TRUE,
+                  selector = "table",
+                  expand = c(1,20,1,5)
+                  )
+        }
+
+        if (".pdf" %in% extension) {
+          tmp_name <- paste0(
+            fname,
+            ".pdf"
+          ) |>
+            stringr::str_remove_all(" ")
+          gt_obj |>
+            gt::gtsave(filename = tmp_name, path = figs)
+        }
+
+      }
+
+    }
+  }
+
+}
+
+tabulate_statistics <- function(
+                             data,
+                             ft_size = 20,
+                             inline_print = TRUE,
+                             extension = c(
+                               ".docx", ".tex"
+                               ## ".pdf", ".png"
+                             ),
+                             tabs = "../tabs",
+                             figs = "../figs",
+                             ...
+                             ) {
+
+  ## browser()
+
+  foo <- df
+
+}
+
 group_plots <- function(
                         data = decomp,
                         IO = results,
@@ -892,8 +1200,17 @@ group_plots <- function(
 
     report_import_coeff(group = group, IO = IO, countries = countries, grouped = grouped)
 
+
+    ## FIXME: Aparently, it is not working
+    ## tabulate_statistics(data = df, countries = countries, grouped = grouped)
+
+    metrics_df <- calculate_metrics(data = df, countries = countries, grouped = grouped)
+
+    tabulate_metrics(metrics_df)
+
     dev.off()
 
   }
 }
+
 

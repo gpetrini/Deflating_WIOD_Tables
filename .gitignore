@@ -3,6 +3,7 @@
 !*.gitkeep
 !*.gitignore
 !*.org
+!*.tex
 !*.R
 # !*.csv
 !*.txt
