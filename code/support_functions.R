@@ -340,6 +340,8 @@ decompose_growth <- function(data_base = results) {
 
     df[,"CDX"] <- tmp_CDX + df[, "M"] ## NOTE: As a workaround
 
+    ## FIXME: Computes CDD directly instead as a residual
+
 
     df <- df |>
       mutate(Total = rowSums(across(all_of(c(vars, "M"))))) |>
@@ -372,6 +374,7 @@ decompose_growth <- function(data_base = results) {
     df <- df |>
       mutate(Total = rowSums(across(all_of(vars)))) |>
       mutate(CDX = X)  ## NOTE: as a workaround
+    ## FIXME: Test if CDD + C == Total
 
     df <- xts(df, order.by = dates)
 
@@ -396,6 +399,7 @@ decompose_growth <- function(data_base = results) {
       mutate(Total = rowSums(across(all_of(c(vars, "M"))))) |>
       mutate(CDX = X + M) |> ## NOTE: M already in negative terms
       mutate(CDD = Total - CDX) ## NOTE: as a workaround
+    ## FIXME: Computes CDD directly instead as a residual
 
     df <- xts(df, order.by = dates)
 
