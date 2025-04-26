@@ -1,0 +1,30 @@
+#+title: Figures and Tables
+
+* LaTeX packages
+
+#+latex_header: \usepackage{booktabs, caption, longtable, colortbl, array}
+#+latex_header: \usepackage{tabularx,amsmath,amsfonts,amssymb}
+#+latex_header: \usepackage{anyfontsize,multirow}
+
+* Figures
+
+#+begin_src R :exports results :results output raw :wrap export latex
+cat("\\section*{Test}\n")
+cat("\\section*{Foo}\n")
+
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\section*{Test}
+\section*{Foo}
+#+end_export
+
+
+* Tables
+
+** Metrics comparing methods
+
+#+begin_export latex
+\input{./tabs/USA_NetExports_CDX.tex}
+#+end_export
