@@ -39,44 +39,31 @@
 
 * FIXMEs [56%]
 
-** DONE [#A] Contribuição do setor externo (CDX e X) não está correta
-
-- CDX a partir do método das exportações líquidas e do método da atribuição coincidem
-
-** DONE [#B] Defini um limitador para a variação de estoques nos boxplots
-
-- Isso porque é o componente com maior variabilidade, distorcendo os eixos se deixado sem o limitador
-  - Uma alternativa seria colocar como um subplot dentro do plot principal
-- Para alguns países, o limitador é muito baixo, fazendo com que apenas a parte da cauda inferior esteja visível
-
-** DONE [#C] Gráficos de área tem partes transparentes na presença de valores negativos
-** TODO [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade
-
 ** TODO [#A] Revisar cálculo CDX e CDD :@Gabriel:
 
 
-** DONE Exportar gráficos
-
-** DONE Corrigir cores dos gráficos exportados
-
 ** TODO [#A] Exportar tabelas
-** DONE [#C] Cat the country to be displayed
-** DONE [#B] Criar boxplot da diferença entre os métodos a cada variável
-** DONE Mudar target method
-** DONE Add Avg and SD for calculate metrics
+** TODO [#A] Adjust normalization of the comparative table to express the percentage deviation from the bechmark
+
+- Simply make 1 - res
+- Possibly ommit the normalization column for clarity
+
+** TODO [#B] Criar gráfico com mudança do conteúdo importado
+
+- São os termos negativos nas identidades
+
+
+** TODO [#B] Selecionar países
+
+** TODO [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade
+
 ** TODO [#C] Add footnote for Avg and SD
 It should indicate that these variables are not in comparisson with target variable
-** TODO [#A] Decide if remove the normalization of the comparative table
+** TODO [#C] Criar gráfico exportação para todos os métodos e exportações líquidas para net exports :@Gabriel:
 
-One easy way to implement is to set it to FALSE
+** STRT [#B] Gerar org com todas as figuras a serem incluídas no google drive
 
-** DONE [#A] Only generate diffs plots for the target method
-
-** DONE Verificar taxa de crescimento médio com texto do Bacarro :@Gabriel:
-- Em especial, Vietnam
-- Checar novamente depois dos ajustes na taxa de câmbio
-
-** WAIT Verificar taxa câmbio :@Doug:
+** WAIT [#C] Verificar taxa câmbio :@Doug:
 
 - Talvez existam distorções na taxa de câmbio
   - Idealmente, deveria utilizar a mesma taxa de câmbio utilizada pelo Bacarro
@@ -84,20 +71,34 @@ One easy way to implement is to set it to FALSE
       - Não está disponível na release anterior das matrizes
 
 
+** DONE [#A] Contribuição do setor externo (CDX e X) não está correta
+
+- CDX a partir do método das exportações líquidas e do método da atribuição coincidem
+
+** DONE [#A] Only generate diffs plots for the target method
+
+** DONE [#B] Defini um limitador para a variação de estoques nos boxplots
+
+- Isso porque é o componente com maior variabilidade, distorcendo os eixos se deixado sem o limitador
+  - Uma alternativa seria colocar como um subplot dentro do plot principal
+- Para alguns países, o limitador é muito baixo, fazendo com que apenas a parte da cauda inferior esteja visível
+
+** DONE Exportar gráficos
+
+** DONE Corrigir cores dos gráficos exportados
+
+** DONE [#B] Criar boxplot da diferença entre os métodos a cada variável
+** DONE Mudar target method
+** DONE Add Avg and SD for calculate metrics
+** DONE Verificar taxa de crescimento médio com texto do Bacarro :@Gabriel:
+- Em especial, Vietnam
+- Checar novamente depois dos ajustes na taxa de câmbio
+
 ** DONE Remove inventories from plots
 ** DONE Set free y
 
-** TODO Criar gráfico exportação para todos os métodos e exportações líquidas para net exports :@Gabriel:
-
-** TODO Criar gráfico com mudança do conteúdo importado
-
-- São os termos negativos nas identidades
-
-
-** TODO Selecionar países
-
-** STRT Gerar org com todas as figuras a serem incluídas no google drive
-
+** DONE [#C] Gráficos de área tem partes transparentes na presença de valores negativos
+** DONE [#C] Cat the country to be displayed
 * FIXME List
 
 #+BEGIN_SRC shell :dir ./code :exports results :results raw
@@ -109,14 +110,19 @@ done
 #+RESULTS:
 - [[file:./code/deflate_tables.R::82]][Line 82] ::
 - [[file:./code/generate_reports.R::2]][Line 2] :: : Adjust the call to compile the databse
-- [[file:./code/support_functions.R::482]][Line 482] :: : There might be some errors with the input data and with the area plot as well
-- [[file:./code/support_functions.R::515]][Line 515] :: : Add GDP growth?
-- [[file:./code/support_functions.R::644]][Line 644] ::  Table of import coeficients?
-- [[file:./code/support_functions.R::894]][Line 894] :: : Increase the space between groups
-- [[file:./code/support_functions.R::1042]][Line 1042] :: : Add as another table
-- [[file:./code/support_functions.R::1113]][Line 1113] :: : Format the numbers
-- [[file:./code/support_functions.R::1125]][Line 1125] :: : Check if there is a way to post remove the Normalize
-- [[file:./code/support_functions.R::1141]][Line 1141] :: : Define a grouping scheme if countries > 1
-- [[file:./code/support_functions.R::1273]][Line 1273] :: : Aparently, it is not working
+- [[file:./code/support_functions.R::343]][Line 343] :: : Computes CDD directly instead as a residual
+- [[file:./code/support_functions.R::374]][Line 374] :: : The methods that is potentially problematic is this one
+- [[file:./code/support_functions.R::378]][Line 378] :: : Test if CDD + C == Total
+- [[file:./code/support_functions.R::403]][Line 403] :: : Computes CDD directly instead as a residual
+- [[file:./code/support_functions.R::497]][Line 497] :: : There might be some errors with the input data and with the area plot as well
+- [[file:./code/support_functions.R::541]][Line 541] :: : Add GDP growth?
+- [[file:./code/support_functions.R::692]][Line 692] ::  Table of import coeficients?
+- [[file:./code/support_functions.R::1031]][Line 1031] :: : Increase the space between groups
+- [[file:./code/support_functions.R::1180]][Line 1180] :: : Add as another table
+- [[file:./code/support_functions.R::1251]][Line 1251] :: : Format the numbers
+- [[file:./code/support_functions.R::1263]][Line 1263] :: : Check if there is a way to post remove the Normalize
+- [[file:./code/support_functions.R::1279]][Line 1279] :: : Define a grouping scheme if countries > 1
+- [[file:./code/support_functions.R::1321]][Line 1321] :: : Possible export the body only
+- [[file:./code/support_functions.R::1531]][Line 1531] :: : Aparently, it is not working
 - [[file:./code/tmp.R::290]][Line 290] :: : Creates a wrapper that gets from the csv subbolfolder
 - [[file:./code/tmp.R::364]][Line 364] :: : Creates a wrapper that gets from the csv subbolfolder
