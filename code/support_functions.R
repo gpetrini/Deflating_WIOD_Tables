@@ -371,6 +371,7 @@ decompose_growth <- function(data_base = results) {
     df[, "CDD"] <-  tmp_CDD - lag(wei[["X"]]) * grw[["X"]]
 
 
+    ## FIXME: The methods that is potentially problematic is this one
     df <- df |>
       mutate(Total = rowSums(across(all_of(vars)))) |>
       mutate(CDX = X)  ## NOTE: as a workaround
@@ -1246,7 +1247,7 @@ tabulate_metrics <- function(
           ) |>
           gt::tab_footnote(
             footnote = paste0(
-              "MAE: Mean Absolute Error; MAD: Maximum Absolute Difference;",
+              "MAE: Mean Absolute Error; MAD: Maximum Absolute Difference; ",
               "MAPE: Mean Absolute Percentage Error."
             )
           ) |>
@@ -1497,6 +1498,11 @@ group_plots <- function(
   for (group in names(groups)) {
 
     group_tag <- group
+    tmp_msg <- paste0(
+      "\nProducing results for ",
+      group_tag
+    )
+    cat(tmp_msg)
     countries <- groups[[group]]
     if (length(countries) > 1) {
       grouped <- TRUE
@@ -1510,27 +1516,36 @@ group_plots <- function(
     df <- all_data |>
       filter(ISO %in% countries)
 
+    cat(" ...")
     plot_decomp(df, group = group, countries = countries, methods, grouped = grouped)
 
     if ((grouped && verbose) || !(grouped)) {
-      plot_differenteces(df, group = group, countries = countries, methods, grouped = grouped)
+      cat(" ...")
+      plot_differenteces(df, group = group, countries = countries, methods, grouped = grouped, target_meth = target_meth)
     }
 
+    cat(" ...")
     plot_external_contrib(df = df, group = group, countries = countries, grouped = grouped)
 
+    cat(" ...")
     report_import_coeff(group = group, IO = IO, countries = countries, grouped = grouped)
 
 
     ## FIXME: Aparently, it is not working
+    ## cat(" ...")
     ## tabulate_statistics(data = df, countries = countries, grouped = grouped)
 
+    cat(" ...")
     metrics_df <- calculate_metrics(data = df, countries = countries, grouped = grouped)
 
+    cat(" ...")
     tabulate_metrics(metrics_df)
 
     dev.off()
+    cat(" done!")
 
   }
 }
+
 
 
