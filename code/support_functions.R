@@ -481,7 +481,17 @@ get_dGDP <- function(IO = results) {
   return(df)
 }
 
-plot_external_contrib <- function(df, group = NULL, countries = NULL, grouped, ...) {
+plot_external_contrib <- function(
+                                  df,
+                                  group = NULL,
+                                  countries = NULL,
+                                  figs = "../figs/",
+                                  tabs = "../tabs/",
+                                  fig_extension = c("pdf", "png"),
+                                  tab_extension = c("tex", "docx"),
+                                  grouped,
+                                  ...
+                                  ) {
 
   ## FIXME: There might be some errors with the input data and with the area plot as well
 
@@ -512,33 +522,62 @@ plot_external_contrib <- function(df, group = NULL, countries = NULL, grouped, .
 
   print(p)
 
+
+  save_figs(plot = p, main = "External_Contrib_CDX_X", fig_extension = fig_extension, suffix = tag)
+
+  if (grouped) {
+    diffs <- "countries"
+  } else {
+    diffs <- "methods"
+  }
+
+  df <- df |>
+    mutate(Time = lubridate::year(Time))
+
   p <- df |>
     filter(Variable %in% c("CDD", "CDX")) |>
     ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
-    geom_area(alpha=0.6 , size=.5, colour="black", position = "stack") +
+    geom_col(position = "stack", stat = "identity", width = 1, color = "black") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
     ## FIXME: Add GDP growth?
-    facet_wrap(~Method, ncol = 1) +
+    geom_line(
+      data = df |> filter(Variable == "GDP"),
+      aes(x = Time, y = Contribution),
+      color = "black",
+      inherit.aes = FALSE,
+      size = 1.2
+    ) +
     labs(
       title = paste0("Domestic (CDD) and external (CDX) demand contribution across different methods for ", tag),
       x = NULL, y = NULL, fill = NULL,
       caption = "Authors' own elaboration",
       ) +
-    scale_color_ipsum() +
-    scale_fill_ipsum() +
-    theme_ipsum(grid = "XY", base_family = "sans")
+    custom_theme()
 
   if (grouped) {
     p <- p +
-      facet_wrap(~ ISO, scales = "free_y")
+      facet_grid(ISO ~ Method, scales = "free_y")
   } else {
     p <- p +
       facet_wrap(~Method, ncol = 1)
   }
 
   print(p)
+
+  save_figs(plot = p, main = "Contrib_CDD_CDX", fig_extension = fig_extension, suffix = tag)
 }
 
-report_import_coeff <- function(countries, group = FALSE, IO = results, grouped, ...) {
+report_import_coeff <- function(
+                                countries,
+                                group = FALSE,
+                                IO = results,
+                                grouped,
+                                figs = "../figs/",
+                                tabs = "../tabs/",
+                                fig_extension = c("pdf", "png"),
+                                tab_extension = c("tex", "docx"),
+                                ...
+                                ) {
 
 
   imp <- get_imp(IO)
@@ -623,7 +662,10 @@ report_import_coeff <- function(countries, group = FALSE, IO = results, grouped,
 
   print(p)
 
+  save_figs(plot = p, main = "ImpCoef_BoxPlot", fig_extension = fig_extension, suffix = tag)
+
   p <- df |>
+    filter(Variable != "E") |>
     ggplot(aes(x = Time, y = Coefficient, color = Variable)) +
     geom_bump(size = 2) +
     facet_wrap(~ Variable, scales = "free_y") +
@@ -643,6 +685,7 @@ report_import_coeff <- function(countries, group = FALSE, IO = results, grouped,
 
   print(p)
 
+  save_figs(plot = p, main = "ImpCoef_TimeSeries", fig_extension = fig_extension, suffix = tag)
 
 
   ## FIXME Table of import coeficients?
@@ -683,7 +726,19 @@ report_import_coeff <- function(countries, group = FALSE, IO = results, grouped,
   }
 }
 
-plot_differenteces <- function(df, group = NULL, countries = NULL, methods, grouped, ...) {
+plot_differenteces <- function(
+                               df,
+                               group = NULL,
+                               countries = NULL,
+                               methods,
+                               grouped,
+                               figs = "../figs/",
+                               tabs = "../tabs/",
+                               fig_extension = c("pdf", "png"),
+                               tab_extension = c("tex", "docx"),
+                               target_meth = "Import Content",
+                               ...
+                               ) {
 
 
 
@@ -699,7 +754,7 @@ plot_differenteces <- function(df, group = NULL, countries = NULL, methods, grou
 
     tmp_vars <- df |>
       filter(Variable != "GDP") |>
-      filter(Variable != "CDD") |>
+      ## filter(Variable != "CDD") |>
       select(Variable) |>
       unique() |>
       unlist(use.names = FALSE) |>
@@ -750,11 +805,17 @@ plot_differenteces <- function(df, group = NULL, countries = NULL, methods, grou
 
         print(p)
 
+        tmp_main <- paste0("DotDiff_", alt, "_", meth)
+        tmp_main <- tmp_main |>
+          stringr::str_remove_all(" ")
+
+        if (meth == target_meth) {
+          save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
+        }
 
         alt_df <- df |>
           filter(Method %in% c(meth, alt)) |>
           filter(Variable != "GDP") |>
-          filter(Variable != "CDD") |>
           filter(Variable %in% vrbl) |>
           drop_na() |>
           pivot_wider(names_from = Method, values_from = Contribution) |>
@@ -801,21 +862,91 @@ plot_differenteces <- function(df, group = NULL, countries = NULL, methods, grou
 
         print(p)
 
+        tmp_main <- paste0("LineDiff_", alt, "_", meth)
+        tmp_main <- tmp_main |>
+          stringr::str_remove_all(" ")
+
+        if (meth == target_meth) {
+          save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
+        }
+
         if (!grouped) {
           break
         }
+
+
+
+
 
       }
 
 
 
 
-
     }
+
+
+  }
+
+  others <- setdiff(methods, target_meth)
+
+  diff_df <- df |>
+    pivot_wider(names_from = "Method", values_from = "Contribution") %>%
+    mutate(across(
+      .cols = all_of(others),
+      .fns = ~ . - !!sym(target_meth),
+      .names = "{.col}"
+    )) |>
+    pivot_longer(cols = !c(Time, ISO, Variable), names_to = "Method", values_to = "Difference") |>
+    filter(Method != target_meth) |>
+    drop_na()
+
+
+  p <- diff_df |>
+    filter(Variable %in% vrbl) |>
+    filter(Variable != "E") |>
+    ggplot(aes(x=Difference, fill = Method, color = Method)) +
+    geom_density(aes(y = after_stat(scaled)), adjust=1.5, alpha=.3, na.rm = TRUE, trim = TRUE) +
+    geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
+    labs(
+      title = paste0("Scaled divergence distribution between different methods and ", target_meth, " for ", tag),
+      subtitle = "Across Variables",
+      x = NULL, y = NULL, fill = NULL,
+      caption = "Authors' own elaboration",
+      ) +
+    custom_theme()
+
+  if (grouped) {
+    p <- p +
+      facet_grid(ISO ~ Variable, scales = "free_x")
+  } else {
+    p <- p +
+      facet_wrap(~Variable, scales = "free_x")
+  }
+
+  print(p)
+
+  tmp_main <- paste0("DistDiff_", target_meth)
+  tmp_main <- tmp_main |>
+    stringr::str_remove_all(" ")
+
+  if (!grouped) {
+    save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
   }
 }
 
-plot_decomp <- function(df, group = NULL, countries = NULL, methods, grouped, ...) {
+plot_decomp <- function(
+                        df,
+                        group = NULL,
+                        countries = NULL,
+                        methods,
+                        figs = "../figs/",
+                        tabs = "../tabs/",
+                        fig_extension = c("pdf", "png"),
+                        tab_extension = c("tex", "docx"),
+                        grouped,
+                        ...
+                        ) {
 
   tag <- group
 
@@ -869,12 +1000,15 @@ plot_decomp <- function(df, group = NULL, countries = NULL, methods, grouped, ..
     print(p)
 
     if (!grouped) {
+      save_figs(plot = p, main = "Growth_Decomp_Variable", fig_extension = fig_extension, suffix = tag)
       break
     }
   }
 
 
   tmp_vars <- df |>
+    filter(Variable != "GDP") |>
+    filter(Variable != "E") |>
     select(Variable) |>
     unique() |>
     unlist(use.names = FALSE) |>
@@ -916,6 +1050,8 @@ plot_decomp <- function(df, group = NULL, countries = NULL, methods, grouped, ..
     }
 
     print(p)
+
+    save_figs(plot = p, main = "Growth_Decomp_Method", fig_extension = fig_extension, suffix = tag)
 
     if(!grouped) {
 
@@ -1194,33 +1330,33 @@ tabulate_metrics <- function(
 
         }
 
-        if ("png" %in% extension) {
+        ## if ("png" %in% extension) {
 
-          tmp_name <- paste0(
-            fname,
-            ".png"
-          ) |>
-            stringr::str_remove_all(" ")
+        ##   tmp_name <- paste0(
+        ##     fname,
+        ##     ".png"
+        ##   ) |>
+        ##     stringr::str_remove_all(" ")
 
-          gt_obj |>
-            gt::gtsave(
-                  filename = tmp_name, path = figs,
-                  vwidth = 1080,
-                  quiet = TRUE,
-                  selector = "table",
-                  expand = c(1,20,1,5)
-                  )
-        }
+        ##   gt_obj |>
+        ##     gt::gtsave(
+        ##           filename = tmp_name, path = figs,
+        ##           vwidth = 1080,
+        ##           quiet = TRUE,
+        ##           selector = "table",
+        ##           expand = c(1,20,1,5)
+        ##           )
+        ## }
 
-        if (".pdf" %in% extension) {
-          tmp_name <- paste0(
-            fname,
-            ".pdf"
-          ) |>
-            stringr::str_remove_all(" ")
-          gt_obj |>
-            gt::gtsave(filename = tmp_name, path = figs)
-        }
+        ## if (".pdf" %in% extension) {
+        ##   tmp_name <- paste0(
+        ##     fname,
+        ##     ".pdf"
+        ##   ) |>
+        ##     stringr::str_remove_all(" ")
+        ##   gt_obj |>
+        ##     gt::gtsave(filename = tmp_name, path = figs)
+        ## }
 
       }
 
@@ -1248,11 +1384,109 @@ tabulate_statistics <- function(
 
 }
 
+
+save_figs <- function(
+                      plot,
+                      figs = "../figs/",
+                      main = NA_character_,
+                      fig_extension = c("pdf", "png"),
+                      suffix = NA_character_,
+                      width = plotW,
+                      height = plotH,
+                      units = "in"
+                      ) {
+
+  for (ext in fig_extension) {
+    fname <- paste0(
+      figs,
+      main,
+      "_",
+      suffix,
+      ".",
+      ext
+    )
+    ggsave(
+      fname,
+      plot,
+      device = ext,
+      width = width,
+      height = height,
+      units = units
+    )
+  }
+}
+
+
+custom_theme <- function() {
+  p <- tryCatch(last_plot(), error = function(e) NULL)
+  if (is.null(p)) return(theme_ipsum()) # Fallback if no plot exists
+
+  # Initialize components
+  components <- list()
+
+  # 1. Check if color/fill scales exist by inspecting plot object
+  existing_scales <- sapply(p$scales$scales, function(s) s$aesthetics[1])
+
+  # 2. Add color scale only if:
+  #    - color aesthetic exists in mapping/layers AND
+  #    - no color scale exists already
+  has_color_aes <- !is.null(p$mapping$colour) ||
+                   any(sapply(p$layers, function(l) !is.null(l$mapping$colour)))
+
+  if (has_color_aes && !"colour" %in% existing_scales) {
+    components <- c(components, list(scale_color_ipsum()))
+  }
+
+  # 3. Same for fill scale
+  has_fill_aes <- !is.null(p$mapping$fill) ||
+                  any(sapply(p$layers, function(l) !is.null(l$mapping$fill)))
+
+  if (has_fill_aes && !"fill" %in% existing_scales) {
+    components <- c(components, list(scale_fill_ipsum()))
+  }
+
+  # 4. Date handling (unchanged)
+  time_x <- FALSE
+  if (!is.null(p$mapping$x)) {
+    x_var <- rlang::as_name(p$mapping$x)
+    if (inherits(p$data[[x_var]], "Date")) {
+      components <- c(components, list(
+        scale_x_date(
+          breaks = scales::breaks_width("5 years"),
+          minor_breaks = scales::breaks_width("1 year"),
+          labels = scales::label_date("%Y"),
+          expand = c(0, 0)  # No padding
+        )
+      ))
+      time_x <- TRUE
+    }
+  }
+  is_bar_plot <- any(sapply(p$layers, function(l) inherits(l$geom, "GeomBar")))
+
+
+  # 5. Theme components (unchanged)
+  theme_comp <- theme_ipsum(grid = "XY", base_family = "sans") +
+    theme(
+      legend.title = element_text(size = 22),
+      legend.text = element_text(size = 20),
+      axis.text.x = if (time_x) element_text(angle = 45, hjust = 1) else element_text(),
+      axis.ticks.x.minor = if (time_x) element_line(color = "gray95", linewidth = 0.3) else element_line(),
+      panel.grid.minor.x = if (time_x) element_line(color = "grey95", linewidth = 0.2) else element_line()
+    )
+
+  c(components, list(theme_comp))
+}
+
 group_plots <- function(
                         data = decomp,
                         IO = results,
                         groups = country_groups,
                         verbose = FALSE,
+                        figs = "../figs/",
+                        tabs = "../tabs/",
+                        fig_extension = c("pdf", "png"),
+                        tab_extension = c("tex", "docx"),
+                        target_meth = "Import Content",
                         ...
                         ) {
 
