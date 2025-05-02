@@ -1118,13 +1118,14 @@ calculate_metrics <- function(
 
 
         tmp <- tibble(
+          !!sym("Mean") := mean(alt_series, na.rm = TRUE) - mean(ref_series, na.rm = TRUE),
+          !!sym("Standard Deviation Ratio") := (sd(alt_series) / sd(ref_series)),
           !!sym("Euclidean Distance") := TSdist::EuclideanDistance(ref_series, alt_series),
           MAE = mean(abs(ref_series - alt_series)),
           MAD = max(abs(ref_series - alt_series)),
           MAPE = mean(abs(ref_series - alt_series)/abs(ref_series)),
           !!sym("Cross-Correlation Distance") := TSdist::CCorDistance(ref_series, alt_series),
           !!sym("Sign Divergence Rate") := mean(sign(ref_series) != sign(alt_series), na.rm = TRUE),
-          ## !!sym("Standard Deviation Percent Rate") := (sd(alt_series) / sd(ref_series)) - 1,
           !!sym("Difference in Autocorrelation") := TSdist::ACFDistance(ref_series, alt_series),
           !!sym("Mean Absolute Quantile Differences") := round(quantile_res, digits = digits)
         )
@@ -1170,15 +1171,15 @@ tabulate_metrics <- function(
                              ft_size = 20,
                              inline_print = TRUE,
                              target_var = "CDX",
-                             target_ref = "Net Exports",
+                             target_ref = "Import Content",
                              extension = c(
                                ".docx", ".tex",
                                ".pdf", ".png"
                              ),
-                             norm_meth = "Import Content",
+                             norm_meth = "Average Import Content",
                              ## FIXME: Add as another table
-                             tabs = "../tabs",
-                             figs = "../figs",
+                             tabs = "../tabs/",
+                             figs = "../figs/",
                              ...
                              ) {
 
