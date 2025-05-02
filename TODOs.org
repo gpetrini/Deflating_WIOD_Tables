@@ -1,4 +1,5 @@
 #+title: TODOs
+#+filetags: :IODefl:
 
 
 * Design
@@ -30,27 +31,72 @@
 
 
 ** WAIT Scatter plot matrices
-** WAIT GDP vs Contribution and geom path for time
+** NO GDP vs Contribution and geom path for time
 
 - This might be a way to show ciclicality of components
 
 
 
-* FIXMEs
+* FIXMEs [56%]
 
-** TODO [#A] Cotribuição do setor externo (CDX e X) não está correta
+** DONE [#A] Contribuição do setor externo (CDX e X) não está correta
 
 - CDX a partir do método das exportações líquidas e do método da atribuição coincidem
 
-** TODO [#B] Defini um limitador para a variação de estoques nos boxplots
+** DONE [#B] Defini um limitador para a variação de estoques nos boxplots
 
 - Isso porque é o componente com maior variabilidade, distorcendo os eixos se deixado sem o limitador
   - Uma alternativa seria colocar como um subplot dentro do plot principal
 - Para alguns países, o limitador é muito baixo, fazendo com que apenas a parte da cauda inferior esteja visível
 
-** TODO [#C] Gráficos de área tem partes transparentes na presença de valores negativos
+** DONE [#C] Gráficos de área tem partes transparentes na presença de valores negativos
 ** TODO [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade
 
+** TODO [#A] Revisar cálculo CDX e CDD :@Gabriel:
+
+
+** DONE Exportar gráficos
+
+** DONE Corrigir cores dos gráficos exportados
+
+** TODO [#A] Exportar tabelas
+** DONE [#C] Cat the country to be displayed
+** DONE [#B] Criar boxplot da diferença entre os métodos a cada variável
+** DONE Mudar target method
+** DONE Add Avg and SD for calculate metrics
+** TODO [#C] Add footnote for Avg and SD
+It should indicate that these variables are not in comparisson with target variable
+** TODO [#A] Decide if remove the normalization of the comparative table
+
+One easy way to implement is to set it to FALSE
+
+** DONE [#A] Only generate diffs plots for the target method
+
+** DONE Verificar taxa de crescimento médio com texto do Bacarro :@Gabriel:
+- Em especial, Vietnam
+- Checar novamente depois dos ajustes na taxa de câmbio
+
+** WAIT Verificar taxa câmbio :@Doug:
+
+- Talvez existam distorções na taxa de câmbio
+  - Idealmente, deveria utilizar a mesma taxa de câmbio utilizada pelo Bacarro
+    - Ainda melhor, seria o caso de utilizar a mesma base da OECD
+      - Não está disponível na release anterior das matrizes
+
+
+** DONE Remove inventories from plots
+** DONE Set free y
+
+** TODO Criar gráfico exportação para todos os métodos e exportações líquidas para net exports :@Gabriel:
+
+** TODO Criar gráfico com mudança do conteúdo importado
+
+- São os termos negativos nas identidades
+
+
+** TODO Selecionar países
+
+** STRT Gerar org com todas as figuras a serem incluídas no google drive
 
 * FIXME List
 
