@@ -509,9 +509,7 @@ plot_external_contrib <- function(
       x = NULL, y = NULL, fill = NULL,
       caption = "Authors' own elaboration",
       ) +
-    scale_color_ipsum() +
-    scale_fill_ipsum() +
-    theme_ipsum(grid="XY", base_family = "sans")
+    custom_theme()
 
   if (grouped) {
     p <- p +
@@ -622,17 +620,18 @@ report_import_coeff <- function(
           )
         ) +
       geom_point(size = 1.5) +
-      facet_wrap(~ Variable, scales = "free_y")
-    labs(
-      title = paste0("Import coefficient vs GDP growth ", tag),
-      subtitle = "Arrow indicates the direction of time",
-      x = NULL, y = NULL, fill = NULL,
-      caption = "Authors' own elaboration",
-      ) +
-      theme_ipsum(grid="XY", base_family = "sans")
+      facet_wrap(~ Variable, scales = "free_y") +
+      labs(
+        title = paste0("Import coefficient vs GDP growth ", tag),
+        subtitle = "Arrow indicates the direction of time",
+        x = NULL, y = NULL, fill = NULL,
+        caption = "Authors' own elaboration",
+        ) +
+      custom_theme()
 
     print(p)
 
+  save_figs(plot = p, main = "Cycle_ImpCoef_dGDP", fig_extension = fig_extension, suffix = tag)
 
 
 
@@ -677,7 +676,7 @@ report_import_coeff <- function(
       x = NULL, y = NULL, fill = NULL,
       caption = "Authors' own elaboration",
       ) +
-    theme_ipsum(grid="XY", base_family = "sans")
+    custom_theme()
 
   if (grouped) {
     p <- p +
@@ -792,9 +791,7 @@ plot_differenteces <- function(
             caption = "Authors' own elaboration",
             ) +
           scale_x_continuous(labels = scales::percent_format(scale = 100)) +
-          scale_color_ipsum() +
-          scale_fill_ipsum() +
-          theme_ipsum(grid="XY", base_family = "sans")
+          custom_theme()
 
         if (grouped) {
           p <- p +
@@ -848,9 +845,7 @@ plot_differenteces <- function(
             caption = "Authors' own elaboration",
             ) +
           scale_y_continuous(labels = scales::percent_format(scale = 100)) +
-          ## scale_color_ipsum() +
-          ## scale_fill_ipsum() +
-          theme_ipsum(grid="XY", base_family = "sans")
+          custom_theme()
 
 
         if (grouped) {
@@ -985,9 +980,7 @@ plot_decomp <- function(
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
         ) +
-      scale_color_ipsum() +
-      scale_fill_ipsum() +
-      theme_ipsum(grid = "XY", base_family = "sans")
+      custom_theme()
 
 
     if (!grouped) {
@@ -1038,9 +1031,7 @@ plot_decomp <- function(
         x = NULL, y = NULL, fill = NULL,
         caption = "Authors' own elaboration",
         ) +
-      scale_color_ipsum() +
-      scale_fill_ipsum() +
-      theme_ipsum(grid="XY", base_family = "sans")
+      custom_theme()
 
     if (!grouped) {
       p <- p +
