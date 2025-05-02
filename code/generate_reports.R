@@ -14,5 +14,9 @@ group_plots(
   data = decomp,
   IO = results,
   groups = all_groups,
-  verbose = FALSE
+  verbose = FALSE,
+  figs = "../figs",
+  tabs = "../tabs",
+  fig_extension = c("pdf", "png"),
+  tab_extension = c("tex", "docx")
 )
