@@ -609,6 +609,7 @@ report_import_coeff <- function(
 
 
     p <- df_path |>
+      filter(Variable != "E") |>
       ggplot(aes(y=Value, x=GDP, color = ISO)) +
       geom_path(
         lineend = "round",   # Smoother line ends
@@ -642,18 +643,18 @@ report_import_coeff <- function(
 
 
   p <- df |>
+    filter(Variable != "E") |>
     select(!Time) |>
     ggplot(aes(y=Coefficient, x=Variable, fill=type)) +
     geom_boxplot() +
     scale_fill_manual(values=c("#69b3a2", "grey")) +
     scale_alpha_manual(values=c(1,0.1)) +
-    coord_cartesian(ylim = c(0, 0.425)) +  ## NOTE: Because inventories is very volatile
     labs(
       title = paste0("Import coefficient boxplot across different expenditures for ", tag),
       x = NULL, y = NULL, fill = NULL,
       caption = "Authors' own elaboration",
       ) +
-    theme_ipsum(grid="XY", base_family = "sans")
+    custom_theme()
 
   if (grouped) {
     p <- p +
@@ -774,12 +775,13 @@ plot_differenteces <- function(
         alt_df <- df |>
           filter(Method %in% c(meth, alt)) |>
           filter(Variable != "GDP") |>
-          filter(Variable != "CDD") |>
           mutate(Year = forcats::fct_rev(as.factor(lubridate::year(Time)))) |>
           select(!Time)
 
+
         p <- alt_df |>
           filter(Variable %in% vrbl) |>
+          filter(Variable != "E") |>
           ggplot(aes(x=Contribution,y=Year)) +
           geom_line(aes(group=Year), color="#E7E7E7", linewidth=3.5) +
           geom_point(aes(color=Method), size=3) +
@@ -826,6 +828,7 @@ plot_differenteces <- function(
 
 
         p <- alt_df |>
+          filter(Variable != "E") |>
           ggplot(aes(x = Time)) +
           geom_line(aes(y = Base, color = meth)) +
           geom_line(aes(y = Alt, color = alt)) +
@@ -959,8 +962,10 @@ plot_decomp <- function(
     ## Across methods
 
 
+
     p <- df |>
       filter(Variable != "GDP") |>
+      filter(Variable != "E") |>
       filter(Method %in% meth) |>
       group_by(Time, Variable) |>
       ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
