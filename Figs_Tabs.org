@@ -6,6 +6,7 @@
 #+latex_header: \usepackage{booktabs, caption, longtable, colortbl, array}
 #+latex_header: \usepackage{tabularx,amsmath,amsfonts,amssymb}
 #+latex_header: \usepackage{anyfontsize,multirow}
+#+latex_header: \usepackage{pdflscape}
 
 * Global variables :noexport:
 
@@ -22,6 +23,7 @@ all_methods <- c(
 )
 
 benchmark_meth <- "Import Content"
+benchmark_var <- "CDX"
 snd_bst <- "Average Import Content"
 
 
@@ -285,3 +287,45 @@ for (iso  in selected_countries) {
 
 ** Metrics comparing methods
 
+
+#+begin_src R
+for (iso  in selected_countries) {
+  tmp_sec <- paste0(
+    "\\subsubsection*{",
+    "Dissimilarity measures in respect to ",
+    benchmark_meth,
+    " for ",
+    benchmark_var,
+    " variable for ",
+    iso,
+    "}\n"
+)
+
+  cat(tmp_sec)
+  
+  basename <- paste0(
+    "./tabs/",
+    iso,
+    "_",
+    benchmark_meth,
+    "_",
+    benchmark_var,
+    ".tex"
+  ) |>
+    stringr::str_remove_all(" ")
+  tmp_include <- paste0(
+    "\\include{",
+    basename,
+    "}\n"
+  )
+  cat(tmp_include)
+}
+#+end_src
+
+#+RESULTS:
+#+begin_export latex
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for ARG}
+\include{./tabs/ARG_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for AUS}
+\include{./tabs/AUS_ImportContent_CDX.tex}
+#+end_export

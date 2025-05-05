@@ -1,4 +1,4 @@
-% Created 2025-05-01 Thu 21:39
+% Created 2025-05-05 Mon 19:15
 % Intended LaTeX compiler: pdflatex
 \documentclass[11pt]{article}
 \usepackage[utf8]{inputenc}
@@ -31,6 +31,7 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \usepackage{booktabs, caption, longtable, colortbl, array}
 \usepackage{tabularx,amsmath,amsfonts,amssymb}
 \usepackage{anyfontsize,multirow}
+\usepackage{pdflscape}
 \author{Gabriel Petrini}
 \date{\today}
 \title{Figures and Tables}
@@ -40,10 +41,10 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \tableofcontents
 
 \section{Figures}
-\label{sec:org03364bf}
+\label{sec:org38951e0}
 
 \subsection{Growth Decomposition}
-\label{sec:orgc5aae59}
+\label{sec:org3bf0508}
 
 \begin{figure}[t]
 \centering
@@ -57,7 +58,7 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \caption{Growth Decomposition for AUS}
 \end{figure}
 \subsection{Paired Comparison}
-\label{sec:orgac4e63d}
+\label{sec:org02fe547}
 
 
 \begin{figure}[H]
@@ -107,7 +108,7 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \caption{Scaled distribution of divergences in respect to Import Content for AUS}
 \end{figure}
 \subsection{CDX vs CDD}
-\label{sec:orgcc9614d}
+\label{sec:org22a30ac}
 
 
 \begin{figure}[t]
@@ -122,10 +123,10 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \caption{CDD and CDX contribution for AUS}
 \end{figure}
 \subsection{Import coefficients}
-\label{sec:org510ad7a}
+\label{sec:orgd5ad282}
 
 \subsubsection{Boxplots}
-\label{sec:org955eb9b}
+\label{sec:org494e0bd}
 
 
 \begin{figure}[t]
@@ -140,7 +141,7 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \caption{Import Coefficient Boxplots for AUS}
 \end{figure}
 \subsubsection{Time-series}
-\label{sec:orge382f51}
+\label{sec:org1eb0103}
 
 
 \begin{figure}[t]
@@ -155,8 +156,14 @@ citecolor=blue,filecolor=blue,menucolor=blue,urlcolor=blue]{hyperref}
 \caption{Import Coefficient Boxplots for AUS}
 \end{figure}
 \section{Tables}
-\label{sec:orgb2bf587}
+\label{sec:org39f8fd5}
 
 \subsection{Metrics comparing methods}
-\label{sec:org3092e1c}
+\label{sec:org0fe4af4}
+
+
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for ARG}
+\include{./tabs/ARG_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for AUS}
+\include{./tabs/AUS_ImportContent_CDX.tex}
 \end{document}
