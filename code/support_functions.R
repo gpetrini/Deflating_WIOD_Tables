@@ -1311,15 +1311,16 @@ tabulate_metrics <- function(
                 label = paste0(country),
                 spanners = c("unorm", "norm"),
                 id = "ISO"
-              ) |>
-          cols_label(
-            .list = lapply(names(tmp_df), function(col) {
-              gsub(" Normalized", "", col)  # Removes "_Normalized"
-                                        # Alternative: gsub("Normalized", "", col) for any position
-            }) %>%
-              setNames(names(tmp_df))
-          )
+              )
+          ## cols_label(
+          ##   .list = lapply(names(tmp_df), function(col) {
+          ##     gsub(" Normalized", "", col)  # Removes "_Normalized"
+          ##   }) |>
+          ##     setNames(names(tmp_df))
+          ## )
         ## FIXME: Define a grouping scheme if countries > 1
+
+
 
         if (inline_print) {
           gt_obj |>
@@ -1346,28 +1347,50 @@ tabulate_metrics <- function(
         if (".tex" %in% extension) {
           tmp_name <- paste0(
             tabs,
-            "/", ## NOTE: For some reason, it treats docx/tex files differently
             fname,
             ".tex"
           ) |>
             stringr::str_remove_all(" ")
 
-          body_name <- paste0(
-            tabs,
-            "/", ## NOTE: For some reason, it treats docx/tex files differently
-            "Body_",
-            fname,
-            ".tex"
-          ) |>
-            stringr::str_remove_all(" ")
+          group1 <- paste0("Divergence in respect to ", target_ref)
+          group2 <- paste0("Divergence norm. by ", norm_meth)
+          col_names <- colnames(tmp_df)[-1]
 
-          ## ## FIXME: Possible export the body only
-          ## gt_obj |>
-          ##   gt::gtsave(
-          ##         filename = tmp_name, path = tabs
-          ##       )
-          ## tmp_body <- gt_obj |>
-          ##   gt::extract_body(output = "latex")
+
+          latex_table <- tmp_df |>
+            ## round(digits = 4) |>
+            kableExtra::kable(
+              format = "latex", booktabs = TRUE, escape = FALSE, longtable = TRUE,
+              digits = 3,  # Rounds all numeric columns to 2 decimal places
+              col.names = c("Measure", rep("", ncol(tmp_df)-1))  # Hide original column names
+            ) |>
+            kableExtra::add_header_above(
+                          ## FIXME: Ensure the same hline as in first header
+                          header = c(" " = 1, stats::setNames(rep(1, length(col_names)), col_names))
+                        ) |>
+            kableExtra::add_header_above(header =
+                                           c(" " = 1,  # Empty space for row names column
+                                             setNames(3, group1),  # First group spans 3 columns
+                                             setNames(2, group2))  # Second group spans 2 columns
+                        ) |>
+            kableExtra::footnote(
+              general = paste0(
+                "MAE: Mean Absolute Error; MAD: Maximum Absolute Difference; ",
+                "MAPE: Mean Absolute Percentage Error."
+              )
+            ) |>
+            kableExtra::kable_styling(
+                          latex_options = c("hold_position", "repeat_header"),
+                            font_size = 8
+
+                        ) |>
+            kableExtra::landscape()
+
+
+          writeLines(latex_table, tmp_name)
+
+
+
 
         }
 
