@@ -1,5 +1,6 @@
 #+title: TODOs
 #+filetags: :IODefl:
+#+category: paper
 
 
 * Design
@@ -37,13 +38,26 @@
 
 
 
-* FIXMEs [56%]
+* FIXMEs [60%]
 
-** TODO [#A] Revisar cálculo CDX e CDD :@Gabriel:
+** DONE [#A] Revisar cálculo CDX e CDD :@Gabriel:
+SCHEDULED: <2025-05-05 Mon>
+:PROPERTIES:
+:EFFORT:   2:00
+:END:
+:LOGBOOK:
+CLOCK: [2025-05-05 Mon 16:30]--[2025-05-05 Mon 16:33] =>  0:03
+:END:
 
 
-** TODO [#A] Exportar tabelas
-** TODO [#A] Adjust normalization of the comparative table to express the percentage deviation from the bechmark
+
+** STRT [#A] Exportar tabelas
+SCHEDULED: <2025-05-05 Mon>
+** STRT [#A] Adjust normalization of the comparative table to express the percentage deviation from the bechmark
+SCHEDULED: <2025-05-05 Mon>
+:PROPERTIES:
+:EFFORT:   0:45
+:END:
 
 - Simply make 1 - res
 - Possibly ommit the normalization column for clarity
