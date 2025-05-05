@@ -47,7 +47,7 @@ prepare_data <- function(data_base = NIOTs) {
 
                                         # Componentes da demanda nacional - Fn #
 
-    Fn = lapply(years, function(cur_year) {
+    Fn <- lapply(years, function(cur_year) {
 
       data[["Fn"]][[cur_year]] |>
         rename(
@@ -353,7 +353,6 @@ decompose_growth <- function(data_base = results) {
 
     tmp[[country]][["Average Import Content"]] <- df
 
-    df <- NULL
 
                                         # Attribution method
 
@@ -538,7 +537,6 @@ plot_external_contrib <- function(
     ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
     geom_col(position = "stack", stat = "identity", width = 1, color = "black") +
     geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-    ## FIXME: Add GDP growth?
     geom_line(
       data = df |> filter(Variable == "GDP"),
       aes(x = Time, y = Contribution),
@@ -1248,10 +1246,10 @@ tabulate_metrics <- function(
               "MAPE: Mean Absolute Percentage Error."
             )
           ) |>
-          ## FIXME: Format the numbers
           gt::tab_options(
             table.font.size = ft_size
           ) |>
+          ## FIXME: Format the numbers
           fmt_number() |>
           gt::tab_spanner(
                 label = paste0("Divergence in respect to ", target_ref),
