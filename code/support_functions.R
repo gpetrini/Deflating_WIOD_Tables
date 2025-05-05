@@ -313,7 +313,11 @@ decompose_growth <- function(data_base = results) {
                                         # Average Import Content
 
 
-    mAvg <- (data[["M"]][, "Total"] / (data[["Ft"]][,"Total"]))
+    ## mAvg <- (data[["M"]][, "Total"] / (data[["Ft"]][,"Total"]))
+    mAvg <- imp[, "Total"]
+
+    mAvg <- xts(mAvg, order.by = dates)
+
     gM <- (diff(mAvg) / lag(mAvg)) |>
       as_tibble()
 
@@ -331,21 +335,33 @@ decompose_growth <- function(data_base = results) {
       as_tibble()
 
     tmp_CDX <- 0
+    tmp_CDD <- 0
     for (v in vars) {
       df[,v] <- (1 - mAvg) * lag(wei[[v]]) * grw[[v]]
-      tmp_CDX <- tmp_CDX + (-mAvg * lag(wei[[v]]) * grw[[v]])
+      tmp_CDX <- tmp_CDX + (-lag(mAvg) * lag(wei[[v]]) * gM) + (v == "X") * df[,v]
+      tmp_CDD <- tmp_CDD + df[,v] * (v != "X")
     }
+
+
+
+
+    df[, "CDD"] <- tmp_CDD
+    df[, "CDX"] <- tmp_CDX
+
+    total <- tmp_CDD + tmp_CDX
+    colnames(total) <- c("CDD_CDX")
+
+    df[, "CDD_CDX"] <- total
 
     df[,"M"] <- (lag(mAvg) * lag(DA) * gM[["Total"]]) * (-1)
 
-    df[,"CDX"] <- tmp_CDX + df[, "M"] ## NOTE: As a workaround
-
-    ## FIXME: Computes CDD directly instead as a residual
+    err_sqr <- (df[, "CDD_CDX"] - df[, "GDP"])^2 |>
+      unlist(use.names = FALSE) |>
+      mean(na.rm = TRUE)
 
 
     df <- df |>
-      mutate(Total = rowSums(across(all_of(c(vars, "M"))))) |>
-      mutate(CDD = Total - CDX) ## NOTE: as a workaround
+      mutate(Total = rowSums(across(all_of(c(vars, "M")))))
 
 
     df <- xts(df, order.by = dates)
@@ -361,20 +377,30 @@ decompose_growth <- function(data_base = results) {
 
 
     tmp_CDD <- 0
+    tmp_CDX <- 0
 
+    ## STOP HERE
     for (v in vars) {
       df[, v] <- lag(wei[[v]]) * grw[[v]] - lag(m_wei[[v]]) * m_grw[[v]]
-      tmp_CDD <- tmp_CDD + lag(wei[[v]]) * grw[[v]]
+      tmp_CDD <- tmp_CDD + df[,v] * (v != "X")
+      tmp_CDX <- tmp_CDX + df[,v] * (v == "X")
     }
 
-    df[, "CDD"] <-  tmp_CDD - lag(wei[["X"]]) * grw[["X"]]
+    df[, "CDD"] <-  tmp_CDD
+    df[, "CDX"] <-  tmp_CDX
+
+    total <- tmp_CDD + tmp_CDX
+    colnames(total) <- c("CDD_CDX")
+
+    df[, "CDD_CDX"] <- total
 
 
-    ## FIXME: The methods that is potentially problematic is this one
+    err_sqr <- (df[, "CDD_CDX"] - df[, "GDP"])^2 |>
+      unlist(use.names = FALSE) |>
+      mean(na.rm = TRUE)
+
     df <- df |>
-      mutate(Total = rowSums(across(all_of(vars)))) |>
-      mutate(CDX = X)  ## NOTE: as a workaround
-    ## FIXME: Test if CDD + C == Total
+      mutate(Total = rowSums(across(all_of(vars))))
 
     df <- xts(df, order.by = dates)
 
@@ -382,24 +408,39 @@ decompose_growth <- function(data_base = results) {
 
                                         # Net Exports Method
 
-
     df <- df_gY |>
       as_tibble()
 
+    tmp_CDD <- 0
+    tmp_CDX <- 0
     for (v in c(vars, "M")) {
-      if (v != "M") {
-        df[,v] <- lag(wei[[v]]) * grw[[v]]
-      } else {
-        df[,v] <- lag(wei[[v]]) * grw[[v]] * (-1)
+      var_sign <- ifelse(v == "M", -1, 1)
+      df[,v] <- lag(wei[[v]]) * grw[[v]]*var_sign
+      if (v != "M" && v != "X") {
+        tmp_CDD <- tmp_CDD + df[, v]
       }
+      if (v == "X" || v == "M") {
+        tmp_CDX <- tmp_CDX + df[, v]
+      }
+
     }
 
 
+    df[, "CDD"] <-  tmp_CDD
+    df[, "CDX"] <-  tmp_CDX
+
+    total <- tmp_CDD + tmp_CDX
+    colnames(total) <- c("CDD_CDX")
+
+    df[, "CDD_CDX"] <- total
+
+
+    err_sqr <- (df[, "CDD_CDX"] - df[, "GDP"])^2 |>
+      unlist(use.names = FALSE) |>
+      mean(na.rm = TRUE)
+
     df <- df |>
-      mutate(Total = rowSums(across(all_of(c(vars, "M"))))) |>
-      mutate(CDX = X + M) |> ## NOTE: M already in negative terms
-      mutate(CDD = Total - CDX) ## NOTE: as a workaround
-    ## FIXME: Computes CDD directly instead as a residual
+      mutate(Total = rowSums(across(all_of(c(vars, "M")))))
 
     df <- xts(df, order.by = dates)
 
