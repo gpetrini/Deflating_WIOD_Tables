@@ -1267,13 +1267,17 @@ tabulate_metrics <- function(
           names_from = Method,
           values_from = Differences
         ) |>
+        ## FIXME: Handle with divisions by zero
         mutate(across(-Measure,
-                      ~ . / !!sym(norm_meth),
+                      ~ ( . / !!sym(norm_meth) ) -1,
                       .names = "{.col} Normalized")) %>%
         select(Measure,
                !ends_with("Normalized"),  # Select all non-normalized columns
                ends_with("Normalized"),    # Then select normalized columns
-               everything())
+               everything()) |>
+        select(!intersect(
+          starts_with(norm_meth), ends_with(" Normalized")
+        ))
 
         gt_obj <- tmp_df |>
           gt::gt() |>
