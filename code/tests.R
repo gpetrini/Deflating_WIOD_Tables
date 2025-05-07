@@ -6,117 +6,110 @@ results <- prepare_data()
 
 decomp <- decompose_growth()
 
-  df <- get_tidy(data = decomp) |>
-    filter(ISO == "BRA") |>
-    mutate(Contribution = as.numeric(Contribution))
+## Inhirited by the main function
+
+df <- get_tidy(data = decomp) |>
+  ## filter(ISO == "BRA") |>
+  mutate(Contribution = as.numeric(Contribution))
 
 
-## calculate_metrics <- function(
-##                               data,
-##                               probs = c(0.1, 0.25, 0.5, 0.75, 0.9),
-##                               digits = 4L,
-##                               ...
-##                               ) {
+target_var <- "CDX"
+target_ref <- "Import Content"
+norm_meth <- "Average Import Content"
 
-##   accuracy <- 10^(-digits)
+## That should be on the scope of the function
 
-##   # 1. Prepare clean data
-##   clean_data <- data |>
-##     get_tidy() |>
-##     filter(ISO == "BRA") |>
-##     mutate(Contribution = as.numeric(Contribution)) |>
-##     group_by(Variable, Method) |>
-##     summarise(Contribution = list(na.omit(Contribution)), .groups = "drop")
+all_countries <- df |> select(ISO) |> unique() |> unlist(use.names = FALSE) |> as.character()
 
-##   # 2. Get unique methods and variables
-##   methods <- unique(clean_data$Method)
-##   variables <- unique(clean_data$Variable)
+## FIXME: Ensure the normalization by norm_meth
+metrics_df <- calculate_metrics(data = df, countries = all_countries, grouped = FALSE) |>
+  filter(Variable == target_var) |>
+  filter(Method != target_ref) |>
+  filter(Reference == target_ref) |>
+  select(!Reference) |>
+  select(!Variable)
 
-##   # 3. Build nested results structure
-##   results <- map(variables, function(var) {
-##     var_data <- filter(clean_data, Variable == var)
+wider_df <- metrics_df |>
+  group_by(Measure, ISO, Method) |>
+  pivot_wider(names_from = "Method", values_from = "Differences") |>
+  mutate(across(where(is.numeric), ~ (. / !!sym(norm_meth)) - 1, .names = "{.col} Normalized")) |>
+  mutate(across(
+    where(is.numeric),
+    ~ ifelse(is.infinite(.), NA_real_, .)
+  )) |>
+  select(!c(!!sym(paste0(norm_meth, " Normalized")))) |>
+  select(ISO, everything()) |>
+  arrange(ISO) |>
+  ungroup()
 
-##     map(methods, function(ref_method) {
-##       ref_series <- var_data |>
-##         filter(Method == ref_method) |>
-##         pull(Contribution) |>
-##         pluck(1) |>
-##         unlist(use.names = FALSE) |>
-##         na.omit() |>
-##         as.vector()
+tab_title <- paste0(
+  "Comparative dissimilarity metrics in respect to ",
+  target_ref,
+  " method for ",
+  target_var,
+  " variable (whole period)"
+)
 
+## FIXME: Set the number of normalized and unormalized programatically
+custom_cols <- wider_df |>
+  select(!ISO) |>
+  colnames() |>
+  stringr::str_replace_all("Average", "Avg.") |>
+  stringr::str_replace_all("Normalized", "Norm.")
 
-##       alt_methods <- setdiff(methods, ref_method)
+not_norm <- sum(
+  !grepl("Measure", custom_cols) &
+  !grepl("Norm.", custom_cols)
+)
 
-##       # Calculate all metrics for each alternative method
-##       metrics <- map(alt_methods, function(alt_method) {
-##         alt_series <- var_data |>
-##           filter(Method == alt_method) |>
-##           pull(Contribution) |>
-##           pluck(1) |>
-##           unlist(use.names = FALSE) |>
-##           na.omit() |>
-##           as.vector()
+norm_col <- sum(
+  !grepl("Measure", custom_cols) &
+  grepl("Norm.", custom_cols)
+)
 
+tex_table <- wider_df |>
+  select(!ISO) |>
+  kableExtra::kable(
+                format = "latex",       # For PDF output
+                booktabs = TRUE,        # Professional styling
+                longtable = TRUE,       # Span multiple pages
+                caption = tab_title,
+                col.names = custom_cols,
+                digits = 3
+              ) |>
+  kableExtra::kable_styling(
+                latex_options = c("hold_position", "repeat_header"),  # Repeat headers on each page
+                font_size = 9
+              ) |>
+  kableExtra::add_header_above(               # Add a header above Method columns
+                c(
+                  " ", "Method" = not_norm,
+                  "Normalized Methods" = norm_col
+                  ),
+                bold = TRUE
+              ) |>
+  kableExtra::pack_rows(
+    index = table(wider_df$ISO),
+    label = "\\textbf{%s}",  # Bold group labels
+    italic = FALSE,
+    latex_gap_space = "0.5em",
+    hline_after = TRUE  # Line after each group
+  ) |>
+  kableExtra::footnote(
+    general = paste0(
+      "MAE: Mean Absolute Error; MAD: Maximum Absolute Difference; ",
+      "MAPE: Mean Absolute Percentage Error; ",
+      "MAQD: Mean Absolute Quantile Differences. ",
+      "Note: — indicates values that were infinite due to division by zero."
+    ),
+    general_title = "Legend:",
+    footnote_as_chunk = FALSE,
+    threeparttable = TRUE
+    ) |>
+  kableExtra::landscape()
 
-##         quantile_ref <- quantile(ref_series, probs = probs, na.rm = TRUE)
+tex_table <- gsub("NaN", "\\\\textendash", tex_table)
+tex_table <- gsub("NA", "\\\\textendash", tex_table)
 
-##         quantile_alt <- quantile(alt_series, probs = probs, na.rm = TRUE)
-
-
-##         quantile_res <- mean(abs(quantile_ref - quantile_alt))
-
-
-##         # Ensure series are comparable
-##         if (length(ref_series) != length(alt_series)) {
-##           return(tibble(
-##             ## Difference Metrics
-##             !!sym("Euclidean Distance") := NA_real_,
-##             MAE = NA_real_,
-##             MAD = NA_real_,
-##             MAPE = NA_real_,
-##             ## Directional Discrepancies
-##             !!sym("Cross-Correlation Distance") := NA_real_,
-##             !!sym("Sign Divergence Rate") := NA_real_,
-##             ## Volatity Comparison
-##             !!sym("Standard Deviation Percent Rate") := NA_real_,
-##             !!sym("Difference in Autocorrelation") := NA_real_,
-##             ## Distribution Comparison
-##             !!sym("Mean Absolute Quantile Differences") := NA_real_
-##           ))
-##         }
-
-##         # Calculate metrics
-##         tibble(
-##           ## Difference Metrics
-##           !!sym("Euclidean Distance") := TSdist::EuclideanDistance(ref_series, alt_series),
-##           MAE = mean(abs(ref_series - alt_series)),
-##           MAD = max(abs(ref_series - alt_series)),
-##           MAPE = mean(abs(ref_series - alt_series)/abs(ref_series)),
-##           ## Directional Discrepancies
-##           !!sym("Cross-Correlation Distance") := TSdist::CCorDistance(ref_series, alt_series),
-##           !!sym("Sign Divergence Rate") := mean(
-##             sign(ref_series) != sign(alt_series),
-##             na.rm = TRUE
-##           ),
-##           ## Volatity Comparison
-##           !!sym("Standard Deviation Percent Rate") := (sd(alt_series) / sd(ref_series)) - 1,
-##           !!sym("Difference in Autocorrelation") := TSdist::ACFDistance(ref_series, alt_series),
-##           ## Distribution Comparison
-##           !!sym("Mean Absolute Quantile Differences") := quantile_res |> round(digits = digits)
-##         )
-##       }) |> set_names(alt_methods)
-
-##       # Convert to matrix
-##       metric_names <- names(metrics[[1]])
-##       matrix(
-##         data = unlist(metrics),
-##         nrow = length(metric_names),
-##         byrow = FALSE,
-##         dimnames = list(metric_names, alt_methods)
-##       )
-##     }) |> set_names(methods)
-##   }) |> set_names(variables)
-
-##   return(results)
-## }
+fname <- paste0("../tabs/All_Metrics.tex")
+writeLines(tex_table, fname)
