@@ -1168,6 +1168,7 @@ calculate_metrics <- function(
 
                                         # Calculate metrics for each alternative method
       metrics <- map(alt_methods, function(alt_method) {
+
         alt_series <- clean_data |>
           filter(Variable == var, Method == alt_method) |>
           pull(Contribution) |>
@@ -1236,11 +1237,11 @@ tabulate_metrics <- function(
                              inline_print = TRUE,
                              target_var = "CDX",
                              target_ref = "Import Content",
+                             norm_meth = "Average Import Content",
                              extension = c(
                                ".docx", ".tex",
                                ".pdf", ".png"
                              ),
-                             norm_meth = "Average Import Content",
                              ## FIXME: Add as another table
                              tabs = "../tabs/",
                              figs = "../figs/",
@@ -1468,7 +1469,6 @@ tabulate_statistics <- function(
                              ...
                              ) {
 
-  ## browser()
 
   foo <- df
 
