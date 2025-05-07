@@ -1191,7 +1191,7 @@ calculate_metrics <- function(
           !!sym("Cross-Correlation Distance") := TSdist::CCorDistance(ref_series, alt_series),
           !!sym("Sign Divergence Rate") := mean(sign(ref_series) != sign(alt_series), na.rm = TRUE),
           !!sym("Difference in Autocorrelation") := TSdist::ACFDistance(ref_series, alt_series),
-          !!sym("Mean Absolute Quantile Differences") := round(quantile_res, digits = digits)
+          !!sym("MAQD") := round(quantile_res, digits = digits)
         )
         return(tmp)
       }) |> set_names(alt_methods)
@@ -1313,7 +1313,8 @@ tabulate_metrics <- function(
           gt::tab_footnote(
             footnote = paste0(
               "MAE: Mean Absolute Error; MAD: Maximum Absolute Difference; ",
-              "MAPE: Mean Absolute Percentage Error."
+              "MAPE: Mean Absolute Percentage Error; ",
+              "MAQD: Mean Absolute Quantile Differences."
             )
           ) |>
           gt::tab_options(
