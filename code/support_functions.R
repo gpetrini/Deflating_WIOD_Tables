@@ -1052,16 +1052,17 @@ plot_decomp <- function(
 
     print(p)
 
-    if (!grouped) {
-      save_figs(plot = p, main = "Growth_Decomp_Variable", fig_extension = fig_extension, suffix = tag)
-      break
-    }
+    tmp_main <- paste0("Growth_Decomp_", meth)
+    tmp_main <- tmp_main |> stringr::str_remove_all(" ")
+    save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
   }
 
 
   tmp_vars <- df |>
     filter(Variable != "GDP") |>
     filter(Variable != "E") |>
+    filter(Variable != "M") |>
+    filter(Variable != "CDI") |>
     select(Variable) |>
     unique() |>
     unlist(use.names = FALSE) |>
@@ -1106,9 +1107,14 @@ plot_decomp <- function(
 
     save_figs(plot = p, main = "Growth_Decomp_Method", fig_extension = fig_extension, suffix = tag)
 
-    if(!grouped) {
-
+    if (!grouped) {
+      tmp_main <- paste0("Growth_Decomp_Variable_", vrbl)
+      tmp_main <- tmp_main |> stringr::str_remove_all(" ")
+      save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
       break
+    } else {
+      tmp_main <- paste0("Growth_Decomp_AllVariables")
+      save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
     }
 
   }
@@ -1488,6 +1494,10 @@ save_figs <- function(
       ".",
       ext
     )
+
+    fname <- fname |>
+      stringr::str_remove_all(" ")
+
     ggsave(
       fname,
       plot,
