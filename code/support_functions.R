@@ -260,6 +260,11 @@ decompose_growth <- function(data_base = results) {
     df <- merge(df, CDA)
 
 
+    M <- xts::xts(rep(0, length(dates)), order.by = dates)
+    colnames(M) <- c("M")
+
+    df <- merge(df, M)
+
     CDI <- map(vars, ~ ( - lag(imp[, .x])) * lag(wei[, .x]) * gms[, .x]) |>
       reduce(`+`)
     colnames(CDI) <- c("CDI")
@@ -313,7 +318,6 @@ decompose_growth <- function(data_base = results) {
                                         # Average Import Content
 
 
-    ## mAvg <- (data[["M"]][, "Total"] / (data[["Ft"]][,"Total"]))
     mAvg <- imp[, "Total"]
 
     mAvg <- xts(mAvg, order.by = dates)
@@ -343,8 +347,6 @@ decompose_growth <- function(data_base = results) {
     }
 
 
-
-
     df[, "CDD"] <- tmp_CDD
     df[, "CDX"] <- tmp_CDX
 
@@ -353,7 +355,9 @@ decompose_growth <- function(data_base = results) {
 
     df[, "CDD_CDX"] <- total
 
-    df[,"M"] <- (lag(mAvg) * lag(DA) * gM[["Total"]]) * (-1)
+    df[,"CDI"] <- (lag(mAvg) * lag(DA) * gM[["Total"]]) * (-1)
+
+    ## FIXME: CDI does not match
 
     err_sqr <- (df[, "CDD_CDX"] - df[, "GDP"])^2 |>
       unlist(use.names = FALSE) |>
@@ -361,7 +365,9 @@ decompose_growth <- function(data_base = results) {
 
 
     df <- df |>
-      mutate(Total = rowSums(across(all_of(c(vars, "M")))))
+      mutate(Total = rowSums(across(all_of(c(vars, "CDI"))))) |>
+      mutate(M = 0)
+
 
 
     df <- xts(df, order.by = dates)
@@ -400,7 +406,9 @@ decompose_growth <- function(data_base = results) {
       mean(na.rm = TRUE)
 
     df <- df |>
-      mutate(Total = rowSums(across(all_of(vars))))
+      mutate(Total = rowSums(across(all_of(vars)))) |>
+      mutate(CDI = 0) |>
+      mutate(M = 0)
 
     df <- xts(df, order.by = dates)
 
@@ -440,7 +448,8 @@ decompose_growth <- function(data_base = results) {
       mean(na.rm = TRUE)
 
     df <- df |>
-      mutate(Total = rowSums(across(all_of(c(vars, "M")))))
+      mutate(Total = rowSums(across(all_of(c(vars, "M"))))) |>
+      mutate(CDI = 0)
 
     df <- xts(df, order.by = dates)
 
@@ -821,6 +830,8 @@ plot_differenteces <- function(
         p <- alt_df |>
           filter(Variable %in% vrbl) |>
           filter(Variable != "E") |>
+          filter(Variable != "CDI") |>
+          filter(Variable != "M") |>
           ggplot(aes(x=Contribution,y=Year)) +
           geom_line(aes(group=Year), color="#E7E7E7", linewidth=3.5) +
           geom_point(aes(color=Method), size=3) +
@@ -855,6 +866,8 @@ plot_differenteces <- function(
         alt_df <- df |>
           filter(Method %in% c(meth, alt)) |>
           filter(Variable != "GDP") |>
+          filter(Variable != "CDI") |>
+          filter(Variable != "M") |>
           filter(Variable %in% vrbl) |>
           drop_na() |>
           pivot_wider(names_from = Method, values_from = Contribution) |>
@@ -943,6 +956,8 @@ plot_differenteces <- function(
   p <- diff_df |>
     filter(Variable %in% vrbl) |>
     filter(Variable != "E") |>
+    filter(Variable != "CDI") |>
+    filter(Variable != "M") |>
     ggplot(aes(x=Difference, fill = Method, color = Method)) +
     geom_density(aes(y = after_stat(scaled)), adjust=1.5, alpha=.3, na.rm = TRUE, trim = TRUE) +
     geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
@@ -1001,17 +1016,17 @@ plot_decomp <- function(
     ## Across methods
 
 
-
     p <- df |>
       filter(Variable != "GDP") |>
-      filter(Variable != "E") |>
+      filter(Variable != "CDD") |>
+      filter(Variable != "CDX") |>
       filter(Method %in% meth) |>
       group_by(Time, Variable) |>
       ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
       geom_col(
         ## width = 0.6,
         color = "black",
-        position = "dodge"
+        position = "stack"
       ) +
       geom_point(
         data = df |> filter(Variable == "GDP"),
@@ -1065,6 +1080,8 @@ plot_decomp <- function(
 
     p <- df |>
       filter(Variable %in% vrbl) |>
+      filter(Variable != "CDI") |>
+      filter(Variable != "M") |>
       group_by(Time, Variable) |>
       ggplot(aes(x = Time, y = Contribution, fill = Method)) +
       ## FIXME: Increase the space between groups
@@ -1118,6 +1135,8 @@ calculate_metrics <- function(
   clean_data <- data |>
     filter(ISO == country) |>
     mutate(Contribution = as.numeric(Contribution)) |>
+    filter(Variable != "M") |>
+    filter(Variable != "CDI") |>
     group_by(Variable, Method) |>
     summarise(Contribution = list(na.omit(Contribution)), .groups = "drop")
 
@@ -1576,6 +1595,7 @@ group_plots <- function(
       paste0("../reports/", group_tag, ".pdf"),
       width = plotW, height = plotH
     )
+
     df <- all_data |>
       filter(ISO %in% countries)
 

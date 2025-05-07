@@ -11,7 +11,7 @@ last_year <- tail(years, 1)
 country <- NULL
 
 expenditures_dom <- c("C", "I", "G", "E")
-expenditures <- c(expenditures_dom, "X", "CDX", "CDD")
+expenditures <- c(expenditures_dom, "X", "CDX", "CDD", "CDI", "M")
 vars <- c(expenditures, "GDP")
 
 plotW     <- 28     # plot window width
