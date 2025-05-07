@@ -19,6 +19,16 @@ plotH     <- 16     # plot window height
 
 ## NOTE: Some generic groups
 country_groups <- list(
+
+  "Selected Countries" = c(
+    ## G7
+    "CAN", "FRA", "DEU", "ITA", "JPN", "GBR", "USA",
+    ## BRICS
+    "BRA", "RUS", "IND", "CHN", "ZAF",
+    ## Others
+    "SWE", "NLD", "MEX", "KOR"
+
+  )
   ## BRICS = c("BRA", "RUS", "IND", "CHN", "ZAF"),
   ## G7 = c("CAN", "FRA", "DEU", "ITA", "JPN", "GBR", "USA")
   ## MINT = c("MEX", "IDN", "NGA", "TUR"),
