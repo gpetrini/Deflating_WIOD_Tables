@@ -1301,6 +1301,10 @@ tabulate_metrics <- function(
                !ends_with("Normalized"),  # Select all non-normalized columns
                ends_with("Normalized"),    # Then select normalized columns
                everything()) |>
+        mutate(across(
+          where(is.numeric),
+          ~ ifelse(is.infinite(.), NA_real_, .)
+        )) |>
         select(!intersect(
           starts_with(norm_meth), ends_with(" Normalized")
         ))
