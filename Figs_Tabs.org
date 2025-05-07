@@ -7,12 +7,22 @@
 #+latex_header: \usepackage{tabularx,amsmath,amsfonts,amssymb}
 #+latex_header: \usepackage{anyfontsize,multirow}
 #+latex_header: \usepackage{pdflscape}
+#+latex_header: \usepackage{threeparttablex}
 
 * Global variables :noexport:
 
 
 #+begin_src R :exports none
-selected_countries <- c("ARG", "AUS")
+selected_countries <- c(
+  ## G7
+  "CAN", "FRA", "DEU", "ITA", "JPN", "GBR", "USA",
+  ## BRICS
+  "BRA", "RUS", "IND", "CHN", "ZAF",
+  ## Others
+  "SWE", "NLD", "MEX", "KOR"
+
+)
+
 
 ## FIXME: Ideally export as a RDs from the main scripts
 all_methods <- c(
@@ -63,13 +73,15 @@ include_graphics <- function(
 ** Growth Decomposition
 
 #+begin_src R
-for (iso  in selected_countries) {
-  base_name <- "Growth_Decomp_Method_"
-  fname <- paste0(base_name, iso)
+for (meth  in all_methods) {
+  base_name <- "Growth_Decomp_"
+  fname <- paste0(base_name, meth, "_SelectedCountries")
+  fname <- fname |>
+    stringr::str_remove_all(" ")
   cat("\\begin{figure}[t]\n")
   cat("\\centering\n")
   include_graphics(main = fname)
-  cat(paste0("\\caption{Growth Decomposition for ", iso, "}\n"))
+  cat(paste0("\\caption{Growth Decomposition for ", meth, "}\n"))
   cat("\\end{figure}\n\n")
 }
 #+end_src
@@ -78,19 +90,31 @@ for (iso  in selected_countries) {
 #+begin_export latex
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/Growth_Decomp_Method_ARG.pdf}
-\caption{Growth Decomposition for ARG}
+\includegraphics[width=\textwidth]{./figs/Growth_Decomp_NetExports_SelectedCountries.pdf}
+\caption{Growth Decomposition for Net Exports}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/Growth_Decomp_Method_AUS.pdf}
-\caption{Growth Decomposition for AUS}
+\includegraphics[width=\textwidth]{./figs/Growth_Decomp_Attribution_SelectedCountries.pdf}
+\caption{Growth Decomposition for Attribution}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Growth_Decomp_ImportContent_SelectedCountries.pdf}
+\caption{Growth Decomposition for Import Content}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Growth_Decomp_AverageImportContent_SelectedCountries.pdf}
+\caption{Growth Decomposition for Average Import Content}
 \end{figure}
 #+end_export
 
 
-** Paired Comparison
+** Paired Comparison :noexport:
 
 
 #+begin_src R
@@ -144,49 +168,385 @@ for (iso  in selected_countries) {
 #+begin_export latex
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_ARG.pdf}
-\caption{Net Exports vs. Import Content for ARG}
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_CAN.pdf}
+\caption{Net Exports vs. Import Content for CAN}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_ARG.pdf}
-\caption{Attribution vs. Import Content for ARG}
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_CAN.pdf}
+\caption{Attribution vs. Import Content for CAN}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_ARG.pdf}
-\caption{Average Import Content vs. Import Content for ARG}
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_CAN.pdf}
+\caption{Average Import Content vs. Import Content for CAN}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_AUS.pdf}
-\caption{Net Exports vs. Import Content for AUS}
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_FRA.pdf}
+\caption{Net Exports vs. Import Content for FRA}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_AUS.pdf}
-\caption{Attribution vs. Import Content for AUS}
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_FRA.pdf}
+\caption{Attribution vs. Import Content for FRA}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_AUS.pdf}
-\caption{Average Import Content vs. Import Content for AUS}
-\end{figure}
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_ARG.pdf}
-\caption{Scaled distribution of divergences in respect to Import Content for ARG}
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_FRA.pdf}
+\caption{Average Import Content vs. Import Content for FRA}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_AUS.pdf}
-\caption{Scaled distribution of divergences in respect to Import Content for AUS}
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_DEU.pdf}
+\caption{Net Exports vs. Import Content for DEU}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_DEU.pdf}
+\caption{Attribution vs. Import Content for DEU}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_DEU.pdf}
+\caption{Average Import Content vs. Import Content for DEU}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_ITA.pdf}
+\caption{Net Exports vs. Import Content for ITA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_ITA.pdf}
+\caption{Attribution vs. Import Content for ITA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_ITA.pdf}
+\caption{Average Import Content vs. Import Content for ITA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_JPN.pdf}
+\caption{Net Exports vs. Import Content for JPN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_JPN.pdf}
+\caption{Attribution vs. Import Content for JPN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_JPN.pdf}
+\caption{Average Import Content vs. Import Content for JPN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_GBR.pdf}
+\caption{Net Exports vs. Import Content for GBR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_GBR.pdf}
+\caption{Attribution vs. Import Content for GBR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_GBR.pdf}
+\caption{Average Import Content vs. Import Content for GBR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_USA.pdf}
+\caption{Net Exports vs. Import Content for USA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_USA.pdf}
+\caption{Attribution vs. Import Content for USA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_USA.pdf}
+\caption{Average Import Content vs. Import Content for USA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_BRA.pdf}
+\caption{Net Exports vs. Import Content for BRA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_BRA.pdf}
+\caption{Attribution vs. Import Content for BRA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_BRA.pdf}
+\caption{Average Import Content vs. Import Content for BRA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_RUS.pdf}
+\caption{Net Exports vs. Import Content for RUS}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_RUS.pdf}
+\caption{Attribution vs. Import Content for RUS}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_RUS.pdf}
+\caption{Average Import Content vs. Import Content for RUS}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_IND.pdf}
+\caption{Net Exports vs. Import Content for IND}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_IND.pdf}
+\caption{Attribution vs. Import Content for IND}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_IND.pdf}
+\caption{Average Import Content vs. Import Content for IND}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_CHN.pdf}
+\caption{Net Exports vs. Import Content for CHN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_CHN.pdf}
+\caption{Attribution vs. Import Content for CHN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_CHN.pdf}
+\caption{Average Import Content vs. Import Content for CHN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_ZAF.pdf}
+\caption{Net Exports vs. Import Content for ZAF}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_ZAF.pdf}
+\caption{Attribution vs. Import Content for ZAF}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_ZAF.pdf}
+\caption{Average Import Content vs. Import Content for ZAF}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_SWE.pdf}
+\caption{Net Exports vs. Import Content for SWE}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_SWE.pdf}
+\caption{Attribution vs. Import Content for SWE}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_SWE.pdf}
+\caption{Average Import Content vs. Import Content for SWE}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_NLD.pdf}
+\caption{Net Exports vs. Import Content for NLD}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_NLD.pdf}
+\caption{Attribution vs. Import Content for NLD}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_NLD.pdf}
+\caption{Average Import Content vs. Import Content for NLD}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_MEX.pdf}
+\caption{Net Exports vs. Import Content for MEX}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_MEX.pdf}
+\caption{Attribution vs. Import Content for MEX}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_MEX.pdf}
+\caption{Average Import Content vs. Import Content for MEX}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_NetExports_ImportContent_KOR.pdf}
+\caption{Net Exports vs. Import Content for KOR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_Attribution_ImportContent_KOR.pdf}
+\caption{Attribution vs. Import Content for KOR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/LineDiff_AverageImportContent_ImportContent_KOR.pdf}
+\caption{Average Import Content vs. Import Content for KOR}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_CAN.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for CAN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_FRA.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for FRA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_DEU.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for DEU}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_ITA.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for ITA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_JPN.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for JPN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_GBR.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for GBR}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_USA.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for USA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_BRA.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for BRA}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_RUS.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for RUS}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_IND.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for IND}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_CHN.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for CHN}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_ZAF.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for ZAF}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_SWE.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for SWE}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_NLD.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for NLD}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_MEX.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for MEX}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{./figs/DistDiff_ImportContent_KOR.pdf}
+\caption{Scaled distribution of divergences in respect to Import Content for KOR}
 \end{figure}
 #+end_export
 
@@ -209,14 +569,98 @@ for (iso  in selected_countries) {
 #+begin_export latex
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_ARG.pdf}
-\caption{CDD and CDX contribution for ARG}
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_CAN.pdf}
+\caption{CDD and CDX contribution for CAN}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_AUS.pdf}
-\caption{CDD and CDX contribution for AUS}
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_FRA.pdf}
+\caption{CDD and CDX contribution for FRA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_DEU.pdf}
+\caption{CDD and CDX contribution for DEU}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_ITA.pdf}
+\caption{CDD and CDX contribution for ITA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_JPN.pdf}
+\caption{CDD and CDX contribution for JPN}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_GBR.pdf}
+\caption{CDD and CDX contribution for GBR}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_USA.pdf}
+\caption{CDD and CDX contribution for USA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_BRA.pdf}
+\caption{CDD and CDX contribution for BRA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_RUS.pdf}
+\caption{CDD and CDX contribution for RUS}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_IND.pdf}
+\caption{CDD and CDX contribution for IND}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_CHN.pdf}
+\caption{CDD and CDX contribution for CHN}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_ZAF.pdf}
+\caption{CDD and CDX contribution for ZAF}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_SWE.pdf}
+\caption{CDD and CDX contribution for SWE}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_NLD.pdf}
+\caption{CDD and CDX contribution for NLD}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_MEX.pdf}
+\caption{CDD and CDX contribution for MEX}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/Contrib_CDD_CDX_KOR.pdf}
+\caption{CDD and CDX contribution for KOR}
 \end{figure}
 #+end_export
 
@@ -241,14 +685,98 @@ for (iso  in selected_countries) {
 #+begin_export latex
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_ARG.pdf}
-\caption{Import Coefficient Boxplots for ARG}
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_CAN.pdf}
+\caption{Import Coefficient Boxplots for CAN}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_AUS.pdf}
-\caption{Import Coefficient Boxplots for AUS}
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_FRA.pdf}
+\caption{Import Coefficient Boxplots for FRA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_DEU.pdf}
+\caption{Import Coefficient Boxplots for DEU}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_ITA.pdf}
+\caption{Import Coefficient Boxplots for ITA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_JPN.pdf}
+\caption{Import Coefficient Boxplots for JPN}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_GBR.pdf}
+\caption{Import Coefficient Boxplots for GBR}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_USA.pdf}
+\caption{Import Coefficient Boxplots for USA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_BRA.pdf}
+\caption{Import Coefficient Boxplots for BRA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_RUS.pdf}
+\caption{Import Coefficient Boxplots for RUS}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_IND.pdf}
+\caption{Import Coefficient Boxplots for IND}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_CHN.pdf}
+\caption{Import Coefficient Boxplots for CHN}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_ZAF.pdf}
+\caption{Import Coefficient Boxplots for ZAF}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_SWE.pdf}
+\caption{Import Coefficient Boxplots for SWE}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_NLD.pdf}
+\caption{Import Coefficient Boxplots for NLD}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_MEX.pdf}
+\caption{Import Coefficient Boxplots for MEX}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_BoxPlot_KOR.pdf}
+\caption{Import Coefficient Boxplots for KOR}
 \end{figure}
 #+end_export
 
@@ -272,20 +800,104 @@ for (iso  in selected_countries) {
 #+begin_export latex
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_ARG.pdf}
-\caption{Import Coefficient Boxplots for ARG}
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_CAN.pdf}
+\caption{Import Coefficient Boxplots for CAN}
 \end{figure}
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_AUS.pdf}
-\caption{Import Coefficient Boxplots for AUS}
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_FRA.pdf}
+\caption{Import Coefficient Boxplots for FRA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_DEU.pdf}
+\caption{Import Coefficient Boxplots for DEU}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_ITA.pdf}
+\caption{Import Coefficient Boxplots for ITA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_JPN.pdf}
+\caption{Import Coefficient Boxplots for JPN}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_GBR.pdf}
+\caption{Import Coefficient Boxplots for GBR}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_USA.pdf}
+\caption{Import Coefficient Boxplots for USA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_BRA.pdf}
+\caption{Import Coefficient Boxplots for BRA}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_RUS.pdf}
+\caption{Import Coefficient Boxplots for RUS}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_IND.pdf}
+\caption{Import Coefficient Boxplots for IND}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_CHN.pdf}
+\caption{Import Coefficient Boxplots for CHN}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_ZAF.pdf}
+\caption{Import Coefficient Boxplots for ZAF}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_SWE.pdf}
+\caption{Import Coefficient Boxplots for SWE}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_NLD.pdf}
+\caption{Import Coefficient Boxplots for NLD}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_MEX.pdf}
+\caption{Import Coefficient Boxplots for MEX}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{./figs/ImpCoef_TimeSeries_KOR.pdf}
+\caption{Import Coefficient Boxplots for KOR}
 \end{figure}
 #+end_export
 
 * Tables
 
-** Metrics comparing methods
+** Metrics comparing methods (Selected countries) :noexport:
 
 
 #+begin_src R
@@ -324,8 +936,42 @@ for (iso  in selected_countries) {
 
 #+RESULTS:
 #+begin_export latex
-\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for ARG}
-\include{./tabs/ARG_ImportContent_CDX.tex}
-\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for AUS}
-\include{./tabs/AUS_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for CAN}
+\include{./tabs/CAN_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for FRA}
+\include{./tabs/FRA_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for DEU}
+\include{./tabs/DEU_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for ITA}
+\include{./tabs/ITA_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for JPN}
+\include{./tabs/JPN_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for GBR}
+\include{./tabs/GBR_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for USA}
+\include{./tabs/USA_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for BRA}
+\include{./tabs/BRA_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for RUS}
+\include{./tabs/RUS_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for IND}
+\include{./tabs/IND_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for CHN}
+\include{./tabs/CHN_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for ZAF}
+\include{./tabs/ZAF_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for SWE}
+\include{./tabs/SWE_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for NLD}
+\include{./tabs/NLD_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for MEX}
+\include{./tabs/MEX_ImportContent_CDX.tex}
+\subsubsection*{Dissimilarity measures in respect to Import Content for CDX variable for KOR}
+\include{./tabs/KOR_ImportContent_CDX.tex}
+#+end_export
+
+** All countries
+
+#+begin_export latex
+\include{./tabs/All_Metrics.tex}
 #+end_export
