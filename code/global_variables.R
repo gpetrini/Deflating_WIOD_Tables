@@ -20,14 +20,11 @@ plotH     <- 16     # plot window height
 ## NOTE: Some generic groups
 country_groups <- list(
 
-  "Selected Countries" = c(
-    ## G7
-    "CAN", "FRA", "DEU", "ITA", "JPN", "GBR", "USA",
-    ## BRICS
-    "BRA", "RUS", "IND", "CHN", "ZAF",
-    ## Others
-    "SWE", "NLD", "MEX", "KOR"
-
+  "Developed" = c(
+    "USA", "DEU", "NLD", "JPN"
+  ),
+  "Developing" = c(
+    "BRA", "MEX", "CHN", "IND"
   )
   ## BRICS = c("BRA", "RUS", "IND", "CHN", "ZAF"),
   ## G7 = c("CAN", "FRA", "DEU", "ITA", "JPN", "GBR", "USA")
@@ -36,6 +33,8 @@ country_groups <- list(
   ## FragileFive = c("BRA", "IND", "IDN", "TUR", "ZAF"),
   ## Nordic = c("DNK", "FIN", "ISL", "NOR", "SWE")
 )
+
+saveRDS(country_groups, "../objs/country_groups.rds")
 
 # Append using single countries as the function should work the same way
 all_groups <- c(

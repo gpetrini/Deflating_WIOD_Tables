@@ -1003,59 +1003,48 @@ plot_decomp <- function(
 
   tag <- group
 
-  for (meth in methods) {
-    if (!grouped) {
-      meth <- methods
-      title <- paste0("Growth decompostion across different method for ", tag)
-      subtitle <- ""
-    } else {
-      title <- paste0("Growth decompostion across different countries of ", tag)
-      subtitle <- paste0("Using ", meth, " method")
-    }
 
-    ## Across methods
+  title <- paste0("Growth decompostion across different method for ", tag)
+  subtitle <- ""
+  ## Across methods
 
 
-    p <- df |>
-      filter(Variable != "GDP") |>
-      filter(Variable != "CDD") |>
-      filter(Variable != "CDX") |>
-      filter(Method %in% meth) |>
-      group_by(Time, Variable) |>
-      ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
-      geom_col(
-        ## width = 0.6,
-        color = "black",
-        position = "stack"
+  p <- df |>
+    filter(Variable != "GDP") |>
+    filter(Variable != "CDD") |>
+    filter(Variable != "CDX") |>
+    group_by(Time, Variable) |>
+    ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
+    geom_col(
+      ## width = 0.6,
+      color = "black",
+      position = "stack"
+    ) +
+    geom_point(
+      data = df |> filter(Variable == "GDP"),
+      aes(x = Time, y = Contribution),
+      color = "black"
+    ) +
+    labs(
+      title = title,
+      subtitle = subtitle,
+      x = NULL, y = NULL, fill = NULL,
+      caption = "Authors' own elaboration",
       ) +
-      geom_point(
-        data = df |> filter(Variable == "GDP"),
-        aes(x = Time, y = Contribution),
-        color = "black"
-      ) +
-      labs(
-        title = title,
-        subtitle = subtitle,
-        x = NULL, y = NULL, fill = NULL,
-        caption = "Authors' own elaboration",
-        ) +
-      custom_theme()
+    custom_theme()
 
 
-    if (!grouped) {
-      p <- p +
-        facet_wrap(~Method, scales = "free_y")
-    } else {
-      p <- p +
-        facet_wrap(~ISO, scales = "free_y")
-    }
-
-    print(p)
-
-    tmp_main <- paste0("Growth_Decomp_", meth)
-    tmp_main <- tmp_main |> stringr::str_remove_all(" ")
-    save_figs(plot = p, main = tmp_main, fig_extension = fig_extension, suffix = tag)
+  if (!grouped) {
+    p <- p +
+      facet_wrap(~Method, scales = "free_y")
+  } else {
+    p <- p +
+      facet_wrap(ISO~Method, scales = "free_y")
   }
+
+  print(p)
+
+  save_figs(plot = p, main = "Growth_Decomp", fig_extension = fig_extension, suffix = tag)
 
 
   tmp_vars <- df |>

@@ -33,13 +33,15 @@
 
 
 ** WAIT Scatter plot matrices
+
+
 ** NO GDP vs Contribution and geom path for time
 
 - This might be a way to show ciclicality of components
 
 
 
-* FIXMEs [62%]
+* FIXMEs [71%]
 
 
 ** DONE [#A] Create a subset of countries for the analysis
@@ -69,24 +71,30 @@
 
 - Check Table 3 on [cite/t:@baccaro_2024_operationalizing] as a reference
 *** TODO Create a funtion for create the table for the whole sample
+** DONE [#A] Run script for a new group of countries
+*** DONE [#B] Split between develop and developing countries
+** DONE [#A] For the contribution of growth, wrap for ISO x method
+** DONE [#A] Create figure comparing differences in discrepancies accross methods benchmarked for the import content
+** TODO [#B] Create ranked discrepancies plot, but split it between top 90 and top 10 percent of discrepancies
 
+- This might help us to spot which countries have the higher discrepancies, allowing us to filter the subset on a different way
 
 ** DONE [#B] Replace growth decomp plot on the report and figs file
 SCHEDULED: <2025-05-07 Wed>
 
-** TODO [#B] Upload files to the gdrive folder
+** DONE [#B] Upload files to the gdrive folder
 SCHEDULED: <2025-05-07 Wed>
 ** TODO [#B] Write a brief description about the procedures adopted :@writing:
-** TODO [#B] Criar gráfico com mudança do conteúdo importado
+** WAIT [#C] Criar gráfico com mudança do conteúdo importado
 
 - São os termos negativos nas identidades
 
 
-** TODO [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade
+** DONE [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade
 
 ** TODO [#C] Add footnote for Avg and SD
 It should indicate that these variables are not in comparisson with target variable
-** TODO [#C] Criar gráfico exportação para todos os métodos e exportações líquidas para net exports :@Gabriel:
+** WAIT [#C] Criar gráfico exportação para todos os métodos e exportações líquidas para net exports :@Gabriel:
 
 ** DONE [#A] Exportar tabelas
 SCHEDULED: <2025-05-07 Wed>
@@ -110,6 +118,13 @@ SCHEDULED: <2025-05-07 Wed>
 
 
 ** IDEA [#B] Create a scatter plot across measurements and add selected countries as text labels
+
+- x: Rank of dissimilarity measures
+- y: Actual value of dissimilarity
+- color: method (excludes normalized)
+- dots: ISOs with labels for the highest discrepancy
+- across: meassures
+
 ** DONE [#A] Revisar cálculo CDX e CDD :@Gabriel:
 SCHEDULED: <2025-05-05 Mon>
 :PROPERTIES:
