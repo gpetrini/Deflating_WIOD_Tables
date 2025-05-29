@@ -41,9 +41,14 @@
 
 
 
-* FIXMEs [71%]
+* FIXMEs [72%]
 
 
+** DONE [#A] Review abstract for submission to FMM
+SCHEDULED: <2025-05-27 Tue>
+:PROPERTIES:
+:EFFORT:   0:30
+:END:
 ** DONE [#A] Create a subset of countries for the analysis
 :PROPERTIES:
 :EFFORT:   0:10
@@ -75,7 +80,10 @@
 *** DONE [#B] Split between develop and developing countries
 ** DONE [#A] For the contribution of growth, wrap for ISO x method
 ** DONE [#A] Create figure comparing differences in discrepancies accross methods benchmarked for the import content
-** TODO [#B] Create ranked discrepancies plot, but split it between top 90 and top 10 percent of discrepancies
+
+** TODO [#B] Exports the comparative dissimilarity plot as a png
+
+** TODO [#C] Create ranked discrepancies plot, but split it between top 90 and top 10 percent of discrepancies
 
 - This might help us to spot which countries have the higher discrepancies, allowing us to filter the subset on a different way
 
@@ -99,7 +107,7 @@ It should indicate that these variables are not in comparisson with target varia
 ** DONE [#A] Exportar tabelas
 SCHEDULED: <2025-05-07 Wed>
 ** STRT [#A] Adjust normalization of the comparative table to express the percentage deviation from the bechmark
-SCHEDULED: <2025-05-07 Wed>
+SCHEDULED: <2025-05-29 Thu>
 :PROPERTIES:
 :EFFORT:   0:45
 :END:
