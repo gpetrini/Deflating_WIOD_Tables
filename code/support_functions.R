@@ -1556,9 +1556,11 @@ custom_theme <- function() {
     theme(
       legend.title = element_text(size = 22),
       legend.text = element_text(size = 20),
-      axis.text.x = if (time_x) element_text(angle = 45, hjust = 1) else element_text(),
+      axis.text.x = if (time_x) element_text(angle = 45, hjust = 1, size = 20) else element_text(size = 20),
+      axis.text.y = element_text(size = 20),
       axis.ticks.x.minor = if (time_x) element_line(color = "gray95", linewidth = 0.3) else element_line(),
-      panel.grid.minor.x = if (time_x) element_line(color = "grey95", linewidth = 0.2) else element_line()
+      panel.grid.minor.x = if (time_x) element_line(color = "grey95", linewidth = 0.2) else element_line(),
+      strip.text = element_text(size = 20)
     )
 
   c(components, list(theme_comp))
