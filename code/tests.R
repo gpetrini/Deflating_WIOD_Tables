@@ -133,7 +133,7 @@ foo <- foo |>
   pivot_longer(cols = all_of(all_methods), names_to = "Methods", values_to = "Differences") |>
   pivot_longer(cols = all_of(paste0(all_methods, " Ranked")), names_to = "Ranked Methods", values_to = "Ranks")
 
-threshold <- 5
+threshold <- 0.3
 sub_df <- foo  |>
   group_by(Measure, Methods) |>
   arrange(Ranks)
@@ -171,3 +171,5 @@ combined_plots <- p_box / p_point
 ##   custom_theme()
 
 save_figs(plot = combined_plots, main = "Differences_Database", fig_extension = "pdf", suffix = "All")
+save_figs(plot = p_point, main = "Point_Differences_Database", fig_extension = "pdf", suffix = "All")
+save_figs(plot = p_box, main = "Box_Differences_Database", fig_extension = "pdf", suffix = "All")
