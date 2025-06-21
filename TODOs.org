@@ -41,34 +41,9 @@
 
 
 
-* FIXMEs [72%]
+* FIXMEs [8%]
 
 
-** DONE [#A] Review abstract for submission to FMM
-SCHEDULED: <2025-05-27 Tue>
-:PROPERTIES:
-:EFFORT:   0:30
-:END:
-** DONE [#A] Create a subset of countries for the analysis
-:PROPERTIES:
-:EFFORT:   0:10
-:END:
-
-- G7
-- BRICS
-- Suécia
-- México
-- Coreia do Sul
-- Holanda
-
-** DONE [#A] Stack the variables for the barcharts
-:PROPERTIES:
-:EFFORT:   0:30
-:END:
-
-*** DONE Ensure to remove the CDD and CDX before that
-** DONE [#A] Fix the space in the filenames of select countries
-** DONE [#A] Fix the save of growth decomp for select countries
 ** STRT [#A] Generate a table that include the whole sample and produce some summary statistics
 :PROPERTIES:
 :EFFORT:   2:00
@@ -76,38 +51,23 @@ SCHEDULED: <2025-05-27 Tue>
 
 - Check Table 3 on [cite/t:@baccaro_2024_operationalizing] as a reference
 *** TODO Create a funtion for create the table for the whole sample
-** DONE [#A] Run script for a new group of countries
-*** DONE [#B] Split between develop and developing countries
-** DONE [#A] For the contribution of growth, wrap for ISO x method
-** DONE [#A] Create figure comparing differences in discrepancies accross methods benchmarked for the import content
-
 ** TODO [#B] Exports the comparative dissimilarity plot as a png
 
 ** TODO [#C] Create ranked discrepancies plot, but split it between top 90 and top 10 percent of discrepancies
 
 - This might help us to spot which countries have the higher discrepancies, allowing us to filter the subset on a different way
 
-** DONE [#B] Replace growth decomp plot on the report and figs file
-SCHEDULED: <2025-05-07 Wed>
-
-** DONE [#B] Upload files to the gdrive folder
-SCHEDULED: <2025-05-07 Wed>
 ** TODO [#B] Write a brief description about the procedures adopted :@writing:
 ** WAIT [#C] Criar gráfico com mudança do conteúdo importado
 
 - São os termos negativos nas identidades
 
 
-** DONE [#C] Adicionar espaçamento entre os gráficos de barra para melhor visibilidade
-
 ** TODO [#C] Add footnote for Avg and SD
 It should indicate that these variables are not in comparisson with target variable
 ** WAIT [#C] Criar gráfico exportação para todos os métodos e exportações líquidas para net exports :@Gabriel:
 
-** DONE [#A] Exportar tabelas
-SCHEDULED: <2025-05-07 Wed>
 ** STRT [#A] Adjust normalization of the comparative table to express the percentage deviation from the bechmark
-SCHEDULED: <2025-05-29 Thu>
 :PROPERTIES:
 :EFFORT:   0:45
 :END:
@@ -133,45 +93,6 @@ SCHEDULED: <2025-05-29 Thu>
 - dots: ISOs with labels for the highest discrepancy
 - across: meassures
 
-** DONE [#A] Revisar cálculo CDX e CDD :@Gabriel:
-SCHEDULED: <2025-05-05 Mon>
-:PROPERTIES:
-:EFFORT:   2:00
-:END:
-:LOGBOOK:
-CLOCK: [2025-05-05 Mon 16:30]--[2025-05-05 Mon 16:33] =>  0:03
-:END:
-
-
-
-** DONE [#A] Contribuição do setor externo (CDX e X) não está correta
-
-- CDX a partir do método das exportações líquidas e do método da atribuição coincidem
-
-** DONE [#A] Only generate diffs plots for the target method
-
-** DONE [#B] Defini um limitador para a variação de estoques nos boxplots
-
-- Isso porque é o componente com maior variabilidade, distorcendo os eixos se deixado sem o limitador
-  - Uma alternativa seria colocar como um subplot dentro do plot principal
-- Para alguns países, o limitador é muito baixo, fazendo com que apenas a parte da cauda inferior esteja visível
-
-** DONE Exportar gráficos
-
-** DONE Corrigir cores dos gráficos exportados
-
-** DONE [#B] Criar boxplot da diferença entre os métodos a cada variável
-** DONE Mudar target method
-** DONE Add Avg and SD for calculate metrics
-** DONE Verificar taxa de crescimento médio com texto do Bacarro :@Gabriel:
-- Em especial, Vietnam
-- Checar novamente depois dos ajustes na taxa de câmbio
-
-** DONE Remove inventories from plots
-** DONE Set free y
-
-** DONE [#C] Gráficos de área tem partes transparentes na presença de valores negativos
-** DONE [#C] Cat the country to be displayed
 * FIXME List
 
 #+BEGIN_SRC shell :dir ./code :exports results :results raw
