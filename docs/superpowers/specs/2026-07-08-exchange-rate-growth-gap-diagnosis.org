@@ -19,16 +19,23 @@ The primary benchmark for the central prediction is World Bank series =NY.GDP.MK
 
 * Mechanism traced in code
 
-Value added is scaled by =deflator_geral= constructed in =code/tmp.R:236=:
+GDP is constructed on the expenditure side in =prepare_data()= at =code/support_functions.R:155=:
 
-#+begin_src R
-deflator_geral <- ... |> mutate(Value = exchange_rate / deflator)
-#+end_src
+\[
+\text{GDP}_t = \sum_{k \in \{C, I, E, G, X\}} (1 - m_{k,t})\, F_{k,t}
+\]
 
-The nominal exchange rate =exchange_rate= ($e_t$) varies by year.
-Gross output and value added are multiplied by this factor in =code/deflate_tables.R:132=.
-GDP is the sum of value added in =prepare_data()=.
-A year-varying rate therefore enters the growth rate rather than cancelling.
+where $F_{k,t}$ are final-demand components and $m_{k,t}$ import shares.
+The IO growth rate is $g^{IO}_t = \Delta \text{GDP}_t / \text{GDP}_{t-1}$ at =code/support_functions.R:202=.
+
+Each component $F_{k,t}$ is converted by =deflator_geral=, constructed in =code/tmp.R:236= as $e_t / P_t$ (year-varying nominal rate $e_t$, deflator $P_t$).
+The conversion is applied to the components in =code/deflate_tables.R:94=.
+That line currently reads =Jull <- Meepo # * deflator=, so the multiplication is commented out.
+
+Two consequences follow.
+First, a year-varying rate, when applied, enters the growth rate rather than cancelling.
+Second, the deflation state of the supplied =NIOTs_resultados.rdata= is unknown, because the object may have been produced by a version in which the conversion was, or was not, applied.
+Whether the series is real or nominal is therefore an empirical question resolved in Rung 1 and by Hypothesis H0.
 
 * Central prediction
 
@@ -50,7 +57,21 @@ Subtracting yields the falsifiable prediction:
 \text{Gap}_t \equiv g^{IO}_t - g^{off}_t \approx \underbrace{\Delta \ln(e_t)}_{\text{predicted, slope } 1} + \underbrace{r_t}_{\text{deflator / coverage residual}}
 \]
 
-The within-country panel regression $\text{Gap}_{c,t} = \alpha + \beta\,\Delta\ln(e_{c,t}) + r_{c,t}$ should return $\beta \approx 1$, $\alpha \approx 0$, and high within-country $R^2$.
+Because the deflation state of the series is unknown, the discriminating specification adds domestic inflation $\pi_t = \Delta\ln(P_t)$ as a second regressor:
+
+\[
+\text{Gap}_{c,t} = \alpha + \beta_e\,\Delta\ln(e_{c,t}) + \beta_\pi\,\pi_{c,t} + r_{c,t}
+\]
+
+The coefficient pattern identifies the state of the series:
+
+| Deflation state of the series | $\beta_e$ | $\beta_\pi$ |
+|-------------------------------+-----------+-------------|
+| Real dollars, $e/P$ applied | 1 | 0 |
+| Nominal local currency, nothing applied | 0 | 1 |
+| Nominal dollars, $\times e$ only | 1 | 1 |
+
+The exchange-rate hypothesis H1 is confirmed as dominant only in the first row, with $\beta_e \approx 1$ and $\beta_\pi \approx 0$.
 
 Because both $g^{IO}$ and $g^{off}$ contain $g^{realLCU}_t$, that term differences out of the gap.
 The correlation between currency depreciation and real contraction therefore does not confound the central regression, provided deflator and coverage coincide.
@@ -72,7 +93,8 @@ A failure of any of these three conditions inverts or invalidates the predicted 
 
 | # | Hypothesis | Discriminating test | Prior |
 |---+------------+---------------------+-------|
-| H1 | Year-varying dollar conversion injects $\Delta\ln e_t$ into growth | Panel regression $\text{Gap} \sim \Delta\ln e$; expect $\beta \approx 1$ | primary |
+| H0 | The supplied series is nominal, so the gap is domestic inflation $\pi_t$, not the exchange rate | Two-regressor fit; expect $\beta_\pi \approx 1$, $\beta_e \approx 0$ | high, given the commented conversion at =deflate_tables.R:94= |
+| H1 | Year-varying dollar conversion injects $\Delta\ln e_t$ into growth | Two-regressor fit; expect $\beta_e \approx 1$, $\beta_\pi \approx 0$ | primary |
 | H2 | Deflator choice, OCDE versus World Bank fallback | Residual after removing $\Delta\ln e$ is larger for World-Bank-fallback countries | live |
 | H3 | Chain versus fixed-base index method | Residual grows with horizon length, the signature of substitution bias | live |
 | H4 | GDP definition, value added net of taxes versus GDP at market prices | Wedge is near-constant; it shrinks when the benchmark is United Nations value added rather than World Bank GDP | live |
@@ -91,8 +113,8 @@ The following rungs acquire information in the order that raises confidence.
 | Rung | Information acquired | Effect on confidence |
 |------+----------------------+----------------------|
 | 0 | Load supplied =NIOTs_resultados.rdata=; emit $g^{IO}$ for at least one country | precondition; untestable without it |
-| 1 | Panel of $\text{Gap}_{c,t}$ against World Bank constant dollars | establishes the phenomenon and its magnitude |
-| 2 | Regression $\text{Gap} \sim \Delta\ln e$ with slope and within-$R^2$ | large increase if $\beta \approx 1$ |
+| 1 | Panel of $\text{Gap}_{c,t}$; classify the series as real or nominal by inspecting a fixed-price identity year | establishes the phenomenon and resolves H0 versus H1 at the first order |
+| 2 | Two-regressor fit $\text{Gap} \sim \Delta\ln e + \pi$ with coefficients and within-$R^2$ | large increase if $\beta_e \approx 1$ and $\beta_\pi \approx 0$ |
 | 3 | Counterfactual re-run with fixed base-year rate $e_0$; test whether the gap collapses | near-definitive, since it is an intervention rather than a correlation |
 | 4 | Residual attribution: World-Bank-fallback subset for H2, horizon dependence for H3, United Nations value-added benchmark for H4 | rules out rivals; reaches or exceeds 0.95 |
 
