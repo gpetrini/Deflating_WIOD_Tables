@@ -1,0 +1,26 @@
+#+title: ADR-0001: Input boundary is a prebuilt NIOT object
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+The functions in =code/support_functions.R= form a pipeline whose first stage, =prepare_data()=, consumes a national input-output table object.
+An earlier stage builds that object from raw OECD or WIOD tables in =deflate_tables.R= and =tmp.R=.
+The construction stage is work in progress and is coupled to global variables.
+
+* Decision
+
+The package boundary begins at a prebuilt NIOT object.
+The construction stage is out of v1 scope.
+The input contract is the five per-country slots that =prepare_data()= reads: =Ft=, =Fn=, =Fm=, =lista_Am=, =lista_Z=.
+
+* Consequences
+
+The runtime and tested surface stays small and self-contained.
+Users must obtain or build a NIOT object separately.
+Construction from raw data remains available in the source repository outside the package.
+This decision constrains ADR-0002 and ADR-0003, since public macro data cannot supply the NIOT structure.

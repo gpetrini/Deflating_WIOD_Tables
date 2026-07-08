@@ -1,0 +1,27 @@
+#+title: ADR-0004: Pure core with a thin impure I/O wrapper
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+The current plot and table functions entangle computation with disk output.
+=plot_decomp()= builds a =ggplot= then calls =save_figs()= internally at =code/support_functions.R:1047=.
+Tables are written mid-function with =writeLines= and =gt::gtsave=.
+The functions also read global variables =WIOD_countries=, =years=, and =results=.
+Side effects and global reads make the functions hard to test and non-idiomatic for a package.
+
+* Decision
+
+Exported computation functions return objects and perform no file I/O.
+A single impure wrapper, =report_all()=, accepts an output directory and writes artifacts by composing the pure functions.
+Global reads are removed: =countries= and =years= derive from the NIOT object, and country groups are passed as an explicit argument.
+
+* Consequences
+
+The pure functions are unit-testable without touching the filesystem.
+Callers decide when and where to write.
+The refactor requires stripping internal =save_figs()= calls from plot functions and threading previously global values through arguments.

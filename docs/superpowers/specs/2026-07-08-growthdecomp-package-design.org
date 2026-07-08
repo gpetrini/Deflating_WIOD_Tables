@@ -1,0 +1,124 @@
+#+title: Design Spec: growthdecomp R Package
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:spec:
+
+* Purpose
+
+Package the input-output growth-decomposition functions into an installable R package named =growthdecomp=.
+The package decomposes the growth of real GDP demand components into domestic and import-content contributions under competing accounting methods, and compares those methods.
+It ships unit tests, a sample dataset, and vignettes that run on publicly available data.
+It instructs users how to obtain credentials for keyed data sources rather than embedding any key.
+
+* Scope
+
+In scope for v1:
+the decomposition, metric, and reporting layer that consumes a prebuilt national input-output table (NIOT) object.
+
+Out of scope for v1:
+construction of the NIOT from raw OECD or WIOD tables (Stage A), the GRAS balancing routine, and the heritage WIOD deflation.
+These are excluded because the core does not reach them and because Stage A is coupled to global state.
+See [[file:../../adr/0001-input-boundary-niot-object.org][ADR-0001]] and [[file:../../adr/0010-exclude-gras-and-stage-a.org][ADR-0010]].
+
+* Input contract
+
+The exported functions consume a NIOT object: a named list keyed by ISO country code.
+Each country holds the following per-year slots, verified against =prepare_data()= at =code/support_functions.R:12=.
+
+| Slot | Type | Contents |
+|------+------+----------|
+| =Ft= | per-year data frame | total final demand, columns =HFCE, GGFC, GFCF, EXPO, INVNT= |
+| =Fn= | per-year data frame | domestic final demand, same columns |
+| =Fm= | per-year data frame | imported final demand, same columns |
+| =lista_Am= | per-year matrix | imported technical-coefficient matrix |
+| =lista_Z= | per-year matrix | Leontief inverse |
+
+Slots =Recurso=, =CIn=, =CIm=, =lista_An=, and =lista_A= present in the full pipeline object are not read and are not part of the contract.
+
+* Architecture
+
+The package separates computation from disk output.
+See [[file:../../adr/0004-pure-core-thin-wrapper.org][ADR-0004]].
+
+Pure functions return objects and perform no file I/O.
+One impure wrapper, =report_all()=, accepts an output directory and writes figures and tables by calling the pure functions.
+Global state is removed: =countries= and =years= are derived from the NIOT object, and country groups are passed as an explicit argument.
+
+** Module layout
+
+See [[file:../../adr/0009-r-layout-by-responsibility.org][ADR-0009]].
+
+- =R/prepare.R= : =prepare_data()=
+- =R/decompose.R= : =decompose_growth()=
+- =R/tidy.R= : =get_tidy()=, =get_imp()=, =get_dGDP()=
+- =R/metrics.R= : =calculate_metrics()=, =tabulate_metrics()=, =tabulate_statistics()=
+- =R/plots.R= : =plot_decomp()=, =plot_external_contrib()=, =plot_differenteces()=, =report_import_coeff()=, =custom_theme()=
+- =R/report.R= : =report_all()= (impure wrapper)
+- =R/data_sources.R= : =fetch_wb()=, =fetch_fred()=, =fetch_un()=
+- =R/data.R= : documentation of the sample dataset
+- =R/growthdecomp-package.R= : package-level documentation
+
+* Public API
+
+Pure computation:
+- =prepare_data(niot, groups = NULL)= returns a per-country prepared list with slots =g=, =GDP=, =m=, =Weights=, =Import Weights=, =Import Growth=.
+- =decompose_growth(prepared)= returns the decomposition across methods Net Exports, Attribution, Import Content, Average Import Content.
+- =get_tidy(decomp)= returns a long tibble with columns =ISO, Time, Variable, Method, Contribution=.
+- =calculate_metrics(data, countries, grouped = FALSE)= returns a tibble of distance metrics between methods.
+- =tabulate_metrics(...)= and =tabulate_statistics(...)= return =gt= or LaTeX tables.
+
+Pure visualization (return =ggplot= objects):
+- =plot_decomp()=, =plot_external_contrib()=, =plot_differenteces()=, =report_import_coeff()=, =custom_theme()=.
+
+Impure reporting:
+- =report_all(decomp, io, groups, outdir, fig_extension = "pdf", tab_extension = "tex")= writes artifacts and returns invisibly.
+
+Benchmark and data access (Suggests-gated):
+- =fetch_wb()=, =fetch_fred()=, =fetch_un()= return tidy tibbles of official series for comparison.
+See [[file:../../adr/0002-fetchers-benchmark-only.org][ADR-0002]].
+
+* Sample data
+
+A small national NIOT derived from WIOD 2016 is built offline by a script in =data-raw/= and shipped as the object =niot_wiod= in =data/=.
+The Stage-A construction math lives only in =data-raw/= and is not part of the runtime or tested surface.
+The dataset is documented with the required WIOD citation.
+See [[file:../../adr/0003-sample-wiod-slice-offline.org][ADR-0003]].
+
+* Testing
+
+Deterministic, network-free unit tests run against the bundled sample.
+Success criteria include the accounting identities, for example the domestic-plus-external contributions reconstructing GDP growth within tolerance, and weights summing to one net of imports.
+Writing these tests may surface existing defects flagged in =TODOs.org= regarding the residual computation of CDD.
+
+Fetcher tests use responses recorded once with =httptest2= or =vcr= so they run offline in =R CMD check=.
+Live smoke tests are guarded by =skip_on_cran()= and a skip when the relevant key is unset.
+See [[file:../../adr/0005-fetcher-tests-recorded-fixtures.org][ADR-0005]].
+
+* Vignettes
+
+Vignette one, "Decomposing growth", runs fully on =niot_wiod= and builds on CRAN.
+Vignette two, "Fetching public data", is a non-built pkgdown article with =eval = FALSE= or precomputed output, showing World Bank, FRED, and UN retrieval and =.Renviron= setup.
+See [[file:../../adr/0006-vignettes-built-core-plus-article.org][ADR-0006]].
+
+* Credentials
+
+Keys are read from environment variables via =Sys.getenv()=, sourced from the user =.Renviron=.
+Fetchers for keyed sources stop with setup instructions when the key is unset.
+World Bank and UN national-accounts sources require no key; only FRED, and BEA if later added, are keyed.
+No key is committed or shipped.
+See [[file:../../adr/0007-credentials-renviron.org][ADR-0007]].
+
+* Package metadata
+
+Name =growthdecomp=, license GPL-3.
+See [[file:../../adr/0008-name-and-license.org][ADR-0008]].
+
+Dependency split:
+core computation packages (=dplyr=, =tidyr=, =purrr=, =tibble=, =xts=, =rlang=, =TSdist=) are Imports.
+Visualization and table extensions (=ggplot2=, =ggridges=, =viridis=, =hrbrthemes=, =ggbump=, =patchwork=, =ggh4x=, =gt=, =kableExtra=), data-access packages (=WDI=, =fredr=, =rsdmx=), and testing and documentation tools (=testthat=, =knitr=, =rmarkdown=, =httptest2=) are Suggests, with functions guarding on =requireNamespace()=.
+
+* Risks and open items
+
+- WIOD 2016 redistribution terms and the exact citation string must be confirmed before shipping =niot_wiod=.
+- The identity tests may fail against current code, exposing the CDD residual defects noted in =TODOs.org=.
+- The precise UN endpoint and client package are undecided.
+- Whether =report_all()= retains the current =docx= and =png= outputs or standardizes on PDF and TeX is undecided.

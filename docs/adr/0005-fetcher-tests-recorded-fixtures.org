@@ -1,0 +1,25 @@
+#+title: ADR-0005: Fetcher tests use recorded fixtures
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+CRAN policy forbids tests that require network access or credentials.
+The fetchers depend on both.
+Skipping them entirely leaves the data layer without coverage.
+
+* Decision
+
+Record API responses once with =httptest2= or =vcr= and commit them as fixtures.
+Fetcher unit tests replay the fixtures, running offline and deterministically in =R CMD check=.
+Live smoke tests are guarded by =skip_on_cran()= and by a skip when the relevant key is unset.
+
+* Consequences
+
+The data layer is covered in CI and on CRAN without network calls.
+Recorded fixtures must be refreshed when an upstream schema changes.
+Live tests still validate the real endpoints when run locally with keys.

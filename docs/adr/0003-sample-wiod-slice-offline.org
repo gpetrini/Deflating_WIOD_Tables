@@ -1,0 +1,28 @@
+#+title: ADR-0003: Sample NIOT is a WIOD slice built offline
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+Tests and vignettes need a realistic NIOT.
+Constructing one from an input-output source revives Stage-A matrix math, which ADR-0001 scoped out of the runtime.
+The repository already redistributes small WIOD auxiliary tables, for example =WIOD_SEA_Nov16.xlsx= and =Exchange_rates.xlsx=, but never the large primary tables and never OECD data.
+WIOD 2016 permits use with citation.
+
+* Decision
+
+Ship a small national NIOT derived from WIOD 2016.
+Build it offline with a script in =data-raw/=, and ship the resulting object =niot_wiod= in =data/=.
+The construction math resides only in =data-raw/= and is excluded from the tested and exported surface.
+Attribute the source with the required WIOD citation.
+
+* Consequences
+
+The runtime package remains free of Stage-A code, preserving ADR-0001.
+Examples show real magnitudes.
+The exact citation string and the redistribution terms must be confirmed before release.
+OECD data is not shipped, consistent with the existing repository posture.

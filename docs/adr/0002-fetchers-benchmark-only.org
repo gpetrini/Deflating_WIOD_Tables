@@ -1,0 +1,24 @@
+#+title: ADR-0002: Public-data fetchers serve benchmarking only
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+The package should demonstrate value against publicly available data.
+FRED, World Bank, and UN publish macroeconomic aggregates.
+None of them publish national input-output matrices with a domestic and import decomposition, which the NIOT contract requires.
+
+* Decision
+
+The fetchers =fetch_wb()=, =fetch_fred()=, and =fetch_un()= supply official series for benchmarking and validation of decomposition output, not for constructing the NIOT.
+They are optional and gated behind Suggests.
+
+* Consequences
+
+The core decomposition has no network dependency.
+Benchmark comparison, for example against World Bank constant-dollar growth, becomes a documented use case aligned with the growth-gap diagnosis.
+Building sample data requires a separate input-output source, addressed in ADR-0003.

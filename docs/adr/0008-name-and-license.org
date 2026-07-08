@@ -1,0 +1,24 @@
+#+title: ADR-0008: Package name growthdecomp under GPL-3
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+The package needs a name and a license.
+The source repository is licensed under GPL-3.
+The core operates on any NIOT object, not only WIOD-derived tables.
+
+* Decision
+
+Name the package =growthdecomp=.
+License it under GPL-3, matching the repository.
+
+* Consequences
+
+The name states the purpose without tying it to a single data source.
+License consistency avoids relicensing questions when moving code from the repository into =R/=.
+Third-party code such as GRAS is excluded from v1, so no incompatible license enters the package. See ADR-0010.

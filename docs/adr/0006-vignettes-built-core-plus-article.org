@@ -1,0 +1,23 @@
+#+title: ADR-0006: Built core vignette plus non-built data article
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+CRAN builds vignettes at check time and cannot reach the network or use keys.
+The package must both demonstrate the decomposition and instruct users on fetching public data.
+
+* Decision
+
+Vignette one, "Decomposing growth", runs fully on the bundled =niot_wiod= object and builds on CRAN.
+Vignette two, "Fetching public data", is a non-built pkgdown article with =eval = FALSE= or precomputed output, showing World Bank, FRED, and UN retrieval and =.Renviron= setup.
+
+* Consequences
+
+The core narrative executes and cannot drift from the code.
+The data-fetching narrative is discoverable without breaking the CRAN build.
+The article is not verified at check time and must be reviewed manually when the fetchers change.

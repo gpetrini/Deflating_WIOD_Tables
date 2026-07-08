@@ -1,0 +1,23 @@
+#+title: ADR-0010: Exclude GRAS and Stage A from v1
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+=GRAS.R= is third-party code, an R retranscription of a Matlab routine from Temurshoev et al. 2013.
+Inspection shows =GRAS()= is not called by the decomposition core; it appears only in heritage =checks.R=.
+The Stage-A helpers =get_deflator()=, =get_Erate()=, =get_common()=, and =consolidate_deflator()= are likewise not reached by the core.
+
+* Decision
+
+Exclude GRAS and the Stage-A helpers from v1.
+
+* Consequences
+
+v1 carries no third-party code, so its attribution and license-compatibility questions are deferred.
+The core depends only on =support_functions.R= and the NIOT object.
+If NIOT construction or balancing enters a later version, the GRAS attribution and the =consolidate_deflator()= global-reference defect must be addressed then.

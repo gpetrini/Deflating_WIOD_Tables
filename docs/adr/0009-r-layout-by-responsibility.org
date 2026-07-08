@@ -1,0 +1,24 @@
+#+title: ADR-0009: Organize R/ by responsibility
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:adr:
+
+* Status
+
+Accepted, 2026-07-08.
+
+* Context
+
+The current logic lives in one file, =code/support_functions.R=, of about 1640 lines.
+A single large file obscures boundaries and is hard to hold in context during edits.
+
+* Decision
+
+Split =R/= by responsibility: =prepare.R=, =decompose.R=, =tidy.R=, =metrics.R=, =plots.R=, =report.R=, =data_sources.R=, =data.R=, and =growthdecomp-package.R=.
+The split mirrors the pure and impure separation from ADR-0004, isolating =report.R= as the impure wrapper and =data_sources.R= as the network layer.
+
+* Consequences
+
+Each file has one clear purpose.
+Files that change together stay together.
+Edits become more reliable because each unit fits in context.
+The split is a one-time reorganization performed during the migration into the package.
