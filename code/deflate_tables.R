@@ -71,11 +71,11 @@ for (pais in OCDE_countries) {
                                         # Seleciona o deflator utilizado para o ano e pais correspondente
 
     tmp_vec <- deflator_geral |>
-      filter(Code == pais && Year == ano)
+      filter(Code == pais & Year == ano)
 
     print(tmp_vec)
 
-    deflator <- vec$Value
+    deflator <- tmp_vec$Value
 
                                         # Un #
     
