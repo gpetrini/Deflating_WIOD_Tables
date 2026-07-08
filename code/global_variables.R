@@ -34,7 +34,7 @@ country_groups <- list(
   ## Nordic = c("DNK", "FIN", "ISL", "NOR", "SWE")
 )
 
-saveRDS(country_groups, "../objs/country_groups.rds")
+qs2::qs_save(country_groups, "../objs/country_groups.qs2")
 
 # Append using single countries as the function should work the same way
 all_groups <- c(

@@ -14,7 +14,7 @@
 
 
 #+begin_src R :exports none
-country_groups <- readRDS("./objs/country_groups.rds")
+country_groups <- qs2::qs_read("./objs/country_groups.qs2")
 
 groups <- names(country_groups)
 
