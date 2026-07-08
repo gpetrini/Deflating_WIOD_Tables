@@ -1,0 +1,657 @@
+#+title: Implementation Plan: growthdecomp R Package
+#+date: 2026-07-08
+#+filetags: :IODefl:growthdecomp:plan:
+
+* Header
+
+For agentic workers: REQUIRED SUB-SKILL is superpowers:subagent-driven-development (recommended) or superpowers:executing-plans.
+Steps use checkbox (=- [ ]=) syntax for tracking.
+
+Goal: package the input-output growth-decomposition functions into an installable, tested R package named =growthdecomp=, with a pure API, a WIOD sample dataset, benchmark data fetchers, and vignettes.
+
+Architecture: existing functions in =code/support_functions.R= migrate into a responsibility-split =R/= tree; computation functions are made pure and decoupled from global state, and a single impure wrapper performs file output.
+Spec: =docs/superpowers/specs/2026-07-08-growthdecomp-package-design.org=. Decisions: =docs/adr/0001= through =0010=.
+
+Tech stack: R, =usethis=, =roxygen2=, =testthat= (3e), =httptest2=, =knitr=, =pkgdown=. Core libraries =dplyr=, =tidyr=, =purrr=, =tibble=, =xts=, =rlang=, =TSdist=.
+
+* Global constraints
+
+- Package name =growthdecomp=; license GPL-3 (ADR-0008).
+- Input contract is a NIOT object: named list by ISO; each country holds per-year =Ft=, =Fn=, =Fm= (data frames with columns =HFCE, GGFC, GFCF, EXPO, INVNT=), =lista_Am=, =lista_Z= (matrices). Slots =Recurso=, =CIn=, =CIm=, =lista_An=, =lista_A= are not read (ADR-0001).
+- Exported computation functions return objects and perform no file I/O; one impure wrapper =report_all()= writes (ADR-0004).
+- No global reads; =countries= and =years= derive from the NIOT, groups are an explicit argument (ADR-0004).
+- Native pipe =|>=; =ggplot2= for graphics; tables via =gt= or =knitr::kable(booktabs = TRUE)=.
+- Viz, table, data-access, and test packages are Suggests, guarded with =requireNamespace()= (spec, dependency split).
+- No API key is committed or shipped; keyed fetchers read =Sys.getenv()= (ADR-0007).
+- Data-gated tasks (real sample, identity tests, built vignette) require a WIOD-derived =niot_wiod=; until it exists their verification is structural, mirroring the accepted diagnosis-plan pattern.
+
+* File structure
+
+- =DESCRIPTION=, =NAMESPACE=, =LICENSE= : package metadata.
+- =R/prepare.R=, =R/decompose.R=, =R/tidy.R=, =R/metrics.R=, =R/plots.R=, =R/report.R=, =R/data_sources.R=, =R/data.R=, =R/growthdecomp-package.R= : source (ADR-0009).
+- =tests/testthat/helper-niot.R= : programmatic =test_niot()= fixture.
+- =tests/testthat/test-*.R= : unit tests.
+- =tests/testthat/fixtures/= : recorded API responses (ADR-0005).
+- =data-raw/build_niot_wiod.R=, =data/niot_wiod.rda= : sample (ADR-0003).
+- =vignettes/decomposing-growth.Rmd= : built vignette.
+- =vignettes/articles/fetching-public-data.Rmd= : non-built article (ADR-0006).
+
+---
+
+* Task 1: Package skeleton and dependencies
+
+Files:
+- Create: =DESCRIPTION=, =NAMESPACE=, =LICENSE=, =R/growthdecomp-package.R=
+- Test: =tests/testthat.R=
+
+Interfaces:
+- Produces: an installable empty package that passes =R CMD check=.
+
+- [ ] Step 1: Scaffold the package
+
+Run from the repository root:
+
+#+begin_src bash
+Rscript -e 'usethis::create_package(".", fields = list(
+  Package = "growthdecomp",
+  Title = "Input-Output Growth Decomposition",
+  Description = "Decomposes real GDP demand-component growth into domestic and import-content contributions under competing accounting methods.",
+  `Authors@R` = "person(\"Gabriel\", \"Petrini\", role = c(\"aut\",\"cre\"), email = \"gpetrinidasilveira@gmail.com\")",
+  License = "GPL-3"), open = FALSE)'
+Rscript -e 'usethis::use_testthat(3)'
+#+end_src
+
+- [ ] Step 2: Declare dependencies
+
+#+begin_src bash
+Rscript -e 'for (p in c("dplyr","tidyr","purrr","tibble","xts","rlang","TSdist")) usethis::use_package(p, "Imports")'
+Rscript -e 'for (p in c("ggplot2","ggridges","viridis","hrbrthemes","ggbump","patchwork","ggh4x","gt","kableExtra","WDI","fredr","rsdmx","httptest2","knitr","rmarkdown")) usethis::use_package(p, "Suggests")'
+#+end_src
+
+- [ ] Step 3: Verify the skeleton checks clean
+
+Run: =Rscript -e 'devtools::check(document = TRUE, args = "--no-manual")'=
+Expected: =0 errors | 0 warnings=. A note about the empty package is acceptable.
+
+- [ ] Step 4: Commit
+
+#+begin_src bash
+git add DESCRIPTION NAMESPACE LICENSE R/ tests/
+git commit -m "[NEW] growthdecomp package skeleton and dependencies"
+#+end_src
+
+* Task 2: Programmatic NIOT fixture
+
+Files:
+- Create: =tests/testthat/helper-niot.R=
+
+Interfaces:
+- Produces: =test_niot()= returning a NIOT object satisfying the input contract: 1 country =AAA=, years 2001-2003, 2 sectors.
+
+- [ ] Step 1: Write the fixture helper
+
+#+begin_src R
+## A minimal, accounting-shaped NIOT for contract tests. No external data.
+test_niot <- function() {
+  yrs <- as.character(2001:2003)
+  cols <- c("HFCE", "GGFC", "GFCF", "EXPO", "INVNT")
+
+  fd <- function(scale) {
+    setNames(as.data.frame(matrix(scale * c(10, 6, 4, 8, 2,
+                                            5, 3, 2, 4, 1),
+                                  nrow = 2, byrow = TRUE)), cols)
+  }
+  mat <- function(v) matrix(v, nrow = 2)
+
+  per_year <- function(k) list(
+    Ft = fd(1.00 * k), Fn = fd(0.70 * k), Fm = fd(0.30 * k),
+    lista_Am = mat(c(0.10, 0.05, 0.04, 0.08)),
+    lista_Z  = mat(c(1.12, 0.06, 0.05, 1.10))
+  )
+
+  slots <- c("Ft", "Fn", "Fm", "lista_Am", "lista_Z")
+  country <- setNames(vector("list", length(slots)), slots)
+  for (s in slots) country[[s]] <- setNames(lapply(seq_along(yrs),
+                                    function(i) per_year(1 + 0.03 * i)[[s]]), yrs)
+  list(AAA = country)
+}
+#+end_src
+
+- [ ] Step 2: Verify it loads
+
+Run: =Rscript -e 'source("tests/testthat/helper-niot.R"); n <- test_niot(); stopifnot(all(c("Ft","Fn","Fm","lista_Am","lista_Z") %in% names(n$AAA)), names(n$AAA$Ft) == as.character(2001:2003)); cat("ok\n")'=
+Expected: prints =ok=.
+
+- [ ] Step 3: Commit
+
+#+begin_src bash
+git add tests/testthat/helper-niot.R
+git commit -m "[NEW] Programmatic NIOT fixture for contract tests"
+#+end_src
+
+* Task 3: Port and decouple prepare_data
+
+Files:
+- Create: =R/prepare.R=
+- Source: =code/support_functions.R:12-219=
+- Test: =tests/testthat/test-prepare.R=
+
+Interfaces:
+- Consumes: =test_niot()=.
+- Produces: =prepare_data(niot)= returning a named-by-ISO list; each element has slots =Ft=, =GDP=, =g=, =m=, =Weights=, =Import Weights=, =Import Growth=, =gm=.
+
+- [ ] Step 1: Write the failing test
+
+#+begin_src R
+test_that("prepare_data returns the prepared slots per country", {
+  res <- prepare_data(test_niot())
+  expect_named(res, "AAA")
+  expect_true(all(c("GDP", "g", "m", "Weights") %in% names(res$AAA)))
+  expect_s3_class(res$AAA$GDP, "xts")
+})
+#+end_src
+
+- [ ] Step 2: Run it, expect failure
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-prepare.R")'=
+Expected: FAIL, =could not find function "prepare_data"=.
+
+- [ ] Step 3: Move the function and decouple it
+
+Copy =prepare_data= from =code/support_functions.R:12-219= into =R/prepare.R=.
+Change the signature and the loop source so no global is read:
+
+#+begin_src R
+## before:  prepare_data <- function(data_base = NIOTs) { ... for (country in WIOD_countries) {
+## after:
+#' Prepare a NIOT object for decomposition
+#' @param niot A NIOT object; see package data \code{niot_wiod}.
+#' @return A named-by-ISO list of prepared series.
+#' @importFrom xts xts
+#' @export
+prepare_data <- function(niot) {
+  results <- list()
+  for (country in names(niot)) {
+    data  <- niot[[country]]
+    years <- names(data[["Ft"]])
+    ## ... body unchanged ...
+  }
+  results
+}
+#+end_src
+
+Delete the top-of-function reliance on the globals =WIOD_countries= and =years=; derive =years= from =names(data[["Ft"]])= as shown.
+
+- [ ] Step 4: Run the test, expect pass
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-prepare.R")'=
+Expected: PASS.
+
+- [ ] Step 5: Commit
+
+#+begin_src bash
+git add R/prepare.R tests/testthat/test-prepare.R
+git commit -m "[NEW] Port and decouple prepare_data into R/prepare.R"
+#+end_src
+
+* Task 4: Port decompose_growth with the identity test
+
+Files:
+- Create: =R/decompose.R=
+- Source: =code/support_functions.R:221-463=
+- Test: =tests/testthat/test-decompose.R=
+
+Interfaces:
+- Consumes: =prepare_data()=.
+- Produces: =decompose_growth(prepared)= returning a named-by-ISO list of decompositions across the four methods.
+
+- [ ] Step 1: Write the contract test
+
+#+begin_src R
+test_that("decompose_growth returns a decomposition per country", {
+  decomp <- decompose_growth(prepare_data(test_niot()))
+  expect_named(decomp, "AAA")
+  expect_true(length(decomp$AAA) >= 1)
+})
+#+end_src
+
+- [ ] Step 2: Write the identity test (data-gated)
+
+#+begin_src R
+test_that("domestic and external contributions reconstruct GDP growth", {
+  skip_if_not(file.exists(test_path("fixtures", "niot_min.rds")),
+              "niot_min fixture requires the WIOD sample")
+  niot <- readRDS(test_path("fixtures", "niot_min.rds"))
+  decomp <- decompose_growth(prepare_data(niot))
+  df <- get_tidy(decomp)
+  ## CDD + CDX should reconstruct GDP growth within tolerance
+  recon <- dplyr::filter(df, Variable %in% c("CDD", "CDX"))
+  gdp   <- dplyr::filter(df, Variable == "GDP")
+  expect_equal(sum(recon$Contribution), sum(gdp$Contribution), tolerance = 1e-6)
+})
+#+end_src
+
+Note: this identity may fail against the current residual computation of CDD flagged in =TODOs.org= (=support_functions.R:343,374,378=). A failure is a real defect to fix in =decompose_growth=, not a test to relax.
+
+- [ ] Step 3: Run, expect the contract test to fail first
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-decompose.R")'=
+Expected: contract test FAILs with =could not find function "decompose_growth"=; identity test SKIPs.
+
+- [ ] Step 4: Move the function, changing its default argument
+
+Copy =decompose_growth= from =code/support_functions.R:221-463= into =R/decompose.R=.
+Change =function(data_base = results)= to =function(prepared)= and replace internal references to =data_base= with =prepared=; add =#' @export=.
+
+- [ ] Step 5: Run, expect contract pass and identity skip
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-decompose.R")'=
+Expected: contract PASS, identity SKIP (fixture absent).
+
+- [ ] Step 6: Commit
+
+#+begin_src bash
+git add R/decompose.R tests/testthat/test-decompose.R
+git commit -m "[NEW] Port decompose_growth with a GDP-identity test"
+#+end_src
+
+* Task 5: Port tidy accessors
+
+Files:
+- Create: =R/tidy.R=
+- Source: =code/support_functions.R:464-533=
+- Test: =tests/testthat/test-tidy.R=
+
+Interfaces:
+- Consumes: =decompose_growth()=.
+- Produces: =get_tidy(decomp)= returning a long tibble with columns =ISO, Time, Variable, Method, Contribution=; =get_imp(io)=; =get_dGDP(io)=.
+
+- [ ] Step 1: Write the failing test
+
+#+begin_src R
+test_that("get_tidy returns the long contribution table", {
+  df <- get_tidy(decompose_growth(prepare_data(test_niot())))
+  expect_true(all(c("ISO", "Variable", "Method", "Contribution") %in% names(df)))
+  expect_s3_class(df, "tbl_df")
+})
+#+end_src
+
+- [ ] Step 2: Run, expect failure
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-tidy.R")'=
+Expected: FAIL, =could not find function "get_tidy"=.
+
+- [ ] Step 3: Move =get_tidy=, =get_imp=, =get_dGDP= from =code/support_functions.R:464-533= into =R/tidy.R=; add =#' @export= to each; replace the default argument =data = decomp= with a required =decomp= parameter.
+
+- [ ] Step 4: Run, expect pass
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-tidy.R")'=
+Expected: PASS.
+
+- [ ] Step 5: Commit
+
+#+begin_src bash
+git add R/tidy.R tests/testthat/test-tidy.R
+git commit -m "[NEW] Port tidy accessors into R/tidy.R"
+#+end_src
+
+* Task 6: Port metric functions
+
+Files:
+- Create: =R/metrics.R=
+- Source: =code/support_functions.R:1117-1470=
+- Test: =tests/testthat/test-metrics.R=
+
+Interfaces:
+- Consumes: =get_tidy()=.
+- Produces: =calculate_metrics(data, countries, grouped = FALSE)= returning a tibble of between-method distances; =tabulate_metrics()=, =tabulate_statistics()= returning =gt= or LaTeX.
+
+- [ ] Step 1: Write the failing test
+
+#+begin_src R
+test_that("calculate_metrics returns a distance tibble", {
+  df <- get_tidy(decompose_growth(prepare_data(test_niot()))) |>
+    dplyr::mutate(Contribution = as.numeric(Contribution))
+  m <- calculate_metrics(df, countries = "AAA", grouped = FALSE)
+  expect_s3_class(m, "tbl_df")
+  expect_true("Measure" %in% names(m) || "Differences" %in% names(m))
+})
+#+end_src
+
+- [ ] Step 2: Run, expect failure
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-metrics.R")'=
+Expected: FAIL, =could not find function "calculate_metrics"=.
+
+- [ ] Step 3: Move =calculate_metrics=, =tabulate_metrics=, =tabulate_statistics= from =code/support_functions.R:1117-1470= into =R/metrics.R=; add =#' @export=; guard =gt= usage with =if (!requireNamespace("gt", quietly = TRUE)) stop("Install 'gt' for table output.")=.
+
+- [ ] Step 4: Run, expect pass
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-metrics.R")'=
+Expected: PASS.
+
+- [ ] Step 5: Commit
+
+#+begin_src bash
+git add R/metrics.R tests/testthat/test-metrics.R
+git commit -m "[NEW] Port metric functions into R/metrics.R"
+#+end_src
+
+* Task 7: Purify plot functions
+
+Files:
+- Create: =R/plots.R=
+- Source: =code/support_functions.R:534-1116, 1507-1568=
+- Test: =tests/testthat/test-plots.R=
+
+Interfaces:
+- Consumes: =get_tidy()=, =prepare_data()=.
+- Produces: =plot_decomp()=, =plot_external_contrib()=, =plot_differenteces()=, =report_import_coeff()=, =custom_theme()=, each returning a =ggplot= (or =gt=) object with no file I/O.
+
+- [ ] Step 1: Write the failing test
+
+#+begin_src R
+test_that("plot_decomp returns a ggplot and writes nothing", {
+  df <- get_tidy(decompose_growth(prepare_data(test_niot())))
+  before <- list.files(tempdir())
+  p <- plot_decomp(df, tag = "AAA")
+  expect_s3_class(p, "ggplot")
+  expect_identical(list.files(tempdir()), before)
+})
+#+end_src
+
+- [ ] Step 2: Run, expect failure
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-plots.R")'=
+Expected: FAIL, =could not find function "plot_decomp"=.
+
+- [ ] Step 3: Move the plot functions into =R/plots.R=; in each, delete the internal =save_figs(...)= call and make the assembled =ggplot= object =p= the return value.
+For =plot_decomp=, remove the line at =code/support_functions.R:1047= (=save_figs(plot = p, ...)=) and end the function with =p=.
+Guard =ggplot2= and extension packages with =requireNamespace()=; add =#' @export=.
+
+- [ ] Step 4: Run, expect pass
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-plots.R")'=
+Expected: PASS, including the no-new-files assertion.
+
+- [ ] Step 5: Commit
+
+#+begin_src bash
+git add R/plots.R tests/testthat/test-plots.R
+git commit -m "[NEW] Purify plot functions to return ggplot objects"
+#+end_src
+
+* Task 8: Impure reporting wrapper
+
+Files:
+- Create: =R/report.R=
+- Source: =code/support_functions.R:1471-1506, 1569-1640=
+- Test: =tests/testthat/test-report.R=
+
+Interfaces:
+- Consumes: all pure functions.
+- Produces: =report_all(decomp, io, groups, outdir, fig_extension = "pdf", tab_extension = "tex")= that writes artifacts under =outdir= and returns invisibly.
+
+- [ ] Step 1: Write the failing test
+
+#+begin_src R
+test_that("report_all writes figures into outdir", {
+  io     <- prepare_data(test_niot())
+  decomp <- decompose_growth(io)
+  out    <- withr::local_tempdir()
+  report_all(decomp, io, groups = list(AAA = "AAA"), outdir = out)
+  expect_gt(length(list.files(out, recursive = TRUE)), 0)
+})
+#+end_src
+
+- [ ] Step 2: Run, expect failure
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-report.R")'=
+Expected: FAIL, =could not find function "report_all"=.
+
+- [ ] Step 3: Build =report_all= from the =group_plots= body at =code/support_functions.R:1569-1640= and =save_figs= at =1471-1506=.
+Replace the hard-coded =../figs= and =../tabs= with the =outdir= argument.
+=report_all= composes the pure functions and calls =ggplot2::ggsave= / =writeLines= to write; add =#' @export=.
+
+- [ ] Step 4: Run, expect pass
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-report.R")'=
+Expected: PASS.
+
+- [ ] Step 5: Commit
+
+#+begin_src bash
+git add R/report.R tests/testthat/test-report.R
+git commit -m "[NEW] Add impure report_all wrapper writing to outdir"
+#+end_src
+
+* Task 9: WIOD sample dataset (data-gated)
+
+Files:
+- Create: =data-raw/build_niot_wiod.R=, =R/data.R=
+- Produce: =data/niot_wiod.rda=, =tests/testthat/fixtures/niot_min.rds=
+
+Interfaces:
+- Produces: exported dataset =niot_wiod= (a NIOT object) and the committed =niot_min= test fixture.
+
+- [ ] Step 1: Write the offline builder
+
+#+begin_src R
+## data-raw/build_niot_wiod.R
+## Requires a local WIOD 2016 download; run once by the maintainer.
+## Builds a small national NIOT (few sectors, few years, one country)
+## satisfying the input contract, then reduces it to a test fixture.
+library(usethis)
+## ... WIOD read + domestic/import split + Leontief inverse for one country ...
+## niot_wiod <- <constructed NIOT>
+usethis::use_data(niot_wiod, overwrite = TRUE)
+saveRDS(lapply(niot_wiod, function(c) c), "tests/testthat/fixtures/niot_min.rds")
+#+end_src
+
+- [ ] Step 2: Document the dataset
+
+#+begin_src R
+## R/data.R
+#' A WIOD-derived national input-output table sample
+#'
+#' Source: WIOD 2016 release. Cite Timmer et al. (2015).
+#' @format A NIOT object; see the input contract in the package vignette.
+"niot_wiod"
+#+end_src
+
+- [ ] Step 3: Verify (structural until WIOD data is present)
+
+Run: =Rscript -e 'devtools::load_all(); exists("niot_wiod")'=
+Expected once built: =TRUE=; the identity test in Task 4 then runs instead of skipping. Until the maintainer supplies WIOD data, this task is verified by the builder sourcing without syntax error: =Rscript -e 'parse(file="data-raw/build_niot_wiod.R")'=.
+
+- [ ] Step 4: Commit
+
+#+begin_src bash
+git add data-raw/build_niot_wiod.R R/data.R
+git commit -m "[NEW] Add WIOD sample builder and dataset documentation"
+#+end_src
+
+* Task 10: Benchmark data fetchers
+
+Files:
+- Create: =R/data_sources.R=
+- Test: =tests/testthat/test-fetchers.R=, =tests/testthat/fixtures/= (recorded)
+
+Interfaces:
+- Produces: =fetch_wb(indicator, countries)= (keyless), =fetch_fred(series_id)= (keyed), =fetch_un(...)= (keyless), each returning a tibble with columns =ISO, Year, value=.
+
+- [ ] Step 1: Write the keyed-guard test
+
+#+begin_src R
+test_that("fetch_fred errors with instructions when the key is unset", {
+  withr::local_envvar(FRED_API_KEY = "")
+  expect_error(fetch_fred("GDPC1"), "FRED_API_KEY")
+})
+#+end_src
+
+- [ ] Step 2: Run, expect failure
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-fetchers.R")'=
+Expected: FAIL, =could not find function "fetch_fred"=.
+
+- [ ] Step 3: Implement the fetchers
+
+#+begin_src R
+#' @export
+fetch_fred <- function(series_id) {
+  key <- Sys.getenv("FRED_API_KEY")
+  if (!nzchar(key)) stop("Set FRED_API_KEY in ~/.Renviron; get a free key at https://fred.stlouisfed.org/docs/api/api_key.html")
+  if (!requireNamespace("fredr", quietly = TRUE)) stop("Install 'fredr'.")
+  fredr::fredr_set_key(key)
+  fredr::fredr(series_id) |>
+    dplyr::transmute(ISO = NA_character_, Year = as.integer(format(date, "%Y")), value)
+}
+
+#' @export
+fetch_wb <- function(indicator, countries) {
+  if (!requireNamespace("WDI", quietly = TRUE)) stop("Install 'WDI'.")
+  WDI::WDI(country = countries, indicator = indicator) |>
+    dplyr::transmute(ISO = iso3c, Year = year, value = .data[[indicator]])
+}
+#+end_src
+
+- [ ] Step 4: Run, expect the guard test to pass
+
+Run: =Rscript -e 'devtools::load_all(); testthat::test_file("tests/testthat/test-fetchers.R")'=
+Expected: PASS.
+
+- [ ] Step 5: Record a fixture for a live fetch and add a guarded live test
+
+#+begin_src R
+test_that("fetch_wb returns WB series (recorded)", {
+  httptest2::with_mock_dir(test_path("fixtures/wb"), {
+    x <- fetch_wb("NY.GDP.MKTP.KD", c("USA", "BRA"))
+    expect_true(all(c("ISO", "Year", "value") %in% names(x)))
+  })
+})
+#+end_src
+
+Record once with network available: =Rscript -e 'httptest2::capture_requests(path=testthat::test_path("fixtures/wb"), fetch_wb("NY.GDP.MKTP.KD", c("USA","BRA")))'=.
+
+- [ ] Step 6: Commit
+
+#+begin_src bash
+git add R/data_sources.R tests/testthat/test-fetchers.R tests/testthat/fixtures/
+git commit -m "[NEW] Add benchmark fetchers with guarded and recorded tests"
+#+end_src
+
+* Task 11: Built core vignette (data-gated)
+
+Files:
+- Create: =vignettes/decomposing-growth.Rmd=
+
+Interfaces:
+- Consumes: =niot_wiod=, the pure API.
+
+- [ ] Step 1: Register the vignette engine
+
+Run: =Rscript -e 'usethis::use_vignette("decomposing-growth", "Decomposing growth")'=
+
+- [ ] Step 2: Write the vignette body
+
+#+begin_src text
+---
+title: "Decomposing growth"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Decomposing growth}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+
+```{r}
+library(growthdecomp)
+io     <- prepare_data(niot_wiod)
+decomp <- decompose_growth(io)
+plot_decomp(get_tidy(decomp), tag = names(niot_wiod)[1])
+```
+#+end_src
+
+- [ ] Step 3: Verify it builds (structural until niot_wiod exists)
+
+Run: =Rscript -e 'devtools::build_vignettes()'=
+Expected once =niot_wiod= exists: the vignette builds without error. Until then, verify the Rmd parses: =Rscript -e 'rmarkdown::yaml_front_matter("vignettes/decomposing-growth.Rmd")'=.
+
+- [ ] Step 4: Commit
+
+#+begin_src bash
+git add vignettes/decomposing-growth.Rmd
+git commit -m "[NEW] Built core vignette on the WIOD sample"
+#+end_src
+
+* Task 12: Data-fetching article and credential docs
+
+Files:
+- Create: =vignettes/articles/fetching-public-data.Rmd=, =README.Rmd=
+
+Interfaces:
+- Consumes: =fetch_wb()=, =fetch_fred()=, =fetch_un()=.
+
+- [ ] Step 1: Write the non-built article
+
+#+begin_src text
+---
+title: "Fetching public data"
+---
+
+```{r, eval = FALSE}
+# World Bank and UN need no key; FRED needs a free key in ~/.Renviron:
+#   FRED_API_KEY=your_key
+library(growthdecomp)
+wb   <- fetch_wb("NY.GDP.MKTP.KD", c("USA", "BRA"))
+fred <- fetch_fred("GDPC1")
+```
+#+end_src
+
+- [ ] Step 2: Add a README credential section
+
+Run: =Rscript -e 'usethis::use_readme_rmd()'= then add a "Data access" section listing keyless sources (World Bank, UN) and the =FRED_API_KEY= =.Renviron= step.
+
+- [ ] Step 3: Verify both parse
+
+Run: =Rscript -e 'rmarkdown::yaml_front_matter("vignettes/articles/fetching-public-data.Rmd"); rmarkdown::render("README.Rmd", quiet = TRUE)'=
+Expected: no error; =README.md= is produced.
+
+- [ ] Step 4: Commit
+
+#+begin_src bash
+git add vignettes/articles/fetching-public-data.Rmd README.Rmd README.md
+git commit -m "[NEW] Data-fetching article and credential documentation"
+#+end_src
+
+* Task 13: Documentation, site, and CI
+
+Files:
+- Create: =.github/workflows/R-CMD-check.yaml=, =_pkgdown.yml=
+
+- [ ] Step 1: Generate docs and check the whole package
+
+Run: =Rscript -e 'devtools::document(); devtools::check(args = "--no-manual")'=
+Expected: =0 errors | 0 warnings=. Notes for Suggests-only packages are acceptable.
+
+- [ ] Step 2: Add CI and a site
+
+Run: =Rscript -e 'usethis::use_github_action("check-standard"); usethis::use_pkgdown()'=
+
+- [ ] Step 3: Verify the site builds
+
+Run: =Rscript -e 'pkgdown::build_site(preview = FALSE)'=
+Expected: builds without error; the article appears under Articles.
+
+- [ ] Step 4: Commit
+
+#+begin_src bash
+git add .github/ _pkgdown.yml man/ NAMESPACE
+git commit -m "[NEW] Roxygen docs, pkgdown site, and R CMD check CI"
+#+end_src
+
+* Self-review notes
+
+- Spec coverage: skeleton and deps (T1), input contract fixture (T2), pure core prepare/decompose/tidy/metrics/plots (T3-T7), impure wrapper (T8), WIOD sample + ADR-0003 (T9), fetchers + ADR-0002/0005 (T10), built vignette + ADR-0006 (T11), article + credentials + ADR-0007 (T12), docs/site/CI (T13). All ten ADRs map to at least one task.
+- Type consistency: the NIOT contract slots in T2 match what T3 reads; =prepare_data(niot)= (T3) feeds =decompose_growth(prepared)= (T4); =get_tidy()= columns =ISO, Variable, Method, Contribution= are produced in T5 and consumed in T6, T7, T11; =report_all(decomp, io, groups, outdir, ...)= signature is stable across T8 and T11; fetcher return columns =ISO, Year, value= are fixed in T10 and referenced in T12.
+- Data-gating: T4 identity test, T9 dataset, and T11 vignette require the WIOD =niot_wiod=; each states its structural verification until the sample exists, per Global constraints.
+- Placeholder scan: no "TBD"/"handle edge cases"; the one narrative gap, the WIOD construction body in T9 Step 1, is intentionally the maintainer's offline step per ADR-0003 and is marked as such rather than stubbed in package code.
