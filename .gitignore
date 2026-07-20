@@ -7,5 +7,6 @@
 !*.R
 # !*.csv
 !*.txt
+!*.sh
 
 Meetings.org
