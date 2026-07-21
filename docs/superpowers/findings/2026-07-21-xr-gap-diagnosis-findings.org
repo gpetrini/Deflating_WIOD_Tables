@@ -1,0 +1,112 @@
+#+title: Findings: Exchange-Rate GDP Growth-Rate Gap Diagnosis
+#+date: 2026-07-21
+#+filetags: :IODefl:diagnosis:findings:
+#+category: paper
+
+* Purpose
+
+This document records the empirical verdict of the growth-gap diagnosis and the
+decision it motivates, for the co-authors.
+It supersedes the working conjecture stated in the diagnosis spec.
+Numbers correspond to the panel built at commit on branch =diagnosis/xr-gap-debug=
+(=code/diagnose_xr_gap.R=; panel persisted at =results/diagnostics/gap_panel.rds=).
+
+* Object
+
+The gap is defined per country-year as $\text{Gap} = g^{IO} - g^{off}$.
+$g^{IO}$ is the log-difference of the GDP level constructed in =prepare_data()=
+from the supplied =NIOTs_resultados.rdata=.
+$g^{off}$ is the log-difference of the World Bank constant-dollar series
+=NY.GDP.MKTP.KD=.
+The panel covers 1575 country-years, 75 countries, 1996 to 2016.
+
+* Verdict
+
+The original conjecture is refuted.
+The divergence between IO-computed and official real GDP growth is not driven by
+the conversion of local-currency values into United States dollars.
+Neither the exchange rate nor domestic inflation explains the gap systematically.
+
+The two-regressor fit $\text{Gap} \sim \Delta\ln e + \pi + \text{factor(ISO)}$
+gives the following.
+
+| Sample                | $\beta_e$ | $\beta_\pi$ | within-$R^2$ |
+|-----------------------+-----------+-------------+--------------|
+| Full                  |    -0.629 |      -0.690 |        0.613 |
+| Trimmed $|Gap|\le 0.5$ |    -0.078 |      -0.167 |        0.121 |
+| Robust (rlm)          |    -0.012 |      -0.025 |            — |
+
+The full-sample coefficients are leverage from five observations.
+Removing them collapses both coefficients toward zero, and a robust estimator
+returns $\beta_e \approx 0$ and $\beta_\pi \approx 0$.
+The correlation $\text{cor}(\text{Gap}, \Delta\ln e)$ falls from $-0.625$ on the
+full sample to $0.002$ after trimming those five points.
+
+* Deflation state of the supplied series
+
+The supplied series behaves as real, not nominal.
+A nominal-local-currency series would satisfy $\text{Gap} \approx \pi$, so
+domestic inflation would carry a coefficient near one.
+The estimate is $\beta_\pi \approx 0$ and $\text{cor}(\text{Gap}, \pi) \approx 0$.
+The object was therefore deflated before it was supplied, although the
+conversion line at =code/deflate_tables.R:94= is commented out; the supplied
+object was produced by a path other than the current Stage-A checkout.
+
+* The residual gap is a data-quality phenomenon, in two modes
+
+Against the benchmark that a correct deflation reproduces official real growth,
+every non-trivial gap is a defect.
+The gap is tight at the core and has a wide tail.
+
+| Threshold | Share of country-years above |
+|-----------+------------------------------|
+| 0.5 p.p.  | 47.9%                        |
+| 1 p.p.    | 27.6%                        |
+| 2 p.p.    | 12.3%                        |
+| 5 p.p.    | 3.8%                         |
+| 50 p.p.   | 0.3% (5 obs)                 |
+
+The tail spans 193 country-years across 51 of the 75 countries, in every
+year-band, so it is not localized.
+Two modes are present.
+
+** Mode 1: one-time discontinuity at an exchange-rate regime change
+
+The GDP level jumps once, by a factor close to the exchange-rate change.
+Myanmar rises from 20,387 in 2011 to 2,485,941 in 2012, a factor near 122,
+against $\Delta\ln e = -4.77$; the resulting $g^{IO} = 4.80 \approx -\Delta\ln e$.
+Nigeria rises from 881,635 in 1998 to 3,345,492 in 1999, a factor near 3.8,
+against $\Delta\ln e = -1.44$.
+The raw national tables re-express values at the new official rate in the break
+year, and the level discontinuity enters the growth rate once.
+Domestic inflation does not account for the jump (Myanmar 2012 $\pi = 0.031$).
+
+** Mode 2: persistent per-country offset
+
+The gap is near-constant across all years for a country, without a spike.
+New Zealand has a median $|Gap|$ of 0.034 with a maximum of 0.068.
+Cambodia, Laos, and Estonia show smaller persistent offsets.
+This is the signature of a deflator, coverage, or base mismatch specific to the
+country, not a single-year event.
+
+* Decision
+
+The diagnosis has answered its causal question, and the productive work shifts.
+The remaining spec tasks built on the exchange-rate-versus-inflation framing
+(counterfactual, residual attribution across H2 to H4, confidence statement) are
+no longer the object, because that framing is resolved.
+The next work is a per-country and per-year gap audit whose target is to drive
+the gap toward zero across the base, treating each gap above a threshold as a
+defect and separating the two modes above.
+Mode 1 requires detecting and splicing the exchange-rate-regime level breaks in
+the raw tables.
+Mode 2 requires reconciling the IO-table deflator and sector coverage against the
+national-accounts source, country by country.
+
+* Reproducibility
+
+- Code: =code/diagnose_xr_gap.R= (functions =get_gIO=, =get_gOff=, =get_xr_infl=,
+  =build_gap_panel=, =classify_series=, =fit_gap_model=, =exclusion_checks=).
+- Panel: =results/diagnostics/gap_panel.rds=.
+- Branch: =diagnosis/xr-gap-debug=.
+- Decision to read currency inputs directly: =docs/adr/0011=.
