@@ -51,7 +51,55 @@ It is unknown for a supplied object and resolved empirically, not assumed.
 A country whose exchange-rate or deflator series is taken from the World Bank
 because it is absent from the OECD source.
 The subset is the discriminating variable for Hypothesis H2.
+The complement is the /OECD-covered country/, of which there are forty-seven in
+the deflator source.
+Every country carrying a cumulative gap drift is a WB-fallback country, so
+deflator provenance is collinear with drift and the two cannot be separated
+within the drifter set.
 _Avoid_: missing country, imputed country.
+
+** Reference implementation
+The co-author's Stage-A project in =etc/Modelo=, which produced the supplied
+=NIOTs_resultados.rdata= on the co-author's machine.
+It has never been executed in this repository and is not maintained here; it is
+consulted to establish what the deflation did.
+Its internal inconsistencies are not defects of this project (ADR-0012).
+_Avoid_: the original pipeline, the runnable version.
+
+** Working codebase
+The functional code in =code=, derived from the reference implementation.
+Its analysis layer serves both the reports and the diagnosis; its Stage-A
+deflation is not yet restored.
+All new work belongs here.
+_Avoid_: the refactor, the refactor in progress.
+
+** Canonical data tree
+=inputs=, a strict superset of the spreadsheets duplicated inside the reference
+implementation.
+The duplicate copies belong to the reference project and are not a second source
+of truth (ADR-0012).
+
+** Applied deflator
+The price index $P$ the Stage-A deflation divides by, distinguished from the
+official deflator implicit in the benchmark series by four attributes: its
+provider, its price concept, its base year, and its vintage.
+For OECD-covered countries the provider is the OECD Economic Outlook, edition
+116, measure /gross domestic product, market prices, deflator/; for WB-fallback
+countries it is the World Bank =NY.GDP.DEFL.ZS=.
+Both are local-currency indices rebased to unity in 1995.
+The comment at =etc/Modelo/base/deflator.R:5= describes the OECD series as a
+consumer-price measure; that description is incorrect and is not the data.
+_Avoid_: consumer-price deflator, the deflator.
+
+** Inherited defect
+A gap component originating in the supplied OECD volumes themselves, which no
+change to this repository can remove.
+It is distinguished from an /applied-deflator choice/, a gap component
+originating in which price index the pipeline elects to divide by, which is
+removable here.
+The two produce the same statistical signature under concentration-by-country
+tests and are separable only by re-deflating with an alternative index.
+_Avoid_: source data quality, data problem.
 
 ** Exchange-rate unit convention
 The rate $e$ is expressed as US dollars per unit of local currency, so a

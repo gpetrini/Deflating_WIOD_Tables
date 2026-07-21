@@ -1,0 +1,215 @@
+#+title: Spec: Gap diagnosis on the current benchmark
+#+date: 2026-07-21
+#+filetags: :IODefl:diagnosis:spec:
+
+* Problem statement
+
+Real GDP growth computed from the deflated OECD Inter-Country Input-Output
+tables, $g^{IO}$, diverges from official real GDP growth, $g^{off}$.
+The difference is the Gap.
+The exchange-rate conjecture that motivated the first diagnosis is refuted, and
+the diagnosis that replaced it was estimated against a benchmark that is eight
+years out of date and four years short.
+This specification restates the diagnosis on the current benchmark and defines
+the order of evidence that raises each surviving hypothesis to ninety-five
+percent confidence.
+
+* Standing rules
+
+No hypothesis is decided below ninety-five percent confidence.
+Below the bar, the specification states what evidence would raise it and stops.
+No diagnostic assumption is acted upon without being stated first.
+No data is downloaded; every input must already be on disk.
+
+* Preconditions and established facts
+
+Do not re-derive the following.
+
+The panel and the supplied file measure the same $g^{IO}$: the median absolute
+difference between =results/diagnostics/gap_panel.rds= and =test/g_GDP.xlsx= is
+0.013 percentage points, consistent with the two-decimal rounding of the sheet,
+with no country systematically divergent.
+The identity between the =dif_g_GDP= sheet and its two components holds exactly.
+An earlier revision of that file was erroneous and nothing was concluded from it.
+
+The exchange rate and inflation are refuted as causes.
+The index-number formula, the base year, the within-country component
+dispersion, and the import adjustment are refuted as causes; the import
+adjustment reduces the gap.
+
+The applied deflator is the OECD Economic Outlook, edition 116, measure gross
+domestic product at market prices, for forty-seven countries, and the World Bank
+=NY.GDP.DEFL.ZS= for the remaining twenty-nine.
+Both are local-currency indices rebased to unity in 1995 and both reach 2020.
+The description of the OECD series as a consumer-price measure at
+=etc/Modelo/base/deflator.R:5= is incorrect.
+
+Every drifter and every spike country is a World Bank fallback country, absent
+from the OECD deflator, so deflator provenance is collinear with drift.
+
+* The defect this specification corrects
+
+=code/diagnose_xr_gap.R:40-41= reads
+=inputs/world_bank/GDP_constant/API_NY.GDP.MKTP.KD_DS2_en_csv_v2.csv=, which
+carries the release date 2018-03-01 and holds data only to 2016.
+The current-dollar file used by =decompose_gap()= has the same release and the
+same truncation.
+The panel therefore spans 1996 to 2016, and the years 2017 to 2020 have never
+been examined although the tables cover them.
+
+The current benchmark is =test/g_GDP.xlsx=, sheet =g_GDP_WB=: the same indicator,
+=NY.GDP.MKTP.KD=, downloaded in the week of 2026-07-14, covering seventy-four
+countries over 1996 to 2020.
+An exhaustive search of the repository established it as the only source of
+official gross domestic product on disk reaching 2020.
+The World Bank files and every United Nations System of National Accounts file
+stop at 2016; =ICESHRE.csv= is OECD import content of exports; the World Bank
+=_original= extracts hold the deflator alone; =tmp= and =outputs= do not exist
+although =code/*.R= references them.
+
+* Tasks
+
+Each task states its verification.
+A task is not complete until its verification has been run and its output read.
+
+** Task 1: repoint the benchmark
+
+Change =get_gOff()= to read =test/g_GDP.xlsx=, sheet =g_GDP_WB=.
+The sheet is in simple growth and percentage points; the diagnosis is in log
+growth, so convert as $\ln(1 + g/100)$ rather than comparing conventions
+implicitly.
+Retain a switch that reproduces the former benchmark, so the vintage effect
+remains measurable rather than discarded.
+
+Verify: the rebuilt panel spans 1996 to 2020; the benchmark growth reproduces
+the sheet to the sheet's rounding; and the count of country-years increases by
+the expected number of added years.
+
+** Task 2: measure the vintage effect before absorbing it
+
+With both benchmarks available, quantify per country how much of the previously
+measured gap was benchmark revision.
+Attend to the concentrated countries: Côte d'Ivoire, Luxembourg, Malta, Romania,
+Cambodia, Saudi Arabia and Brunei.
+
+Verify: the per-country difference between the two benchmarks is tabulated, and
+its aggregate dispersion reproduces the standard deviation of 1.07 percentage
+points already measured.
+
+** Task 3: re-estimate the whole diagnosis on the full window
+
+Re-run, on the new panel, the classification into clean, volatile and spike
+regimes; the decomposition into nominal-aggregate and deflator mismatch; and the
+per-country attribution by covariance with the Gap.
+Treat every previously reported figure as provisional, including the split of
+forty-five and fifty-five percent and the drifter shares for Ukraine, Brunei,
+Kazakhstan, Viet Nam and Egypt.
+
+Verify: the decomposition identity holds to machine precision on the new panel;
+and the re-estimated taxonomy is reported beside the former one, so that changes
+are attributable to the benchmark rather than to an unstated change of method.
+
+** Task 4: examine the four unexamined years
+
+The years 2017 to 2020 have never been analysed.
+Establish whether they behave like the estimated window or introduce a regime of
+their own, and treat 2020 separately, since a pandemic year strains any
+fixed-weight aggregation.
+
+Verify: the gap distribution for 2017 to 2020 is reported against the
+distribution for 1996 to 2016, and 2020 is reported alone.
+
+** Task 5: the pre-committed deflator swap
+
+For the forty-seven countries covered by the OECD deflator, two independent
+local-currency deflators exist on the same base and window, so the swap requires
+no new data.
+Substitute =NY.GDP.DEFL.ZS= for the Economic Outlook series and recompute the
+gap.
+
+The decision rule is fixed before the test runs and is not renegotiated
+afterwards.
+A change in the mean absolute gap below about twenty percent refutes the
+applied-deflator channel for these countries.
+A change above about fifty percent establishes it.
+Between the two, no claim is made.
+
+Two limits are stated with any result.
+The test conflates provider and vintage and cannot separate them.
+The substituted deflator shares a provider with the benchmark, so part of any
+contraction is mechanical rather than evidence of correctness.
+
+Verify: the pre-registered figure is reported against the threshold whatever it
+is, and the two limits are restated in the finding.
+
+** Task 6: the drifters, which the swap cannot reach
+
+The swap cannot test the drifters, since none is covered by the OECD deflator.
+A third source is required.
+On disk there is =inputs/price_deflators/unsd_snaAma_GDP_ImplicitPriceDeflator_USD.txt=,
+covering two hundred forty-five countries and all five drifters, which ends in
+2016 and is expressed in United States dollars and therefore reintroduces the
+exchange rate.
+
+State this constraint before proposing a test.
+If the United Nations series is used, either compare in dollar space on both
+sides or divide out the same exchange rate the deflation applies, so the
+currency term cancels rather than confounds, and restrict the window to 2016.
+Any alternative source requires the maintainer's authorisation, since no data
+may be downloaded.
+
+Verify: the treatment of the currency basis is stated explicitly in the finding,
+and the restricted window is reported.
+
+* Hypotheses and the evidence that closes them
+
+- H-nominal, the OECD final-demand aggregate departs from official nominal gross
+  domestic product.
+  Closed by Task 3 on the full window, if the attribution is stable across the
+  two benchmarks.
+
+- H-F, the applied deflator differs from the deflator implicit in the official
+  series.
+  Closed for the OECD-covered countries by Task 5 against the pre-registered
+  rule; open for the drifters until Task 6 supplies a third source.
+
+- H-G, price-concept mismatch.
+  Largely refuted: the premise that the applied deflator was a consumer-price
+  measure was a stale comment.
+  Reopening it requires evidence from the data, not from a comment.
+
+- H-vintage.
+  The benchmark component is settled by Task 2.
+  The deflator component, Economic Outlook 116 against the 2023 edition of the
+  input-output tables, is untested; separating it from a genuine deflator error
+  requires a second deflator vintage, which is not on disk.
+
+- H-D, the residual is inherited from the source volumes.
+  Not decidable by concentration evidence, which cannot distinguish an inherited
+  defect from an applied-deflator choice.
+  Closed only by Tasks 5 and 6 jointly.
+
+* Success criteria
+
+The panel spans 1996 to 2020 against the current benchmark.
+Every previously reported figure is either reproduced on the new panel or
+withdrawn.
+The share of the former gap attributable to benchmark revision is quantified per
+country.
+Each hypothesis above carries either a verdict at ninety-five percent confidence
+or a written statement of the evidence that would produce one.
+
+* Risks
+
+Re-estimating against a benchmark that shares a provider with the substituted
+deflator invites mechanical contraction; Task 5 states this limit rather than
+resolving it.
+The supplied sheet is rounded to two decimals, which bounds the resolution of
+any claim made from it.
+Seventy-four countries appear in the sheet against seventy-five in the panel.
+The single absent country is Myanmar, which is the hybrid case: a 2012
+exchange-rate break over a volatile pre-2012 segment.
+Repointing the benchmark therefore drops the one country whose regime is not
+purely of one type, and does so silently unless the join is checked.
+Report Myanmar's exclusion explicitly, and decide whether to carry it on the
+former benchmark rather than lose it.

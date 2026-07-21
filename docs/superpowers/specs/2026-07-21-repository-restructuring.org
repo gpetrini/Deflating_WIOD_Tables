@@ -1,0 +1,134 @@
+#+title: Spec: Repository restructuring
+#+date: 2026-07-21
+#+filetags: :IODefl:structure:spec:
+
+* Problem statement
+
+The repository holds two data trees that overlap almost completely, three copies
+of the Stage-A deflation, and products dispersed over six directories.
+The ambiguity has already misdirected work: documentation described =etc/Modelo=
+as the runnable pipeline and =code= as an unfinished alternative, when the first
+has never been executed here and the second is the functional codebase.
+ADR-0012 settles which is which.
+This specification defines what is moved, what is left in place, and what
+evidence closes each step.
+
+* Preconditions
+
+ADR-0012 is accepted.
+The gap diagnosis specified in =2026-07-21-gap-diagnosis-revised.org= has
+priority; this work is scheduled after it, because it alters paths the diagnosis
+reads.
+No step in this specification may be executed while the diagnosis is mid-run.
+
+* Scope
+
+In scope: directory layout, duplicated data, dead code copies, empty
+directories, the version-control filter, and the documentation that describes
+them.
+
+Out of scope: the content of =etc/Modelo=, which ADR-0012 declares read-only;
+the deflation logic; and anything that changes a numerical result.
+A restructuring step that changes a number is a defect of the step.
+
+* Established facts
+
+Fifteen spreadsheets are byte-identical between =etc/Modelo= and =inputs=, as
+are =NATIODOMIMP= and =NATIOTTL=, one thousand nine hundred seventy-six files
+each, about ninety megabytes in total.
+=inputs= is a strict superset, holding in addition =world_bank=,
+=price_deflators=, =United Nations=, =WIOD_Nov16=, =WIOD_SEA_Nov16=,
+=equivalence_tables= and =CodeToNumber.rds=.
+The duplication exists because =etc/Modelo/base/*.R= reads with bare filenames
+and therefore requires its inputs beside it.
+
+=code/base= holds a partial copy of the reference: seven of fifteen files are
+empty, =exchange_rate.R= is byte-identical to the reference, and =Um.R= and
+=Un.R= are larger than their counterparts, at one thousand four hundred
+ninety-four and one thousand four hundred fifty bytes against one thousand
+thirty-two and nine hundred eighty-three.
+=code/tmp.R= does not parse.
+=WP= and =versions= are empty.
+=objs= holds two serialisations of one object.
+=test= holds benchmark data, not tests; the exercises are in =code/tests.R=.
+=.gitignore= excludes =*.*= and whitelists =.org=, =.tex=, =.R=, =.txt= and
+=.sh=, so data, portable documents and Markdown are untracked.
+
+* Tasks
+
+Each task states its verification.
+A task is not complete until its verification has been run and its output read.
+
+** Task 1: freeze the reference boundary
+
+Add =etc/Modelo/README.org= stating that the directory is read-only reference
+under ADR-0012, that it has never been executed in this repository, and that its
+working-directory inconsistency and commented-out save target are artefacts of
+its provenance.
+
+Verify: the file exists and cites ADR-0012.
+
+** Task 2: retire the dead Stage-A copy
+
+=code/base= is neither the reference nor the working implementation.
+Determine whether =code/base/Um.R= and =code/base/Un.R=, which are larger than
+their reference counterparts, contain work absent from =code/deflate_tables.R=.
+
+If they do, that work is salvaged into =code/deflate_tables.R= before anything
+is removed.
+If they do not, =code/base= is removed.
+
+Verify: =diff= of the two pairs of files is recorded in the commit message; and
+=grep= confirms no remaining =source()= reaches =code/base=.
+
+** Task 3: resolve the empty and duplicated directories
+
+Remove =WP= and =versions= if nothing references them.
+Reduce =objs= to one serialisation format, or record why both are kept.
+
+Verify: repository-wide search for each removed path returns nothing.
+
+** Task 4: name the products
+
+Document, in the README layout table, which directory receives which product and
+which script writes it.
+Do not move products in this task; naming precedes moving.
+
+Verify: every directory listed in the table is traced to the line of code that
+writes into it.
+
+** Task 5: decide the data duplication
+
+The duplication is accepted debt under ADR-0012 and is not removed by default.
+This task records the decision explicitly and its cost, about ninety megabytes,
+so that a future session does not reopen it as an oversight.
+
+If the maintainer elects to remove it, the only admissible method is to make
+=inputs= canonical and leave =etc/Modelo= untouched, because the reference cannot
+be re-run here to verify a change to its paths.
+
+Verify: the decision is written into ADR-0012 as an amendment.
+
+** Task 6: revisit the version-control filter
+
+The current filter untracks Markdown, so handoffs require =git add -f=, and
+untracks the reports.
+Decide whether documentation under =docs= should be whitelisted.
+
+Verify: after any change, =git status= shows no newly tracked data file, and no
+previously tracked file has been dropped.
+
+* Success criteria
+
+The repository has one canonical data tree, one working codebase, one reference
+implementation marked as such, and no directory whose purpose is undetermined.
+Every product directory is traced to the code that writes it.
+No numerical result changes: =results/diagnostics/gap_panel.rds= rebuilt after
+the restructuring is identical to the panel before it.
+
+* Risks
+
+The reference cannot be executed here, so no change to =etc/Modelo= can be
+verified; this is why the specification forbids such changes.
+Moving a product directory silently breaks a write path, which is why Task 4
+requires tracing each directory to its writing line before any move.

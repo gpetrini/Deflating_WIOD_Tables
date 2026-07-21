@@ -11,10 +11,16 @@ It fixes the current-versus-legacy boundary so that no diagnosis rests on stale
 code or data, and it derives the algebraic decomposition of the gap that the
 diagnosis tests.
 
-* The authoritative pipeline
+* The reference pipeline
 
-The runnable pipeline lives in =etc/Modelo/=, orchestrated by
-=etc/Modelo/compilacao.R=, which sources, in order:
+The deflation is recorded in =etc/Modelo/=, orchestrated by
+=etc/Modelo/compilacao.R=.
+That project is read-only reference: it belongs to the co-author, it has never
+been executed in this repository, and the object it produced was built on the
+co-author's machine (ADR-0012).
+Its working-directory inconsistency and its commented-out save target are
+artefacts of that provenance, not defects to repair.
+It sources, in order:
 
 1. =base/titulos.R= — sector titles and the 45-to-7 aggregator.
 2. =base/deflator.R= — national GDP deflator, OCDE primary, World Bank fallback.
@@ -117,8 +123,9 @@ unchanged because they were always computed on the OECD-built object.
 
 The project holds two versions of the same deflation pipeline.
 
-- The /original/ pipeline, =etc/Modelo/base/*.R= (mirrored, in part, under
-  =code/base/=), is runnable and produced the loaded data.
+- The /reference/ implementation, =etc/Modelo/base/*.R= (mirrored, in part, under
+  =code/base/=), produced the loaded data on the co-author's machine and is not
+  run here.
 - The /refactor/, =code/*.R= (not =code/base/=), is an updated rewrite of that
   original: =deflate_tables.R= rewrites =matrizes.R= with =Un.R=, =Um.R= and
   =base.R=; =price_deflator.R= rewrites =deflator.R=; =support_functions.R=
@@ -135,8 +142,8 @@ does not yet reproduce the original.
 
 | Artifact                              | Status              | Note                                              |
 |---------------------------------------+---------------------+---------------------------------------------------|
-| =etc/Modelo/base/*.R=                 | original, current   | runnable; produced the loaded data                |
-| =etc/Modelo/compilacao.R=             | original, current   | master runner (save target now =Test.rdata=)      |
+| =etc/Modelo/base/*.R=                 | reference, read-only| produced the loaded data elsewhere; never run here |
+| =etc/Modelo/compilacao.R=             | reference, read-only| mixes two working directories; save target commented |
 | =etc/Modelo/NIOTs_resultados.rdata=   | current data        | =NIOTs=, 75 countries, loaded by global_variables |
 | =code/support_functions.R=            | refactor, complete  | analysis layer in use, =prepare_data()=           |
 | =code/deflate_tables.R=               | refactor, incomplete | Stage-A deflation stubbed (FIXME l.82-85, l.94/103) |
@@ -173,7 +180,7 @@ affect the current findings because it was never run.
 | Taxonomy 56 clean / 12 volatile / 7 spike / 0 offset | no              | holds; built on the 75-country current data          |
 | Spike mechanism (raw Ft / deflate_tables.R:94)     | yes               | corrected: exchange-rate input to =etc/Modelo/base/Un.R= |
 | Pervasive gap is source data quality               | no                | holds; import adjustment, index formula, dispersion all rejected on current data |
-| ADR-0011 "Stage A does not run"                    | imprecise         | Stage A runs as =etc/Modelo/base=, not =code/base=; conclusion unaffected |
+| ADR-0011 "Stage A does not run"                    | correct           | Stage A does not run here at all (ADR-0012); conclusion unaffected |
 
 No full restart is required.
 The diagnosis rests on the current data, the current analysis layer, and

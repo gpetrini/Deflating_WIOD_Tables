@@ -1,0 +1,86 @@
+#+title: ADR-0012: =etc/Modelo= is read-only reference, =code= is the working codebase
+#+date: 2026-07-21
+#+filetags: :IODefl:structure:adr:
+
+* Status
+
+Accepted, 2026-07-21.
+
+* Context
+
+The repository carries two directory trees that overlap almost completely, and
+earlier documentation described them as two versions of one pipeline, one
+"original and runnable" and one "refactor in progress".
+That description is wrong and has misdirected work.
+
+=etc/Modelo= is the co-author's Stage-A project, a self-contained R project
+(=Artigo_taxas.Rproj=) holding the deflation code in =base/=, its own copy of
+every input it reads, and its products =NIOTs_resultados.rdata= and
+=dados_escalares.rdata=.
+It has never been executed on this machine.
+It was copied into this repository, where the co-author does not have it, as
+reference material for the refactor into =code=.
+The products it contains were produced on the co-author's machine.
+
+Two features of it follow from that and are not defects to repair.
+=compilacao.R= sources =./base/*.R=, which presupposes the working directory
+=etc/Modelo=, but writes to =./Modelo/Test.rdata=, which presupposes =etc=; and
+the line that would write =NIOTs_resultados.rdata= is commented out.
+The script is a record of how the object was built elsewhere, not a build
+recipe that runs here.
+
+=code= is the functional codebase, derived from that reference.
+Its analysis layer, =support_functions.R= with =prepare_data=, serves both the
+reports and the diagnosis.
+Its Stage-A deflation is not restored: =deflate_tables.R= carries a FIXME at
+lines 82 to 85 with the deflator commented at 94 and 103, so it would emit
+undeflated tables.
+=code/base= is a partial copy of the reference in which seven of fifteen files
+are empty, =exchange_rate.R= is byte-identical to the reference, and =Um.R= and
+=Un.R= are larger than their counterparts.
+
+The data duplication is mechanical.
+=etc/Modelo/base/*.R= reads with bare filenames, so it requires its inputs
+beside it.
+Fifteen spreadsheets are byte-identical between the two trees, as are
+=NATIODOMIMP= and =NATIOTTL=, 1976 files each, about ninety megabytes in total.
+=inputs= is a strict superset: it also holds =world_bank=, =price_deflators=,
+=United Nations=, =WIOD_Nov16=, =WIOD_SEA_Nov16=, =equivalence_tables= and
+=CodeToNumber.rds=.
+
+* Decision
+
+=etc/Modelo= is read-only reference.
+Do not run it, do not repair it, and do not treat its inconsistencies as bugs.
+Cite it only to establish what the co-author's Stage A did.
+
+=code= is the working codebase.
+All new work goes there.
+
+=inputs= is the canonical data tree.
+The copies under =etc/Modelo= are reference fixtures belonging to the reference
+project, not a second source of truth.
+
+The duplication is accepted as known debt and is not resolved now, because
+removing it would alter the paths the reference reads and the reference cannot
+be re-run here to verify the change.
+
+* Consequences
+
+Documentation must stop calling =etc/Modelo= runnable and must stop framing
+=code= as an unfinished alternative to it.
+The reproducibility question "can we regenerate =NIOTs_resultados.rdata=" is
+answered by restoring the deflation in =code/deflate_tables.R=, never by running
+=etc/Modelo=.
+The deferred version-consistency check keeps its meaning: once that deflation is
+restored, compare freshly built tables against the supplied
+=etc/Modelo/NIOTs_resultados.rdata=, first at the GDP level and then cell by
+cell.
+About ninety megabytes of duplication remain, deliberately.
+
+* Considered Options
+
+Making =inputs= canonical and replacing the copies with symbolic links, or
+rewriting =etc/Modelo/base/*.R= to read from =../../inputs=, was rejected: both
+modify a reference that cannot be executed here, so neither change could be
+verified.
