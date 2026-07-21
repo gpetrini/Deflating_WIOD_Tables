@@ -200,6 +200,36 @@ countries, not in the aggregation.
 The pipeline is validated by the well-measured economies; the defect is inherited
 from the source.
 
+**** Gap decomposition into nominal-aggregate and deflator mismatch
+
+Because the deflation applies a single uniform scalar per country-year, the gap
+splits exactly into two additive terms (derivation in
+=docs/deflation-pipeline-onboarding.org=):
+
+$$\text{Gap} = \underbrace{[\Delta\ln \text{FD}^{\text{nom,USD}}_{IO} - \Delta\ln \text{GDP}^{\text{nom,USD}}_{\text{off}}]}_{\text{nominal-aggregate mismatch}} + \underbrace{[\Delta\ln \text{deflator}^{USD}_{\text{off}} - \Delta\ln \text{deflator}^{USD}_{\text{pipeline}}]}_{\text{deflator mismatch}}.$$
+
+The reconstruction is exact, using only the panel and World Bank current-dollar
+GDP (=NY.GDP.MKTP.CD=); the identity holds to machine precision.
+Attributing the variance of the gap by covariance with each term (the shares sum
+to one) over the sixty-eight non-spike countries gives forty-five percent to the
+nominal-aggregate mismatch and fifty-five percent to the deflator mismatch.
+Both terms are individually larger than the gap and offset, so neither alone is
+the story; the residual is what fails to cancel.
+
+Per country the dominant term separates the regime.
+The deflator mismatch drives the countries with a cumulative drift: Ukraine
+(ninety percent deflator, cumulative deflator term $-0.30$ of a $-0.40$ total
+gap), Brunei (ninety-eight percent, $+0.41$), Kazakhstan (eighty-nine percent),
+and Viet Nam (sixty-six percent).
+The nominal-aggregate mismatch drives Bulgaria, Romania, Tunisia, Russia and New
+Zealand, where the World Bank Input-Output final-demand aggregate departs from
+official nominal GDP.
+The systematic country drifts are therefore a deflator phenomenon, and the
+year-to-year dispersion of the more stable countries is a nominal-aggregate
+phenomenon.
+
+Function: =decompose_gap()= and =attribute_gap()= in =code/diagnose_xr_gap.R=.
+
 **** Hypotheses and the evidence required for 95 percent confidence
 
 - H-D, the residual is source data quality.

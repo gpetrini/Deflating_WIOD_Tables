@@ -152,6 +152,47 @@ fit_gap_model <- function(panel) {
   )
 }
 
+## --- Gap decomposition: nominal-aggregate vs deflator mismatch --------------
+
+## Exact additive split of Gap in USD space (onboarding doc, gap decomposition):
+##   nominal_mm  = dln(WIOD nominal final demand, USD) - dln(WB nominal GDP, USD)
+##   deflator_mm = dln(official USD deflator) - dln(pipeline deflation factor)
+## Reconstruction is exact: nominal_USD_io = GDP_real_io * deflator_GDP / e, so
+## dln(nominal_USD_io) = gY_io + dln_e + pi. Needs WB current-USD GDP only.
+decompose_gap <- function(
+    panel = build_gap_panel(),
+    cd_path = "../inputs/world_bank/GDP_current/API_NY.GDP.MKTP.CD_DS2_en_csv_v2.csv"
+) {
+  cd <- read_csv(cd_path, skip = 4, show_col_types = FALSE) |>
+    rename(ISO = `Country Code`) |>
+    select(ISO, matches("^[0-9]{4}$")) |>
+    pivot_longer(-ISO, names_to = "Year", values_to = "cd") |>
+    mutate(Year = as.integer(Year)) |>
+    filter(!is.na(cd)) |>
+    arrange(ISO, Year) |>
+    group_by(ISO) |>
+    mutate(dln_cd = c(NA, diff(log(cd)))) |>
+    ungroup() |>
+    select(ISO, Year, dln_cd)
+
+  panel |>
+    inner_join(cd, by = c("ISO", "Year")) |>
+    filter(!is.na(dln_cd)) |>
+    mutate(
+      nominal_mm  = (gY_io + dln_e + pi) - dln_cd,
+      deflator_mm = dln_cd - gY_off - dln_e - pi
+    )
+}
+
+## Covariance-with-Gap attribution (shares sum to 1, robust to the mechanical
+## negative covariance between the two terms).
+attribute_gap <- function(d) {
+  list(
+    share_nominal  = cov(d$Gap, d$nominal_mm)  / var(d$Gap),
+    share_deflator = cov(d$Gap, d$deflator_mm) / var(d$Gap)
+  )
+}
+
 ## --- Task 8: exclusion checks (H6, base-year invariance) --------------------
 
 ## H6 (base year) cannot move a growth rate: fixed-base scaling is
