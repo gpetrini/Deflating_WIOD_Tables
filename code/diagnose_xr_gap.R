@@ -55,6 +55,66 @@ get_gOff <- function(
     select(ISO, Year, gY_off)
 }
 
+## --- Task 3: exchange-rate and inflation log-changes (ADR-0011) -------------
+
+## Read cleaned currency inputs directly; do NOT source tmp.R (ADR-0010/0011).
+
+## English-name to ISO map, French suffix stripped as the Stage-A code did.
+.iso_map <- function() {
+  readxl::read_excel("../inputs/titulos.xlsx", sheet = "country") |>
+    transmute(ISO = Code, Country = sub(" / .*", "", Country))
+}
+
+## Wide OCDE file (Country x Year) -> long ISO/Year/Value, provenance "OCDE".
+read_ocde_wide <- function(file) {
+  readxl::read_excel(file) |>
+    mutate(Country = sub(" / .*", "", Country)) |>
+    left_join(.iso_map(), by = "Country") |>
+    filter(!is.na(ISO)) |>
+    select(ISO, matches("^[0-9]{4}$")) |>
+    pivot_longer(-ISO, names_to = "Year", values_to = "Value") |>
+    mutate(Year = as.integer(Year), Source = "OCDE") |>
+    filter(!is.na(Value))
+}
+
+## Wide World Bank file (Country Code = ISO) -> long, provenance "WB".
+read_wb_wide <- function(file) {
+  readxl::read_excel(file) |>
+    rename(ISO = `Country Code`) |>
+    select(ISO, matches("^[0-9]{4}$")) |>
+    pivot_longer(-ISO, names_to = "Year", values_to = "Value") |>
+    mutate(Year = as.integer(Year), Source = "WB") |>
+    filter(!is.na(Value))
+}
+
+## OCDE primary; World Bank fills ISO/Year absent from OCDE.
+read_currency_series <- function(ocde_file, wb_file) {
+  ocde <- read_ocde_wide(ocde_file)
+  wb   <- read_wb_wide(wb_file)
+  bind_rows(ocde, anti_join(wb, ocde, by = c("ISO", "Year")))
+}
+
+get_xr_infl <- function() {
+  ## Exchange rate stored as local currency per US dollar (US = 1); invert to
+  ## US dollars per unit of local currency so depreciation lowers e (ADR-0011).
+  e <- read_currency_series("../inputs/exchange_rate_OCDE.xlsx",
+                            "../inputs/exchange_rate_WB.xls") |>
+    transmute(ISO, Year, e = 1 / Value, e_src = Source)
+  P <- read_currency_series("../inputs/deflator_GDP_OCDE.xlsx",
+                            "../inputs/deflator_GDP_WB.xls") |>
+    transmute(ISO, Year, P = Value, P_src = Source)
+
+  e |>
+    inner_join(P, by = c("ISO", "Year")) |>
+    arrange(ISO, Year) |>
+    group_by(ISO) |>
+    mutate(dln_e = c(NA, diff(log(e))),
+           pi    = c(NA, diff(log(P)))) |>
+    ungroup() |>
+    filter(!is.na(dln_e), !is.na(pi)) |>
+    select(ISO, Year, dln_e, pi, e_src, P_src)
+}
+
 ## --- Task 8: exclusion checks (H6, base-year invariance) --------------------
 
 ## H6 (base year) cannot move a growth rate: fixed-base scaling is

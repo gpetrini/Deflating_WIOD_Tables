@@ -130,20 +130,81 @@ git commit -m "[NEW] Official World Bank constant-USD growth for the XR gap diag
 
 * Task 3: Exchange-rate and inflation log-changes
 
+REVISED 2026-07-21 per ADR-0011.
+The original step sourced =tmp.R= and called =get_Erate()=/=get_deflator()=.
+Those helpers do not run (=tmp.R:391= syntax error; undefined =fdefl=; bare
+=OCDE_country=) and are excluded by ADR-0010.
+The reader now reads the cleaned inputs directly and inverts the exchange rate
+to the spec's direction.
+
 Files:
 - Modify: =code/diagnose_xr_gap.R=
-- Uses: =get_Erate()= and =get_deflator()= from =code/tmp.R=
+- Reads: =inputs/exchange_rate_OCDE.xlsx=, =inputs/exchange_rate_WB.xls=,
+  =inputs/deflator_GDP_OCDE.xlsx=, =inputs/deflator_GDP_WB.xls=,
+  =inputs/titulos.xlsx= (country-name to ISO map).
+
+Verified input facts:
+- The OCDE files are wide, keyed by English =Country= name (French suffix after
+  " / " to strip), years as columns; 47 countries.
+- The World Bank files are wide, carry =Country Code= (ISO) and =Country Name=; 266 rows.
+- Both exchange-rate files store local-currency units per US dollar (US = 1; the
+  value rises on depreciation), the inverse of the spec's stated direction.
+- =titulos.xlsx= sheet =country= maps =Code= (ISO) to =Country=; 76 rows.
 
 Interfaces:
-- Produces: =get_xr_infl()= returning =tibble(ISO, Year, dln_e, pi)=.
+- Produces: =get_xr_infl()= returning =tibble(ISO, Year, dln_e, pi, e_src, P_src)=.
+  =e_src=/=P_src= record OCDE-versus-World-Bank provenance, the grouping variable
+  Hypothesis H2 (Task 7) needs.
 
-- [ ] Step 1: Write =get_xr_infl()=
+- [ ] Step 1: Write the readers and =get_xr_infl()=
 
 #+begin_src R
+## ADR-0011: read cleaned currency inputs directly; do not source tmp.R.
+
+## English-name to ISO map, French suffix stripped as the Stage-A code did.
+.iso_map <- function() {
+  readxl::read_excel("../inputs/titulos.xlsx", sheet = "country") |>
+    transmute(ISO = Code, Country = sub(" / .*", "", Country))
+}
+
+## Wide OCDE file (Country x Year) -> long ISO/Year/Value, provenance "OCDE".
+read_ocde_wide <- function(file) {
+  readxl::read_excel(file) |>
+    mutate(Country = sub(" / .*", "", Country)) |>
+    left_join(.iso_map(), by = "Country") |>
+    filter(!is.na(ISO)) |>
+    select(ISO, matches("^[0-9]{4}$")) |>
+    pivot_longer(-ISO, names_to = "Year", values_to = "Value") |>
+    mutate(Year = as.integer(Year), Source = "OCDE") |>
+    filter(!is.na(Value))
+}
+
+## Wide World Bank file (Country Code = ISO) -> long, provenance "WB".
+read_wb_wide <- function(file) {
+  readxl::read_excel(file) |>
+    rename(ISO = `Country Code`) |>
+    select(ISO, matches("^[0-9]{4}$")) |>
+    pivot_longer(-ISO, names_to = "Year", values_to = "Value") |>
+    mutate(Year = as.integer(Year), Source = "WB") |>
+    filter(!is.na(Value))
+}
+
+## OCDE primary; World Bank fills ISO/Year absent from OCDE.
+read_currency_series <- function(ocde_file, wb_file) {
+  ocde <- read_ocde_wide(ocde_file)
+  wb   <- read_wb_wide(wb_file)
+  bind_rows(ocde, anti_join(wb, ocde, by = c("ISO", "Year")))
+}
+
 get_xr_infl <- function() {
-  source("tmp.R")                       # defines get_Erate, get_deflator, get_common
-  e <- get_Erate()  |> transmute(ISO = Code, Year = as.integer(Year), e = Value)
-  P <- get_deflator() |> transmute(ISO = Code, Year = as.integer(Year), P = Value)
+  ## Exchange rate stored as local currency per US dollar (US = 1); invert to
+  ## US dollars per unit of local currency so depreciation lowers e (ADR-0011).
+  e <- read_currency_series("../inputs/exchange_rate_OCDE.xlsx",
+                            "../inputs/exchange_rate_WB.xls") |>
+    transmute(ISO, Year, e = 1 / Value, e_src = Source)
+  P <- read_currency_series("../inputs/deflator_GDP_OCDE.xlsx",
+                            "../inputs/deflator_GDP_WB.xls") |>
+    transmute(ISO, Year, P = Value, P_src = Source)
 
   e |>
     inner_join(P, by = c("ISO", "Year")) |>
@@ -153,20 +214,29 @@ get_xr_infl <- function() {
            pi    = c(NA, diff(log(P)))) |>
     ungroup() |>
     filter(!is.na(dln_e), !is.na(pi)) |>
-    select(ISO, Year, dln_e, pi)
+    select(ISO, Year, dln_e, pi, e_src, P_src)
 }
 #+end_src
 
-- [ ] Step 2: Verify the unit-direction pre-check (spec pre-check)
+- [ ] Step 2: Verify the unit-direction pre-check (spec pre-check, strengthened)
 
-Run: =cd code && Rscript -e 'source("diagnose_xr_gap.R"); x <- get_xr_infl(); print(dplyr::filter(x, ISO=="USA") |> summarise(m = mean(abs(dln_e))))'=
-Expected: =USA= mean =abs(dln_e)= near zero (reference currency), confirming $e$ is dollars per unit of local currency. If large, the unit direction is inverted and the sign of every downstream prediction flips; halt and correct the source before continuing.
+The original check tested only that US =abs(dln_e)= is near zero.
+That passes under either convention (US = 1 gives =dln_e = 0=), so it cannot
+catch an inverted rate.
+Add a depreciation-episode direction test, which the spec requires and which
+does discriminate.
+
+Run: =cd code && Rscript -e 'source("diagnose_xr_gap.R"); x <- get_xr_infl(); print(dplyr::summarise(dplyr::filter(x, ISO=="USA"), m = mean(abs(dln_e)))); print(dplyr::filter(x, ISO=="BRA", Year %in% 2014:2016))'=
+Expected: US mean =abs(dln_e)= near zero; Brazil =dln_e < 0= in 2015, since the
+inverted rate (US dollars per real) falls when the real depreciates.
+A positive Brazil 2015 =dln_e= means the inversion is wrong-signed; halt and fix
+before any regression.
 
 - [ ] Step 3: Commit
 
 #+begin_src bash
 git add code/diagnose_xr_gap.R
-git commit -m "[NEW] Exchange-rate and inflation log-changes with unit pre-check"
+git commit -m "[NEW] Exchange-rate and inflation log-changes read directly (ADR-0011)"
 #+end_src
 
 * Task 4: Assemble the Gap panel and classify the series (H0)
