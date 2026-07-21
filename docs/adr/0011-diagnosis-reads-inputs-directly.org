@@ -1,0 +1,49 @@
+#+title: ADR-0011: The XR gap diagnosis reads currency inputs directly
+#+date: 2026-07-21
+#+filetags: :IODefl:diagnosis:adr:
+
+* Status
+
+Accepted, 2026-07-21.
+
+* Context
+
+The exchange-rate GDP growth-gap diagnosis needs a per-country nominal exchange
+rate $e_t$ and GDP deflator $P_t$.
+The diagnosis plan sourced =code/tmp.R= and called =get_Erate()= and
+=get_deflator()= to obtain them.
+Those helpers do not run: =tmp.R= fails to parse (a stray bracket at
+=code/tmp.R:391=), and even once parsed the readers carry defects
+(=get_deflator()= references an undefined =fdefl= and a bare global
+=OCDE_country=; =get_common()= reads a mistyped, unprefixed =agregador.xslx=).
+ADR-0010 already excludes these Stage-A helpers from v1 and records their
+global-reference defect as out of scope.
+
+* Decision
+
+The diagnosis reads the cleaned currency inputs directly:
+=inputs/exchange_rate_OCDE.xlsx= and =inputs/deflator_GDP_OCDE.xlsx=, filling
+countries absent from the OECD source from the World Bank variants, inside pure
+functions in =code/diagnose_xr_gap.R=.
+It does not source =tmp.R= and does not depend on the excluded Stage-A helpers.
+
+* Considered Options
+
+Fixing =tmp.R= was rejected: it contradicts ADR-0010 and pulls work-in-progress
+Stage-A code into the diagnosis.
+Using the World Bank series alone for both $e$ and $P$ was rejected: it discards
+the OECD primary source and weakens Hypothesis H2, which needs the
+OECD-versus-World-Bank-fallback split.
+
+* Consequences
+
+The diagnosis is self-contained and testable against the supplied
+=NIOTs_resultados.rdata= without a runnable Stage A.
+The reader records each country's provenance so H2 can identify the
+World-Bank-fallback subset.
+The OECD exchange-rate input expresses the rate as local-currency units per US
+dollar, the inverse of the direction stated in the diagnosis spec; the reader
+inverts it to US dollars per local-currency unit so the central prediction's
+unit-one slope holds as written.
+If Stage A becomes runnable, the stronger fixed-rate reconstruction of Rung 3
+supersedes the algebraic counterfactual used in v1.

@@ -1,0 +1,43 @@
+#+title: CONTEXT: Deflating WIOD Tables / Growth Decomposition
+#+filetags: :IODefl:context:
+
+This repository decomposes real GDP growth into domestic and import-content
+contributions across countries, and diagnoses why the growth computed from the
+deflated input-output tables diverges from official growth.
+This file is the glossary of terms specific to that domain.
+
+* Language
+
+** IO growth ($g^{IO}$)
+Real GDP growth computed from the deflated national input-output tables, built
+on the expenditure side in =prepare_data()=.
+_Avoid_: model growth, computed growth.
+
+** Official growth ($g^{off}$)
+Benchmark real GDP growth from an external source, primarily the World Bank
+constant-US-dollar series =NY.GDP.MKTP.KD=, which converts at a fixed base-year
+rate.
+_Avoid_: true growth, actual growth.
+
+** Gap
+The difference $g^{IO} - g^{off}$ for a country-year, the object the diagnosis
+explains.
+
+** Deflation state
+Whether the supplied input-output series is real (the $e/P$ conversion applied),
+nominal in local currency (nothing applied), or nominal in dollars (multiplied
+by $e$ only).
+It is unknown for a supplied object and resolved empirically, not assumed.
+
+** WB-fallback country
+A country whose exchange-rate or deflator series is taken from the World Bank
+because it is absent from the OECD source.
+The subset is the discriminating variable for Hypothesis H2.
+_Avoid_: missing country, imputed country.
+
+** Exchange-rate unit convention
+The rate $e$ is expressed as US dollars per unit of local currency, so a
+depreciation lowers $e$.
+The OECD input file stores the inverse (local-currency units per US dollar, US
+value one) and is inverted on read.
+_Avoid_: FX, parity.
