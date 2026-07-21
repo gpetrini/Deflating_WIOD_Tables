@@ -136,6 +136,22 @@ classify_series <- function(panel) {
   )
 }
 
+## --- Task 5: two-regressor discriminating fit (H0 vs H1) --------------------
+
+fit_gap_model <- function(panel) {
+  m <- lm(Gap ~ dln_e + pi + factor(ISO), data = panel)
+  co <- coef(m)
+  ## within R2: variance explained by dln_e and pi beyond the fixed effects
+  m_fe <- lm(Gap ~ factor(ISO), data = panel)
+  within_r2 <- 1 - sum(resid(m)^2) / sum(resid(m_fe)^2)
+  list(
+    beta_e    = unname(co["dln_e"]),
+    beta_pi   = unname(co["pi"]),
+    within_r2 = within_r2,
+    resid     = residuals(m)
+  )
+}
+
 ## --- Task 8: exclusion checks (H6, base-year invariance) --------------------
 
 ## H6 (base year) cannot move a growth rate: fixed-base scaling is
