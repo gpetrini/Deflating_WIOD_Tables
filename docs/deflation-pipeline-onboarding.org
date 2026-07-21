@@ -29,8 +29,8 @@ this object and builds the GDP level whose log-difference is $g^{IO}$.
 
 * How the deflation works
 
-The raw World Bank Input-Output cells (=NATIODOMIMP=) are in current United States
-dollars.
+The raw OECD Inter-Country Input-Output cells (=NATIODOMIMP=, OECD ICIO national
+domestic and import tables, 1995 to 2020) are in current United States dollars.
 For each country and year the pipeline forms a single scalar
 
 : deflator_geral = exchange_rate / deflator_GDP        (base.R)
@@ -84,6 +84,34 @@ The break lives in the exchange-rate /input/ to the deflation, not in the raw
 final-demand volumes.
 This corrects the earlier attribution to =code/deflate_tables.R= (the incomplete
 refactor, whose deflation is stubbed) and to the raw =Ft= components.
+
+* Data provenance and fork lineage (review 2026-07-21)
+
+The repository is a fork.
+The upstream project (initial commit by Quentin Perrier, 2019) deflates the World
+Input-Output Database (WIOD, 2016 release).
+This fork (from 2025) repurposes that deflation code but changes the input source:
+Stage A now reads the OECD Inter-Country Input-Output tables from
+=inputs/NATIODOMIMP/= (1995 to 2020, 76 countries) and produces
+=etc/Modelo/NIOTs_resultados.rdata= (75 countries).
+The WIOD deflation is retained as /heritage/, documented as such in =README.md=,
+and produces the separate =results/= artifacts (=wiot_*_deflated.rds=,
+=results/NIOTs_resultados.rdata= with 43 countries, the WIOD-2016 country set).
+The heritage scripts are =code/price_deflator.R= and =code/checks.R=.
+
+Consequence for the diagnosis: the term "WIOD" for the analysed volumes is
+inherited from upstream and is incorrect.
+The diagnosis loads =etc/Modelo/NIOTs_resultados.rdata=, which is built from the
+OECD Inter-Country Input-Output tables; the countries that carry the residual gap
+(Myanmar, Nigeria, Viet Nam, Ukraine, Bangladesh, Brunei, Kazakhstan, Egypt,
+Morocco, Pakistan, Belarus, Côte d'Ivoire) exist only in the OECD set and are
+absent from WIOD.
+No conclusion depends on the WIOD heritage: the diagnosis never loads =results/=,
+never runs =checks.R= or =price_deflator.R=, and the currency and deflator inputs
+it reads are byte-identical to those the OECD Stage-A pipeline used.
+The findings and this onboarding were corrected on 2026-07-21 to name the source
+OECD Inter-Country Input-Output rather than WIOD; the numeric results are
+unchanged because they were always computed on the OECD-built object.
 
 * Two versions of the pipeline
 
@@ -164,8 +192,8 @@ The single legacy-dependent error, the spike mechanism, is corrected.
 
 - H-G, price-concept mismatch.
   =base/deflator.R= labels the OCDE series "deflator do GDP a preços do
-  consumidor", a consumer-price basis, while the World Bank Input-Output tables
-  are valued at basic prices and official GDP is at market prices.
+  consumidor", a consumer-price basis, while the OECD Inter-Country Input-Output
+  tables are valued at basic prices and official GDP is at market prices.
   A basis mismatch would appear as a systematic component of the deflator-mismatch
   term, concentrated where the wedge between consumer and market prices moves
   (indirect taxes, subsidies, terms of trade).
@@ -173,8 +201,8 @@ The single legacy-dependent error, the spike mechanism, is corrected.
   market-price GDP deflator and observe whether the gap contracts.
 
 - H-nominal, nominal-aggregate mismatch.
-  The World Bank Input-Output nominal final demand (in local currency) may not
-  track official nominal GDP.
+  The OECD Inter-Country Input-Output nominal final demand (in local currency)
+  may not track official nominal GDP.
   Test: compare $\Delta\ln \text{GDP}^{\text{nom,LCU}}_{IO}$ with
   $\Delta\ln$ =NY.GDP.MKTP.CN= per country-year.
 

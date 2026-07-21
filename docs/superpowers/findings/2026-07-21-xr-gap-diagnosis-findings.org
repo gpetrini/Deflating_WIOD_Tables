@@ -195,8 +195,8 @@ A minority carry a genuine cumulative drift (Ukraine $-0.40$ log points over the
 window, Brunei $+0.31$), where the source real-GDP trajectory departs from
 official systematically.
 
-The residual therefore lives in the supplied WIOD volumes and deflators for these
-countries, not in the aggregation.
+The residual therefore lives in the supplied OECD Inter-Country Input-Output
+volumes and deflators for these countries, not in the aggregation.
 The pipeline is validated by the well-measured economies; the defect is inherited
 from the source.
 
@@ -222,8 +222,8 @@ The deflator mismatch drives the countries with a cumulative drift: Ukraine
 gap), Brunei (ninety-eight percent, $+0.41$), Kazakhstan (eighty-nine percent),
 and Viet Nam (sixty-six percent).
 The nominal-aggregate mismatch drives Bulgaria, Romania, Tunisia, Russia and New
-Zealand, where the World Bank Input-Output final-demand aggregate departs from
-official nominal GDP.
+Zealand, where the OECD Inter-Country Input-Output final-demand aggregate departs
+from official nominal GDP.
 The systematic country drifts are therefore a deflator phenomenon, and the
 year-to-year dispersion of the more stable countries is a nominal-aggregate
 phenomenon.
@@ -247,8 +247,8 @@ Function: =decompose_gap()= and =attribute_gap()= in =code/diagnose_xr_gap.R=.
 
 - H-F, deflator choice versus source volumes (open).
   The mean-reverting noise is consistent either with a national deflator that is
-  itself noisy for high-inflation transition economies or with noisy WIOD volume
-  estimates.
+  itself noisy for high-inflation transition economies or with noisy OECD
+  Inter-Country Input-Output volume estimates.
   The discriminating test is to re-deflate one high-dispersion country (Ukraine
   or Viet Nam) with the national GDP deflator applied uniformly and observe
   whether the annual gap collapses; a collapse implicates the deflator, its
