@@ -1,0 +1,154 @@
+#+title: Deflation Pipeline Onboarding and Legacy Audit
+#+date: 2026-07-21
+#+filetags: :IODefl:onboarding:pipeline:
+#+category: paper
+
+* Purpose
+
+This document is the onboarding for the deflation pipeline that produces the
+=NIOTs_resultados.rdata= consumed by the growth-gap diagnosis.
+It fixes the current-versus-legacy boundary so that no diagnosis rests on stale
+code or data, and it derives the algebraic decomposition of the gap that the
+diagnosis tests.
+
+* The authoritative pipeline
+
+The runnable pipeline lives in =etc/Modelo/=, orchestrated by
+=etc/Modelo/compilacao.R=, which sources, in order:
+
+1. =base/titulos.R= — sector titles and the 45-to-7 aggregator.
+2. =base/deflator.R= — national GDP deflator, OCDE primary, World Bank fallback.
+3. =base/exchange_rate.R= — local currency per United States dollar, OCDE primary, World Bank fallback.
+4. =base/base.R= — consolidates the combined deflator and loads the raw national tables.
+5. =base/matrizes.R= — applies the deflator and builds the deflated national tables.
+6. =base/coeficientes_tecnicos.R=, =base/matriz_impacto.R=, =base/indicadores_sinteticos.R= — technical coefficients and synthetic indicators.
+
+The result is =NIOTs= (75 countries), saved as =etc/Modelo/NIOTs_resultados.rdata=.
+The analysis layer =code/support_functions.R= (function =prepare_data()=) consumes
+this object and builds the GDP level whose log-difference is $g^{IO}$.
+
+* How the deflation works
+
+The raw World Bank Input-Output cells (=NATIODOMIMP=) are in current United States
+dollars.
+For each country and year the pipeline forms a single scalar
+
+: deflator_geral = exchange_rate / deflator_GDP        (base.R)
+
+where =exchange_rate= is local currency per dollar and =deflator_GDP= is the
+national GDP deflator with base 1995.
+Every cell of every matrix is multiplied by this one scalar
+
+: Jull = Meepo * deflator                              (Un.R, Um.R)
+
+so the deflator is uniform across all sectors and all final-demand components
+within a country-year.
+The output is expressed in constant-1995 local currency
+(=matrizes.R= header: "deflacionadas a preços locais e constantes de 1995").
+
+The single uniform deflator is the central fact for the diagnosis.
+There are no component-specific deflators, so the residual gap cannot arise from
+component-level deflator heterogeneity.
+
+* The gap decomposition
+
+Because the deflator is uniform, the constant-price GDP factors as
+$\text{GDP}^{\text{real}}_t = f_t \cdot \text{GDP}^{\text{nom,LCU}}_t$ with
+$f_t = \text{exchange\_rate}_t / \text{deflator\_GDP}_t$ and
+$\text{GDP}^{\text{nom,LCU}}_t = \text{exchange\_rate}_t \cdot \text{GDP}^{\text{nom,USD}}_t$.
+Taking log-differences,
+
+$$g^{IO} = \Delta\ln \text{GDP}^{\text{nom,USD}} + \Delta\ln \text{exchange\_rate} - \Delta\ln \text{deflator\_GDP}.$$
+
+Official real growth is $g^{off} = \Delta\ln \text{GDP}^{\text{nom,LCU}}_{\text{off}} - \Delta\ln \text{deflator}_{\text{off}}$.
+Subtracting,
+
+$$\text{Gap} = \underbrace{\big[\Delta\ln \text{GDP}^{\text{nom,LCU}}_{IO} - \Delta\ln \text{GDP}^{\text{nom,LCU}}_{\text{off}}\big]}_{\text{nominal-aggregate mismatch}} + \underbrace{\big[\Delta\ln \text{deflator}_{\text{off}} - \Delta\ln \text{deflator\_GDP}_{\text{used}}\big]}_{\text{deflator mismatch}}.$$
+
+The gap has exactly two sources, both testable from inputs already on disk without
+re-running the pipeline:
+
+- the nominal final-demand aggregate from the World Bank tables (in local currency)
+  against the official nominal GDP, and
+- the GDP deflator used (OCDE/World Bank) against the deflator implicit in the
+  official constant series =NY.GDP.MKTP.KD=.
+
+** Consequence for the spike regime
+
+The exchange-rate term $\Delta\ln \text{exchange\_rate}$ enters $g^{IO}$ directly.
+A one-time regime change in the official rate therefore injects a one-time jump.
+Verified: Myanmar's rate moves 5.44 to 640.65 between 2011 and 2012 (factor 117.7,
+$\Delta\ln = 4.77$), reproducing the observed 2012 spike; Nigeria's rate moves
+21.89 to 92.34 in 1999 (factor 4.22, $\Delta\ln = 1.44$).
+The break lives in the exchange-rate /input/ to the deflation, not in the raw
+final-demand volumes.
+This corrects the earlier attribution to =code/deflate_tables.R= (legacy) and to
+the raw =Ft= components.
+
+* Current-versus-legacy map
+
+| Artifact                              | Status  | Note                                              |
+|---------------------------------------+---------+---------------------------------------------------|
+| =etc/Modelo/base/*.R=                 | current | runnable pipeline; produced the loaded data       |
+| =etc/Modelo/compilacao.R=             | current | master runner (save target now =Test.rdata=)      |
+| =etc/Modelo/NIOTs_resultados.rdata=   | current | =NIOTs=, 75 countries, loaded by global_variables |
+| =code/support_functions.R=            | current | sole analysis layer, =prepare_data()=             |
+| =inputs/*.xlsx=, =inputs/*.xls=       | current | byte-identical to =etc/Modelo/= copies (md5)      |
+| =code/base/*.R=                       | partial | incomplete refactor; deflation core is empty (0 bytes) |
+| =results/NIOTs_resultados.rdata=      | legacy  | =NIOTs=, 43 countries; never loaded               |
+| =code/deflate_tables.R=               | legacy  | base sources commented out; ADR-0010              |
+| =code/tmp.R=                          | legacy  | syntax error at line 391; ADR-0010                |
+
+=code/base/= is an incomplete migration target.
+Its populated files (=exchange_rate.R=, =Um.R=, =Un.R=, =Ut_matrizes_totais.R=,
+=preparar_base.R=, =salva_dados.R=) coexist with empty stubs for the deflation
+core (=base.R=, =deflator.R=, =matrizes.R=, =coeficientes_tecnicos.R=,
+=Recurso.R=, =Ut.R=, =titulos.R=, =indicadores_sinteticos.R=, =matriz_impacto.R=),
+so it cannot currently produce the data.
+=code/base/Un.R= also diverges from =etc/Modelo/base/Un.R=.
+
+* Legacy audit of prior decisions
+
+| Prior decision or finding                          | Rested on legacy? | Status after audit                                   |
+|----------------------------------------------------+-------------------+------------------------------------------------------|
+| Verdict: gap is not exchange rate, not inflation   | no                | holds; $\beta_\pi\approx 0$ now explained by the deflation dividing out the GDP deflator |
+| Series is real ($\beta_\pi\approx 0$)              | no                | holds; the pipeline deflates to constant prices      |
+| Taxonomy 56 clean / 12 volatile / 7 spike / 0 offset | no              | holds; built on the 75-country current data          |
+| Spike mechanism (raw Ft / deflate_tables.R:94)     | yes               | corrected: exchange-rate input to =etc/Modelo/base/Un.R= |
+| Pervasive gap is source data quality               | no                | holds; import adjustment, index formula, dispersion all rejected on current data |
+| ADR-0011 "Stage A does not run"                    | imprecise         | Stage A runs as =etc/Modelo/base=, not =code/base=; conclusion unaffected |
+
+No full restart is required.
+The diagnosis rests on the current data, the current analysis layer, and
+currency inputs byte-identical to those the deflation used.
+The single legacy-dependent error, the spike mechanism, is corrected.
+
+* Open hypotheses this onboarding sharpens
+
+- H-F, deflator mismatch.
+  The gap term $\Delta\ln \text{deflator}_{\text{off}} - \Delta\ln \text{deflator\_GDP}_{\text{used}}$
+  is nonzero when the OCDE/World Bank GDP deflator differs from the deflator
+  implicit in =NY.GDP.MKTP.KD=.
+  Test: form the implicit official deflator as =NY.GDP.MKTP.CN= over
+  =NY.GDP.MKTP.KN= (nominal over real, local currency), compare its log-change to
+  the =deflator_GDP= used, and correlate the difference with the gap.
+
+- H-G, price-concept mismatch.
+  =base/deflator.R= labels the OCDE series "deflator do GDP a preços do
+  consumidor", a consumer-price basis, while the World Bank Input-Output tables
+  are valued at basic prices and official GDP is at market prices.
+  A basis mismatch would appear as a systematic component of the deflator-mismatch
+  term, concentrated where the wedge between consumer and market prices moves
+  (indirect taxes, subsidies, terms of trade).
+  Test: for a high-dispersion country, replace the applied deflator with the
+  market-price GDP deflator and observe whether the gap contracts.
+
+- H-nominal, nominal-aggregate mismatch.
+  The World Bank Input-Output nominal final demand (in local currency) may not
+  track official nominal GDP.
+  Test: compare $\Delta\ln \text{GDP}^{\text{nom,LCU}}_{IO}$ with
+  $\Delta\ln$ =NY.GDP.MKTP.CN= per country-year.
+
+The two decomposition terms are additive and jointly exhaust the gap, so
+attributing each country-year's gap between them is the next diagnostic step and
+the path from ninety to ninety-five percent confidence.
