@@ -52,7 +52,7 @@ The object was therefore deflated before it was supplied, although the
 conversion line at =code/deflate_tables.R:94= is commented out; the supplied
 object was produced by a path other than the current Stage-A checkout.
 
-* The residual gap is a data-quality phenomenon, in two modes
+* The residual gap is a data-quality phenomenon, in two regimes
 
 Against the benchmark that a correct deflation reproduces official real growth,
 every non-trivial gap is a defect.
@@ -66,11 +66,21 @@ The gap is tight at the core and has a wide tail.
 | 5 p.p.    | 3.8%                         |
 | 50 p.p.   | 0.3% (5 obs)                 |
 
-The tail spans 193 country-years across 51 of the 75 countries, in every
-year-band, so it is not localized.
-Two modes are present.
+Classifying each country by the mean and the standard deviation of its gap over
+the sample separates three regimes; a fourth candidate, a persistent constant
+offset, is absent.
 
-** Mode 1: one-time discontinuity at an exchange-rate regime change
+| Regime   | Countries | Signature                                   | Examples                     |
+|----------+-----------+---------------------------------------------+------------------------------|
+| Clean    |        56 | gap near zero every year, sd below 2 p.p.   | JPN (sd 0.002), FRA, AUT, THA |
+| Volatile |        12 | mean near zero, sd 3 to 7 p.p.              | VNM, UKR, BGD, KAZ, BGR, NZL |
+| Spike    |         7 | one-time level discontinuity dominates      | MMR, NGA, MLT, CYP           |
+| Offset   |         0 | constant nonzero mean, small sd             | none                         |
+
+No country carries a persistent constant offset.
+The deflation reproduces official growth for 56 of the 75 countries.
+
+** Spike: one-time discontinuity at an exchange-rate regime change
 
 The GDP level jumps once, by a factor close to the exchange-rate change.
 Myanmar rises from 20,387 in 2011 to 2,485,941 in 2012, a factor near 122,
@@ -81,13 +91,15 @@ The raw national tables re-express values at the new official rate in the break
 year, and the level discontinuity enters the growth rate once.
 Domestic inflation does not account for the jump (Myanmar 2012 $\pi = 0.031$).
 
-** Mode 2: persistent per-country offset
+** Volatile: mean-zero annual dispersion
 
-The gap is near-constant across all years for a country, without a spike.
-New Zealand has a median $|Gap|$ of 0.034 with a maximum of 0.068.
-Cambodia, Laos, and Estonia show smaller persistent offsets.
-This is the signature of a deflator, coverage, or base mismatch specific to the
-country, not a single-year event.
+The gap fluctuates year to year with a mean near zero and a large standard
+deviation, so the multi-year average growth is right while single years err.
+New Zealand has a mean gap of 0.002 with a standard deviation of 0.038, swinging
+between $+0.058$ and $-0.068$ across adjacent years.
+The regime concentrates in transition and emerging economies (Viet Nam, Ukraine,
+Bangladesh, Kazakhstan, Bulgaria, Romania), which points to year-to-year noise in
+the component deflators or import shares of those IO tables, not a fixed bias.
 
 * Decision
 
@@ -97,11 +109,12 @@ The remaining spec tasks built on the exchange-rate-versus-inflation framing
 no longer the object, because that framing is resolved.
 The next work is a per-country and per-year gap audit whose target is to drive
 the gap toward zero across the base, treating each gap above a threshold as a
-defect and separating the two modes above.
-Mode 1 requires detecting and splicing the exchange-rate-regime level breaks in
-the raw tables.
-Mode 2 requires reconciling the IO-table deflator and sector coverage against the
-national-accounts source, country by country.
+defect and separating the regimes above.
+The 56 clean countries need no further work.
+The 7 spike countries require detecting and splicing the exchange-rate-regime
+level breaks in the raw tables.
+The 12 volatile countries require tracing the year-to-year dispersion into the
+component deflators and import shares of their IO tables.
 
 * Reproducibility
 
