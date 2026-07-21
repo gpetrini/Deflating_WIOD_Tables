@@ -8,9 +8,27 @@ This file is the glossary of terms specific to that domain.
 
 * Language
 
+** Input-output source
+The national input-output tables analysed are the OECD Inter-Country
+Input-Output (ICIO) tables, read from =inputs/NATIODOMIMP/= (1995 to 2020, 76
+countries) and deflated by the Stage-A pipeline in =etc/Modelo/base/=.
+The repository name and the upstream code refer to the World Input-Output
+Database (WIOD, 2016 release); WIOD is /heritage/ only, retained for reference in
+=results/= and in =code/price_deflator.R= and =code/checks.R=, and is also the
+licensing-permitted source for the shippable package sample (ADR-0003).
+The variable =WIOD_countries= in =global_variables.R= is misnamed: it holds the
+OECD country codes.
+_Avoid_: calling the analysed volumes "WIOD".
+
 ** IO growth ($g^{IO}$)
-Real GDP growth computed from the deflated national input-output tables, built
-on the expenditure side in =prepare_data()=.
+Real GDP growth computed from the deflated OECD ICIO tables, built on the
+expenditure side in =prepare_data()=.
+The diagnosis measures it as a log-difference $\Delta\ln \text{GDP}$, consistent
+with the log-difference used for official growth.
+The report pipeline (=decompose_growth()=, =support_functions.R:202=) instead
+uses the simple growth $\Delta \text{GDP}/\text{GDP}_{-1}$ of the same GDP level;
+the two differ at second order and diverge by several points for volatile
+countries.
 _Avoid_: model growth, computed growth.
 
 ** Official growth ($g^{off}$)

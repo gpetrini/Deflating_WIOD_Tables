@@ -9,6 +9,13 @@ The package decomposes the growth of real GDP demand components into domestic an
 It ships unit tests, a sample dataset, and vignettes that run on publicly available data.
 It instructs users how to obtain credentials for keyed data sources rather than embedding any key.
 
+Provenance note: the repository's production analysis deflates OECD Inter-Country
+Input-Output tables (=inputs/NATIODOMIMP/=), not WIOD; the package ships a
+/WIOD/-derived sample (=niot_wiod=) only because WIOD 2016 permits redistribution
+with citation while OECD data does not (see [[file:../../adr/0003-sample-wiod-slice-offline.org][ADR-0003]] and
+[[file:../../deflation-pipeline-onboarding.org][the pipeline onboarding]]).
+The sample is a format fixture, not the analysed data.
+
 * Scope
 
 In scope for v1:

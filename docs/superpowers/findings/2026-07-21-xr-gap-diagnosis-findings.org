@@ -274,6 +274,50 @@ its pre-2012 segment.
 The 12 volatile countries require tracing the year-to-year dispersion into the
 component deflators and import shares of their IO tables.
 
+* Hypothesis review after the provenance correction (2026-07-21)
+
+The provenance correction (the analysed volumes are OECD ICIO, not WIOD) does not
+overturn any result, but it changes which hypotheses may be retired and which
+must stay open.
+
+Retired hypotheses stay retired, because their tests are source-agnostic.
+The series is real not nominal ($\beta_\pi\approx 0$), the exchange-rate level
+does not explain the gap ($\beta_e\approx 0$ in the discriminating fit), the
+base year is growth-invariant, the index-number formula is immaterial, and
+within-country component dispersion does not predict the gap.
+None of these depends on whether the source is OECD or WIOD.
+
+Hypotheses that must not be dropped, and one to add, given the OECD provenance:
+
+- H-nominal and H-F stay open, jointly explaining the gap (45 and 55 percent).
+  OECD ICIO tables are balanced and estimated, so their final-demand aggregate
+  need not equal official nominal GDP, which is exactly the nominal-aggregate
+  mismatch.
+
+- H-G is elevated, not dropped.
+  The chain now spans three price bases: OECD ICIO tables at basic prices, an
+  applied deflator labelled consumer prices, and official GDP at market prices.
+  A basis mismatch is more plausible here than under a single-source framing.
+
+- H-vintage is added.
+  The OECD ICIO edition (1995 to 2020, consistent with the 2023 release) embeds
+  SNA benchmark revisions whose vintage may differ from the World Bank GDP series
+  the diagnosis compares against.
+  A vintage or benchmark mismatch would appear as a persistent per-country level
+  drift, which is precisely the signature of the deflator-driven drifters
+  (Ukraine, Brunei, Kazakhstan).
+  This must be separated from a genuine deflator error before either is claimed.
+
+- The exchange-rate channel is not fully dead.
+  Although the gap is not explained by the exchange-rate /level/, the deflation
+  multiplies by the exchange rate, so a discrepancy between the OECD/World Bank
+  rate used and the rate implicit in the official series is bundled inside the
+  deflator-mismatch term and must be separated with the local-currency series.
+
+- The reason the residual concentrates in transition and emerging economies is
+  reinforced: these are the OECD-only countries, absent from WIOD, that OECD ICIO
+  estimates with weaker national-accounts inputs.
+
 * Reproducibility
 
 - Code: =code/diagnose_xr_gap.R= (functions =get_gIO=, =get_gOff=, =get_xr_infl=,

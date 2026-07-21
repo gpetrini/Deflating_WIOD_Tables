@@ -180,6 +180,30 @@ The diagnosis rests on the current data, the current analysis layer, and
 currency inputs byte-identical to those the deflation used.
 The single legacy-dependent error, the spike mechanism, is corrected.
 
+* Final outputs, the reports, and the diagnosis codebase
+
+The final PDF outputs in =reports/= are produced by =code/generate_reports.R=,
+which sources =global_variables.R= (loading the OECD =NIOTs=) and
+=code/support_functions.R=, then calls =prepare_data()=, =decompose_growth()= and
+=group_plots()=; the latter writes =reports/<group>.pdf= at
+=support_functions.R:1601=.
+This is the refactor's analysis layer, the most current codebase for both the
+reports and the diagnosis: the diagnosis reads =prepare_data()= from the same
+file on the same OECD object, so the two share one construction of the GDP level.
+
+One convention differs and must be reconciled before the diagnosis is quoted
+against the reports.
+The reports measure growth as simple growth,
+$\Delta \text{GDP}/\text{GDP}_{-1}$ (=support_functions.R:202=,
+=gY <- diff(GDP)/lag(GDP)=), while the diagnosis and the official series use the
+log-difference $\Delta\ln \text{GDP}$.
+The GDP /level/ is identical, so both inherit the same data-quality defects, but
+the two growth numbers diverge at second order, by several points for the
+volatile countries (Ukraine, 6.8 points in one year) and enormously across the
+exogenous breaks.
+The gap the diagnosis reports is a log gap; a simple-growth gap would differ by
+that second-order amount.
+
 * Open hypotheses this onboarding sharpens
 
 - H-F, deflator mismatch.
