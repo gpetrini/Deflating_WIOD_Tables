@@ -82,30 +82,59 @@ $\Delta\ln = 4.77$), reproducing the observed 2012 spike; Nigeria's rate moves
 21.89 to 92.34 in 1999 (factor 4.22, $\Delta\ln = 1.44$).
 The break lives in the exchange-rate /input/ to the deflation, not in the raw
 final-demand volumes.
-This corrects the earlier attribution to =code/deflate_tables.R= (legacy) and to
-the raw =Ft= components.
+This corrects the earlier attribution to =code/deflate_tables.R= (the incomplete
+refactor, whose deflation is stubbed) and to the raw =Ft= components.
 
-* Current-versus-legacy map
+* Two versions of the pipeline
 
-| Artifact                              | Status  | Note                                              |
-|---------------------------------------+---------+---------------------------------------------------|
-| =etc/Modelo/base/*.R=                 | current | runnable pipeline; produced the loaded data       |
-| =etc/Modelo/compilacao.R=             | current | master runner (save target now =Test.rdata=)      |
-| =etc/Modelo/NIOTs_resultados.rdata=   | current | =NIOTs=, 75 countries, loaded by global_variables |
-| =code/support_functions.R=            | current | sole analysis layer, =prepare_data()=             |
-| =inputs/*.xlsx=, =inputs/*.xls=       | current | byte-identical to =etc/Modelo/= copies (md5)      |
-| =code/base/*.R=                       | partial | incomplete refactor; deflation core is empty (0 bytes) |
-| =results/NIOTs_resultados.rdata=      | legacy  | =NIOTs=, 43 countries; never loaded               |
-| =code/deflate_tables.R=               | legacy  | base sources commented out; ADR-0010              |
-| =code/tmp.R=                          | legacy  | syntax error at line 391; ADR-0010                |
+The project holds two versions of the same deflation pipeline.
 
-=code/base/= is an incomplete migration target.
-Its populated files (=exchange_rate.R=, =Um.R=, =Un.R=, =Ut_matrizes_totais.R=,
-=preparar_base.R=, =salva_dados.R=) coexist with empty stubs for the deflation
-core (=base.R=, =deflator.R=, =matrizes.R=, =coeficientes_tecnicos.R=,
-=Recurso.R=, =Ut.R=, =titulos.R=, =indicadores_sinteticos.R=, =matriz_impacto.R=),
-so it cannot currently produce the data.
-=code/base/Un.R= also diverges from =etc/Modelo/base/Un.R=.
+- The /original/ pipeline, =etc/Modelo/base/*.R= (mirrored, in part, under
+  =code/base/=), is runnable and produced the loaded data.
+- The /refactor/, =code/*.R= (not =code/base/=), is an updated rewrite of that
+  original: =deflate_tables.R= rewrites =matrizes.R= with =Un.R=, =Um.R= and
+  =base.R=; =price_deflator.R= rewrites =deflator.R=; =support_functions.R=
+  rewrites the analysis and synthetic indicators.
+
+The analysis layer of the refactor (=support_functions.R=, =prepare_data()=) is
+complete and in use; it consumed the data the original pipeline produced.
+The Stage-A deflation of the refactor is /incomplete/: in =deflate_tables.R= the
+component sources are commented behind a =## FIXME= (lines 82 to 85) and the
+deflator multiplication is disabled (lines 94 and 103,
+=Jull <- Meepo # * deflator=), so the refactor would emit undeflated tables and
+does not yet reproduce the original.
+=code/tmp.R= is an earlier refactor draft with a syntax error at line 391.
+
+| Artifact                              | Status              | Note                                              |
+|---------------------------------------+---------------------+---------------------------------------------------|
+| =etc/Modelo/base/*.R=                 | original, current   | runnable; produced the loaded data                |
+| =etc/Modelo/compilacao.R=             | original, current   | master runner (save target now =Test.rdata=)      |
+| =etc/Modelo/NIOTs_resultados.rdata=   | current data        | =NIOTs=, 75 countries, loaded by global_variables |
+| =code/support_functions.R=            | refactor, complete  | analysis layer in use, =prepare_data()=           |
+| =code/deflate_tables.R=               | refactor, incomplete | Stage-A deflation stubbed (FIXME l.82-85, l.94/103) |
+| =code/price_deflator.R=               | refactor            | rewrite of =base/deflator.R=                       |
+| =code/tmp.R=                          | refactor draft      | syntax error at line 391                           |
+| =inputs/*.xlsx=, =inputs/*.xls=       | current             | byte-identical to =etc/Modelo/= copies (md5)      |
+| =code/base/*.R=                       | original, partial   | deflation core files empty (0 bytes); Un.R diverges |
+| =results/NIOTs_resultados.rdata=      | legacy data         | =NIOTs=, 43 countries; never loaded               |
+
+* Deferred: version-consistency check
+
+Requested check: confirm the refactor =code/*.R= reproduces the original
+=etc/Modelo/base= deflation.
+It cannot pass yet because the refactor's Stage-A deflation is stubbed
+(=deflate_tables.R= lines 82 to 85 and 94 and 103).
+Sequence once the refactor is completed:
+
+1. Restore the deflator multiplication and component logic in =deflate_tables.R=,
+   and wire =price_deflator.R= as the deflator source.
+2. Run the refactor end to end to produce a fresh =NIOTs= object.
+3. Compare it against =etc/Modelo/NIOTs_resultados.rdata= at the GDP-level series
+   and, if they differ, cell by cell for one country, to localise any divergence.
+
+Until this passes, the diagnosis stands on the original-produced data consumed
+through the refactor's analysis layer; the incomplete Stage-A refactor does not
+affect the current findings because it was never run.
 
 * Legacy audit of prior decisions
 
