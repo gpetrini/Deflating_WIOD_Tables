@@ -20,7 +20,10 @@ $g^{off}$ is the log-difference of the World Bank constant-dollar series
 =NY.GDP.MKTP.KD=.
 The panel covers 1575 country-years, 75 countries, 1996 to 2016.
 
-* Verdict
+* Verdict on the exchange-rate and inflation conjecture
+
+This verdict covers the original conjecture only.
+It is not a verdict on the cause of the residual gap, which remains open.
 
 The original conjecture is refuted.
 The divergence between IO-computed and official real GDP growth is not driven by
@@ -162,7 +165,10 @@ The regime concentrates in transition and emerging economies (Viet Nam, Ukraine,
 Bangladesh, Kazakhstan, Bulgaria, Romania), which points to year-to-year noise in
 the component deflators or import shares of those IO tables, not a fixed bias.
 
-*** Pervasive-gap diagnosis (2026-07-21): the residual is source data quality, not the pipeline
+*** Pervasive-gap diagnosis (2026-07-21): what the residual is not
+    :PROPERTIES:
+    :STATUS: partially superseded, see "Panel reconciliation and provenance corrections"
+    :END:
 
 Setting the seven exogenous break countries aside, the gap over the remaining
 sixty-eight countries is unbiased and small at the centre with a heavy tail.
@@ -232,11 +238,13 @@ Function: =decompose_gap()= and =attribute_gap()= in =code/diagnose_xr_gap.R=.
 
 **** Hypotheses and the evidence required for 95 percent confidence
 
-- H-D, the residual is source data quality.
+- H-D, the residual is source data quality. *Open, not confirmed.*
   The gap is not produced by the import adjustment, the index formula, or
   component-growth dispersion, and it concentrates by country.
-  Confirmed to about ninety percent by the three rejected tests and the
-  country-level concentration.
+  That evidence reaches about ninety percent, below the bar, and it cannot
+  distinguish an inherited defect in the supplied volumes from the choice of
+  applied deflator, which is the fork stated in =CONTEXT.org=.
+  Do not cite this as a verdict.
 
 - H-E, mean-reverting measurement noise versus cumulative drift.
   For most high-dispersion countries the annual gap reverts (negative
@@ -325,3 +333,222 @@ Hypotheses that must not be dropped, and one to add, given the OECD provenance:
 - Panel: =results/diagnostics/gap_panel.rds=.
 - Branch: =diagnosis/xr-gap-debug=.
 - Decision to read currency inputs directly: =docs/adr/0011=.
+
+
+* Panel reconciliation and provenance corrections (2026-07-21, later session)
+
+This section supersedes parts of the record above.
+
+** The diagnosis panel is reconciled against the reports' growth series
+
+=test/g_GDP.xlsx= supplies the pipeline IO growth and the World Bank benchmark
+in simple growth and percentage points over seventy-four countries and 1996 to
+2020, with the two period-mean sheets over 1995-2007 and 2009-2018 and the two
+=dif_= sheets holding their difference.
+An earlier revision of that file, since corrected, disagreed with the panel by a
+median of 1.3 percentage points; that revision is void and nothing was concluded
+from it.
+
+Against the corrected file, on a common footing of simple growth and verified
+calendar-year alignment:
+
+| Comparison                        | Median abs. difference | 90th pct | Within 0.01 pp |
+|-----------------------------------+------------------------+----------+----------------|
+| IO, =g_GDP= vs =gY_io=              | 0.013 pp               | 0.20     | 0.475          |
+| Benchmark, =g_GDP_WB= vs =gY_off=   | 0.118 pp               | 0.80     | 0.258          |
+| =dif_g_GDP= vs =g_GDP= less =g_GDP_WB= | 0.000 pp               | 0.000    | 1.000          |
+
+The two IO constructions are the same object.
+The residual is consistent with the two-decimal rounding of the sheet, and
+country-years diverging by more than half a point are scattered and rare
+(Argentina and China four each, Latvia three, no country systematic).
+The identity between the =dif_= sheet and its two components holds exactly.
+=code/diagnose_xr_gap.R= and the reports therefore measure the same growth
+series, and the quantities estimated on the panel stand.
+
+** The benchmark differs between the two sources, and the difference is material
+
+The benchmark is the one place the two records disagree.
+The difference between the panel's World Bank series and the supplied one has
+mean $-0.019$ and standard deviation $1.07$ percentage points, against a gap
+whose median absolute size is $0.395$.
+The dispersion introduced by the choice of benchmark is therefore of the same
+order as the phenomenon under study.
+
+It is concentrated by country rather than spread: Côte d'Ivoire diverges in
+eighteen of twenty-five years, Luxembourg sixteen, Malta fourteen, Romania
+twelve, Cambodia and Saudi Arabia eleven, Brunei nine.
+Its correlation with the gap is $0.014$, so it does not create or remove gap
+systematically; it moves individual country-years.
+
+Two explanations remain open and are not distinguished by the evidence held.
+The first is a vintage difference, the two records having drawn the World Bank
+series at different dates, in which case a share of the measured gap for the
+concentrated countries is benchmark revision rather than pipeline defect.
+The second is an indicator difference, the supplied series being something other
+than =NY.GDP.MKTP.KD=.
+Confidence in either is far below the bar.
+Resolving it requires the indicator code and download date behind =g_GDP_WB=;
+until then the benchmark, not the pipeline, is the largest unquantified term for
+the affected countries.
+
+** Provenance corrections to the deflator record
+
+- The applied OECD deflator is /Economic Outlook 116, gross domestic product,
+  market prices, deflator/, rebased to unity in 1995.
+  The comment at =etc/Modelo/base/deflator.R:5= calls it a consumer-price
+  measure; the comment is wrong.
+  Hypothesis H-G was elevated on that comment and is therefore largely refuted.
+
+- The World Bank fallback deflator is =NY.GDP.DEFL.ZS=.
+  The handoff recorded the World Bank deflator indicator as absent from disk; it
+  is present in =inputs/deflator_GDP_WB.xls=, already rebased to 1995 and
+  covering all two hundred sixty-six entities over 1995 to 2020, including every
+  OECD-covered country.
+  No external fetch is required to run H-F.
+  Because =NY.GDP.DEFL.ZS= is by construction the ratio of =NY.GDP.MKTP.CN= to
+  =NY.GDP.MKTP.KN=, fetching that pair adds nothing to source discrimination,
+  though it would isolate the exchange-rate channel.
+
+- The OECD deflator covers forty-seven countries; the remaining twenty-nine are
+  World Bank fallbacks.
+  No spike country is OECD-covered, and none of the five drifters is.
+  Deflator provenance is collinear with drift, so H-F cannot be tested by
+  swapping sources within the drifter set.
+
+- H-D, the residual is source data quality, was recorded at about ninety
+  percent, below the bar, and was restated as a settled verdict in the handoff.
+  It is not settled.
+  The term conflates an inherited defect in the supplied volumes with the choice
+  of applied deflator; the two are separated in =CONTEXT.org=.
+
+** Pre-committed test design, not yet run
+
+For the forty-seven OECD-covered countries two independent local-currency GDP
+deflators exist on the same base and window, so a paired swap is runnable with
+no new data.
+The decision rule was fixed in advance: a change in mean absolute gap below
+about twenty percent refutes the applied-deflator channel for these countries; a
+change above about fifty percent establishes it; between the two, no claim.
+The test conflates provider and vintage and cannot separate them, and it shares
+a provider with the benchmark, so contraction is partly mechanical.
+
+* Execution on the current benchmark (2026-07-21, later session)
+
+This section reports the spec =2026-07-21-gap-diagnosis-revised.org= as executed.
+It supersedes every country-level figure recorded above, which was measured
+against the 2018 benchmark.
+The hypothesis state and the route to ninety-five percent for each are in
+=docs/superpowers/plans/2026-07-21-gap-causal-diagnosis.org=.
+
+** The substitution identity, which is the feedback loop
+
+Stage A multiplies every cell by one scalar per country-year, $e/P$, and GDP is
+a linear combination of components that all carry that scalar, so it passes
+through the aggregation unchanged:
+
+$$g^{IO} = \Delta\ln(\text{ICIO nominal, USD}) + \Delta\ln e - \pi.$$
+
+Any candidate exchange rate or deflator can therefore be substituted
+analytically, without re-running Stage A, which matters because the deflation in
+=code/deflate_tables.R= is stubbed and cannot reproduce the supplied object.
+The counterpart is that the ICIO nominal aggregate is not substitutable, so no
+hypothesis about it can be closed by this loop.
+
+** Task 1, the benchmark is repointed
+
+=get_gOff()= takes a =vintage= argument: =current= reads =test/g_GDP.xlsx= sheet
+=g_GDP_WB= and converts simple percentage growth as $\ln(1+g/100)$; =repo2018=
+retains the former World Bank file so the revision stays measurable.
+The rebuilt panel holds 1850 country-years, seventy-four countries, 1996 to
+2020, with no missing cell; the former panel held 1575 over 1996 to 2016.
+The round-trip through the log conversion reproduces the sheet to $10^{-15}$.
+Myanmar is the one country lost, and it is the hybrid spike case.
+
+** Task 2, the benchmark revision
+
+Over the 1554 overlapping country-years the revision has mean 0.017 and standard
+deviation 0.992 percentage points.
+It accounts for the greater part of the previously measured mean absolute gap in
+a minority of countries: Saudi Arabia ninety-three percent, Latvia ninety-three,
+Luxembourg ninety-one, Mexico eighty-five.
+The aggregate mean absolute gap moves from 1.243 to 1.134 percentage points, so
+the revision relocates the gap across countries without removing it.
+Per-country figures: =results/diagnostics/vintage_effect_by_country.csv=.
+
+** Task 3, the attribution reproduces
+
+Over the sixty-eight non-spike countries the covariance attribution gives 45.3
+percent to the nominal-aggregate term under the former benchmark, reproducing
+the figure on record, and 42.2 percent under the current one.
+The decomposition identity holds to machine precision on both panels.
+
+Pooled over all countries the attribution is 6.9 percent, so the seven spike
+countries determine the pooled result.
+The non-spike restriction is a condition of the figure and must be cited with
+it.
+
+The decomposition cannot extend past 2016: it reads the World Bank
+current-dollar file, which is the same 2018 release and carries the same
+truncation as the constant-dollar file.
+
+** Task 4, the four unexamined years
+
+Median absolute gap: 0.396 percentage points over 1996 to 2016, 0.333 over 2017
+to 2019, and 0.795 in 2020.
+The three pre-pandemic years behave like the estimated window, so the repointing
+did not import a new regime.
+2020 stands apart, at roughly twice the median of the years before it, with mean
+gap $-0.215$: the input-output series grows less than official in the pandemic
+year.
+No threshold was pre-registered for this comparison, so no verdict is recorded.
+
+** Task 5, the pre-committed deflator swap
+
+Substituting =NY.GDP.DEFL.ZS= for Economic Outlook 116 across the forty-seven
+OECD-covered countries moves the mean absolute gap from 0.634 to 0.691
+percentage points, an increase of nine percent; the median-based counterpart
+moves one percent.
+Both fall inside the pre-registered refutation region of twenty percent.
+
+The direction carries information the pre-registration did not anticipate: the
+stated limit that a contraction would be partly mechanical, since the
+substituted deflator shares a provider with the benchmark, does not apply to an
+increase.
+The other stated limit stands: the test conflates provider and vintage, so this
+is a rejection of the pair and not of the deflator alone.
+
+The verdict is nevertheless withheld at ninety percent.
+The pooled mean conceals country movement of opposite sign and larger size,
+from $-32$ percent for Brazil and $-28$ for Ireland to $+62$ for Argentina,
+$+99$ for Indonesia, $+170$ for Turkey and $+303$ for Colombia.
+A pooled mean over a distribution that heterogeneous is a weak basis for a group
+verdict whatever its point value, and the four countries the substitution
+worsens are themselves evidence about those series that must not be left
+unexplained.
+
+** Task 6, the drifters
+
+Not run.
+The deflator mismatch term carries between sixty-six and ninety-seven percent of
+the gap for the five drifters, stable across the benchmark revision, but that
+identifies a term in an identity rather than a cause.
+The block stated in the spec holds: no second local-currency deflator covers
+these countries.
+
+** A hypothesis the identity raises
+
+The exchange-rate series has never been substituted.
+The regression of the gap on $\Delta\ln e$ returned a coefficient near zero,
+which refuted the conjecture that the series is nominal, but the identity places
+$\Delta\ln e$ inside $g^{IO}$ with a coefficient of one, so an error in the
+level or the dating of the rate enters the growth rate directly and a null
+coefficient on the gap does not exclude it.
+Both series are on disk and the substitution is the cheapest outstanding test.
+
+** Method
+
+An identity does not attribute cause.
+A term of the decomposition being large establishes where the gap sits in the
+identity, not what produced it, so every verdict rests on a substitution or an
+external comparison and never on the size of a term.

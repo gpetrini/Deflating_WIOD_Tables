@@ -37,7 +37,33 @@ get_gIO <- function(results = load_io()) {
 
 ## --- Task 2: official growth g^off from World Bank constant dollars ---------
 
-get_gOff <- function(
+## Two vintages of the same indicator, NY.GDP.MKTP.KD:
+##   "current"  test/g_GDP.xlsx sheet g_GDP_WB, downloaded 2026-07-14, to 2020.
+##   "repo2018" inputs/world_bank/, release 2018-03-01, ends 2016.
+## The former vintage is retained so that the benchmark revision stays
+## measurable rather than being absorbed into the gap (spec Task 2).
+get_gOff <- function(vintage = c("current", "repo2018")) {
+  switch(match.arg(vintage),
+         current  = get_gOff_current(),
+         repo2018 = get_gOff_repo2018())
+}
+
+## The sheet reports simple growth in percentage points; the diagnosis works in
+## log growth, so convert explicitly as ln(1 + g/100).
+get_gOff_current <- function(
+    path  = "../test/g_GDP.xlsx",
+    sheet = "g_GDP_WB"
+) {
+  readxl::read_excel(path, sheet = sheet) |>
+    rename(ISO = Country) |>
+    select(ISO, matches("^[0-9]{4}$")) |>
+    pivot_longer(-ISO, names_to = "Year", values_to = "g_pct") |>
+    mutate(Year = as.integer(Year)) |>
+    filter(!is.na(g_pct)) |>
+    transmute(ISO, Year, gY_off = log1p(g_pct / 100))
+}
+
+get_gOff_repo2018 <- function(
     path = "../inputs/world_bank/GDP_constant/API_NY.GDP.MKTP.KD_DS2_en_csv_v2.csv"
 ) {
   raw <- read_csv(path, skip = 4, show_col_types = FALSE)
@@ -117,9 +143,9 @@ get_xr_infl <- function() {
 
 ## --- Task 4: assemble the Gap panel and classify the series (H0) ------------
 
-build_gap_panel <- function() {
+build_gap_panel <- function(vintage = c("current", "repo2018")) {
   get_gIO() |>
-    inner_join(get_gOff(),    by = c("ISO", "Year")) |>
+    inner_join(get_gOff(vintage), by = c("ISO", "Year")) |>
     inner_join(get_xr_infl(), by = c("ISO", "Year")) |>
     mutate(Gap = gY_io - gY_off)
 }

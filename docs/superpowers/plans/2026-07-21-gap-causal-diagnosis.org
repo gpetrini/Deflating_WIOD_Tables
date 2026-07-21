@@ -1,0 +1,267 @@
+#+title: Plan: causal diagnosis of the gap, by hypothesis and confidence
+#+date: 2026-07-21
+#+filetags: :IODefl:diagnosis:plan:
+
+* Purpose
+
+This plan executes =docs/superpowers/specs/2026-07-21-gap-diagnosis-revised.org=
+under the =/diagnose= discipline.
+The spec orders the measurements; this plan orders the hypotheses.
+Every hypothesis carries a confidence level and the evidence that would raise it
+to ninety-five percent.
+No hypothesis is accepted or rejected below that level.
+
+* Phase 1: the feedback loop
+
+The =/diagnose= discipline holds that the loop is the work and the rest is
+mechanical.
+The loop for this problem is an identity rather than a test.
+
+Stage A multiplies every cell of the raw current-dollar table by one scalar per
+country-year, $e / P$, and GDP is a linear combination of components that all
+carry that scalar, so the scalar passes through the aggregation unchanged:
+
+$$g^{IO} = \Delta\ln(\text{ICIO nominal, USD}) + \Delta\ln e - \pi$$
+
+and therefore
+
+$$\mathrm{Gap} = \underbrace{\Delta\ln(\text{ICIO nominal, USD})}_{\text{fixed}}
++ \underbrace{\Delta\ln e}_{\text{swappable}}
+- \underbrace{\pi}_{\text{swappable}}
+- \underbrace{g^{off}}_{\text{swappable}}.$$
+
+Three of the four terms can be replaced from files already on disk without
+re-running Stage A, which matters because the deflation in
+=code/deflate_tables.R= is stubbed and cannot reproduce the supplied object.
+Only the ICIO nominal aggregate is fixed.
+
+This yields a deterministic pass, running in seconds, that answers "what would
+the gap have been under series X" for any candidate series.
+It was verified this session: substituting the deflator through the identity
+reproduces the panel exactly where the series coincide.
+
+The loop's limit is the counterpart: no hypothesis about the ICIO nominal
+aggregate can be tested by substitution, because there is nothing to substitute.
+That term is closed only by an external comparison, which is H1 below.
+
+* Phase 2: reproduction
+
+Reproduction is established and is not repeated.
+The panel spans 1996 to 2020 over seventy-four countries, 1850 country-years,
+against the current benchmark; the former benchmark is retained behind a switch
+in =get_gOff()=.
+The symptom is a median absolute gap near 0.4 percentage points with a tail
+reaching several points in a minority of countries.
+
+* Phase 3: the ranked hypotheses
+
+Confidence below is confidence in the stated verdict, not in the hypothesis
+being true.
+
+** H1: nominal-aggregate mismatch. Confidence 90, verdict pending
+
+The ICIO final-demand aggregate does not equal official nominal GDP, because the
+tables are balanced and estimated rather than transcribed.
+
+Prediction: the gap survives every substitution of $e$, $P$ and $g^{off}$, and
+the surviving residual tracks the difference between the ICIO nominal aggregate
+and official nominal GDP.
+
+Standing: it carries forty-two percent of gap variance over the sixty-eight
+non-spike countries by covariance attribution, against forty-five percent under
+the former benchmark, so the attribution is stable across the benchmark
+revision.
+
+To reach ninety-five: compare the ICIO nominal dollar aggregate against official
+nominal GDP in levels, per country-year, not through the variance attribution.
+The comparison is the direct test and has not been run.
+The obstacle is that the World Bank current-dollar file is the same 2018 release
+and ends in 2016, so the direct test is available only to 2016 unless a
+current-dollar series reaching 2020 is located on disk.
+
+** H2: applied-deflator error, OECD-covered countries. Confidence 90, verdict rejection
+
+For the forty-seven countries deflated with Economic Outlook 116, the applied
+deflator is not the source of the gap.
+
+Prediction: substituting =NY.GDP.DEFL.ZS= leaves the gap unchanged or worsens it.
+
+Standing: the substitution moves the mean absolute gap from 0.634 to 0.691
+percentage points, an increase of nine percent, against a pre-registered
+threshold of twenty percent for refutation.
+The median-based counterpart moves one percent.
+The direction matters: the pre-registered limit that a contraction would be
+partly mechanical, since the substituted deflator shares a provider with the
+benchmark, does not apply to an increase.
+
+Why it is not yet ninety-five: the pooled mean conceals country-level movement
+of opposite sign and much larger size, from minus thirty-two percent for Brazil
+to plus three hundred percent for Colombia.
+A statistic that unstable across countries is a weak basis for a pooled verdict,
+whatever its point value.
+
+To reach ninety-five: restate the decision at the country level, which the
+pre-registered rule did not anticipate.
+Count the countries whose absolute gap falls by more than twenty percent under
+the substitution.
+If that count is small, the rejection holds for the group and not merely for its
+average.
+Then establish why the substitution worsens Colombia, Turkey, Indonesia and
+Argentina, since a deflator substitution that worsens the fit by a factor is
+evidence about those series and must not be left unexplained.
+
+** H3: applied-deflator error, World Bank fallback countries. Confidence 50, no verdict
+
+For the twenty-nine countries deflated with =NY.GDP.DEFL.ZS=, including every
+drifter and every spike country, the applied deflator is untested.
+
+Prediction: substituting an independent local-currency deflator removes the
+cumulative drift in Ukraine, Brunei, Kazakhstan, Viet Nam and Egypt.
+
+Standing: untestable by the loop as constituted.
+Deflator provenance is collinear with drift, so there is no second
+local-currency deflator on disk for these countries.
+The deflator mismatch term carries between sixty-six and ninety-seven percent of
+the gap for the five drifters, stable across the benchmark revision, but that
+figure identifies a term in an identity and not a cause.
+
+To reach ninety-five: a third local-currency deflator covering the five
+drifters, on the same base and window.
+The only candidate on disk,
+=inputs/price_deflators/unsd_snaAma_GDP_ImplicitPriceDeflator_USD.txt=, ends in
+2016 and is expressed in dollars, so it reintroduces the exchange rate and must
+be used either in dollar space on both sides or divided by the same rate the
+deflation applies.
+Any other source requires a download, which the maintainer has not authorised.
+Until one of the two is settled, H3 has no verdict.
+
+** H4: exchange-rate series error. Confidence 85, verdict rejection
+
+Prediction: substituting the World Bank exchange rate for the OECD rate leaves
+the gap unchanged.
+
+Standing: the regression of the gap on $\Delta\ln e$ returned a coefficient near
+zero, which refuted the conjecture that the series is nominal.
+That test answers a different question from this one.
+The identity places $\Delta\ln e$ in $g^{IO}$ with a coefficient of one, so an
+error in the level or timing of the rate enters the growth rate directly, and a
+coefficient near zero on the gap does not exclude it.
+
+To reach ninety-five: run the exchange-rate substitution through the same
+identity used for the deflator.
+Both series are on disk, both cover the window, and the substitution has never
+been run.
+This is the cheapest outstanding test in the plan and should be executed first.
+
+** H5: spike contamination of the pooled statistics. Confidence 95, verdict accepted
+
+Seven countries carry one-time multiplicative re-expressions of every
+final-demand component, inherited from the supplied national accounts.
+
+Standing: verified at the level of the raw table for Myanmar and Nigeria, where
+the jump factor matches the exchange-rate change and domestic inflation does not
+account for it.
+The consequence is quantified: pooled attribution including the seven gives
+seven percent to the nominal-aggregate term, against forty-two percent when they
+are excluded, so the seven countries determine the pooled result.
+
+Action, not further testing: exclude them by a written rule in every pooled
+statistic, and report them separately.
+The exclusion list must be fixed once and cited, so that it is not re-derived
+per table.
+
+** H6: benchmark vintage. Confidence 95, verdict accepted and quantified
+
+Standing: settled.
+The revision between the 2018 release and the 2026 download has a mean near zero
+and a standard deviation of one percentage point.
+It accounts for over ninety percent of the previously measured mean absolute gap
+for Saudi Arabia, Latvia and Luxembourg, and eighty-five percent for Mexico,
+while moving the aggregate mean absolute gap only from 1.243 to 1.134 percentage
+points.
+
+Consequence for the record: every country-level claim made against the former
+benchmark is withdrawn unless reproduced.
+The aggregate claims survive.
+
+** H7: deflator vintage. Confidence 50, no verdict
+
+Economic Outlook 116 is applied to volumes from the 2023 ICIO release, so the
+deflator and the tables may embed different benchmark revisions.
+
+To reach ninety-five: a second vintage of the same deflator, which is not on
+disk.
+Without it, H7 cannot be separated from H2, and any rejection of H2 is a
+rejection of the pair rather than of the deflator alone.
+This limit must be stated wherever H2's verdict is cited.
+
+** H8: 2020 as a distinct regime. Confidence 70, no verdict
+
+Standing: the median absolute gap is 0.333 percentage points over 2017 to 2019
+and 0.795 in 2020, against 0.396 over 1996 to 2016.
+The three pre-pandemic years behave like the estimated window, which is itself a
+result, since it shows the repointing did not import a new regime.
+
+Why it is not ninety-five: the comparison was made after the data were seen, so
+no threshold was pre-registered, and a doubling of a median over one year across
+seventy-four countries is consistent with a demand composition shift that any
+fixed-weight aggregation would produce.
+
+To reach ninety-five: state whether 2020 is to be diagnosed or excluded before
+examining it further.
+If diagnosed, the prediction is specific: a fixed-weight aggregation strains
+when component shares move, so the 2020 gap should correlate with the size of
+the within-country shift in final-demand shares, and not otherwise.
+That prediction is testable from the tables alone.
+
+** H9: growth-convention mismatch. Confidence 95, verdict rejected as a cause
+
+The reports use simple growth and the diagnosis uses log growth.
+Since the repointing converts the benchmark as $\ln(1+g/100)$ with a round-trip
+error of order $10^{-15}$, both sides of the gap are now on one convention, and
+the mismatch cannot contribute.
+
+It remains a reporting inconsistency between =support_functions.R= and the
+diagnosis, and is recorded as such rather than as a cause.
+
+* Phase 4: order of execution
+
+The order is chosen so that each step either closes a hypothesis or sharpens the
+one after it.
+
+1. H4, the exchange-rate substitution.
+   Cheapest, uses the existing loop, and closes the last term of the identity
+   that has never been substituted.
+   Until it runs, any residual attributed to the nominal aggregate may be an
+   exchange-rate artefact.
+
+2. H5, fix the exclusion list in writing.
+   Every pooled statistic after this point depends on it.
+
+3. H2, restate at the country level and explain the four countries the
+   substitution worsens.
+
+4. H1, the direct level comparison against official nominal GDP, restricted to
+   the window the current-dollar series permits.
+   This is the hypothesis the loop cannot reach by substitution and is where the
+   diagnosis is most likely to terminate.
+
+5. H3 and H7, both blocked on data that is either absent or currency-mismatched.
+   Report the block rather than substituting a weaker test.
+
+6. H8, only after a decision on whether 2020 is in scope.
+
+* Success criteria
+
+Each hypothesis above carries either a verdict at ninety-five percent confidence
+or a written statement of the evidence that would produce one, and no statement
+of cause rests on a term of an identity being large.
+
+* Note on method
+
+An identity does not attribute cause.
+The decomposition into nominal-aggregate and deflator mismatch is an algebraic
+rearrangement, so a term being large establishes where the gap sits in the
+identity and not what produced it.
+Every verdict above therefore rests on a substitution or an external comparison,
+and never on the size of a term alone.
