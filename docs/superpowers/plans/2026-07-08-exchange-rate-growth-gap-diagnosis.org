@@ -7,6 +7,13 @@
 For agentic workers: REQUIRED SUB-SKILL is superpowers:subagent-driven-development (recommended) or superpowers:executing-plans.
 Steps use checkbox (=- [ ]=) syntax for tracking.
 
+Execution isolation (2026-07-21): Tasks 1, 2, 3, 8 are done and merged on =master=.
+The remaining regression and interpretation work (Tasks 4-7, 9) proceeds on branch
+=diagnosis/xr-gap-debug=, isolated from =master= so the H0-vs-H1 verdict can be
+reached without disturbing the committed baseline.
+A branch, not a worktree, because the required data (=etc/Modelo/NIOTs_resultados.rdata=,
+=inputs/=) is gitignored and absent from a fresh worktree checkout.
+
 Goal: build a reproducible R diagnostic that measures the gap between IO-computed and official real GDP growth and identifies whether the exchange rate, domestic inflation, or a rival mechanism drives it.
 
 Architecture: one focused script =code/diagnose_xr_gap.R= defines small single-purpose functions, each returning a tidy tibble, composed by =run_diagnosis()=.
