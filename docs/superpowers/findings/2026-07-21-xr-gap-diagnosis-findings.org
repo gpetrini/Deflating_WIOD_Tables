@@ -91,6 +91,67 @@ The raw national tables re-express values at the new official rate in the break
 year, and the level discontinuity enters the growth rate once.
 Domestic inflation does not account for the jump (Myanmar 2012 $\pi = 0.031$).
 
+*** Spike sub-audit (2026-07-21): root cause and hybrid case
+
+The break is a one-time multiplicative re-scaling of every final-demand
+component in the raw =Ft= table at a single year, inherited from the supplied
+national accounts, not introduced by the pipeline.
+Aggregating =Ft= by year confirms the level jump; decomposing it by component
+shows the four non-inventory components (HFCE, GGFC, GFCF, EXPO) share a common
+jump factor, while inventories (INVNT), being small and sign-changing, carry no
+information about the scale change.
+
+The decisive test is whether the two segments on either side of the break are
+each internally clean.
+Splicing a single break repairs a country only when both segments already track
+official growth.
+
+| ISO | Break | Break Gap | pre mean\vert Gap\vert | post mean\vert Gap\vert | Jump factor (non-INVNT) | Mechanism         |
+|-----+-------+-----------+------------------------+-------------------------+-------------------------+-------------------|
+| NGA |  1999 |     1.329 | edge                   |                   0.027 | 3.6                     | FX re-expression  |
+| MLT |  2008 |     0.860 |                  0.022 |                   0.012 | 2.5                     | euro adoption     |
+| CYP |  2008 |     0.538 |                  0.005 |                   0.011 | 1.8                     | euro adoption     |
+| BLR |  1996 |    -0.300 | edge                   |                   0.014 | 0.75                    | redenomination    |
+| CIV |  1996 |    -0.409 | edge                   |                   0.030 | 0.75                    | vintage/rescale   |
+| PAK |  2000 |    -0.485 |                  0.011 |                   0.026 | 0.66                    | redenomination    |
+| MMR |  2012 |     4.733 |                  0.173 |                   0.075 | 126                     | FX + pre-2012 vol |
+
+Six of the seven are clean single-break spikes: both segments track official
+growth, so removing the single corrupted break-year growth zeroes the gap.
+Myanmar is the exception.
+Its 2012 jump is a genuine FX re-expression, but its entire pre-2012 segment is
+volatile (mean gap 0.173 against 0.075 after), so a splice cannot repair it.
+Myanmar is therefore a hybrid: a spike at 2012 over a volatile pre-2012 base,
+and its pre-2012 years route to the volatile-regime investigation.
+
+The mechanism splits three ways and does not always coincide with the exchange
+rate: NGA and MMR match $-\Delta\ln e$; MLT and CYP are euro adoption; BLR, CIV
+and PAK are redenominations or vintage rescales whose factor $\Delta\ln e$ does
+not explain (PAK is a textbook uniform rescale, all components times 0.66).
+
+**** Hypotheses and the evidence required for 95 percent confidence
+
+- H-A, break mechanism.
+  Each break is a one-time common re-scaling of the raw =Ft= components at a
+  single year.
+  To reach 95 percent confidence: the four non-inventory components share a jump
+  factor within a coefficient of variation below 0.15; that factor matches an
+  /independent/ external source (official rate ratio for an FX break, documented
+  redenomination factor otherwise) within about ten percent; and both adjacent
+  segments carry mean $\vert Gap\vert$ below 0.03.
+  The external source must not be the OCDE exchange-rate file already used to
+  compute $\Delta\ln e$, or the match is circular.
+
+- H-B, Myanmar is hybrid.
+  Splicing the 2012 break leaves Myanmar's pre-2012 mean $\vert Gap\vert$ above
+  0.05, confirming a residual data-quality problem that the splice does not
+  address.
+
+- H-C, splice sufficiency.
+  For the six clean spikes, after the splice the break-year $\vert Gap\vert$
+  falls below 0.02, the neighbouring years are unchanged, and the robust
+  =fit_gap_model= coefficients stay near zero.
+
 ** Volatile: mean-zero annual dispersion
 
 The gap fluctuates year to year with a mean near zero and a large standard
@@ -100,6 +161,70 @@ between $+0.058$ and $-0.068$ across adjacent years.
 The regime concentrates in transition and emerging economies (Viet Nam, Ukraine,
 Bangladesh, Kazakhstan, Bulgaria, Romania), which points to year-to-year noise in
 the component deflators or import shares of those IO tables, not a fixed bias.
+
+*** Pervasive-gap diagnosis (2026-07-21): the residual is source data quality, not the pipeline
+
+Setting the seven exogenous break countries aside, the gap over the remaining
+sixty-eight countries is unbiased and small at the centre with a heavy tail.
+The signed mean is $-0.0009$ (t $=-1.58$, no systematic bias); the standard
+deviation is $0.021$; forty-four percent of country-years exceed half a
+percentage point and nine percent exceed two.
+
+Three candidate pipeline causes were tested and rejected.
+
+| Candidate cause                     | Test                                   | Result                          | Verdict   |
+|-------------------------------------+----------------------------------------+---------------------------------+-----------|
+| Import-content adjustment $(1-m)$   | mean$\vert Gap\vert$ with vs without   | 0.009 with, 0.020 without       | improves  |
+| Index-number formula (sum vs chain) | Törnqvist of same components           | differ by 0.0005; both 0.009    | rejected  |
+| Within-country component dispersion | cor($\vert Gap\vert$, growth sd)       | 0.025, $R^2=0.001$              | rejected  |
+
+The import adjustment reduces the gap rather than causing it, the aggregation
+formula is immaterial, and heterogeneous component growth does not predict the
+residual.
+The construction reproduces official growth to about two tenths of a percentage
+point for well-measured economies (Thailand, Austria, Korea, France, Japan all
+below 0.003 standard deviation) and diverges by three to seven percentage points
+for a dozen transition and emerging economies, a thirty-fold range driven by the
+country, not the method.
+
+The annual gap is mean-reverting: its average lag-one autocorrelation is
+$-0.13$, strongly negative for the noisiest well-behaved cases (New Zealand
+$-0.33$, Egypt $-0.42$), so the levels track official over the window even where
+single years diverge.
+A minority carry a genuine cumulative drift (Ukraine $-0.40$ log points over the
+window, Brunei $+0.31$), where the source real-GDP trajectory departs from
+official systematically.
+
+The residual therefore lives in the supplied WIOD volumes and deflators for these
+countries, not in the aggregation.
+The pipeline is validated by the well-measured economies; the defect is inherited
+from the source.
+
+**** Hypotheses and the evidence required for 95 percent confidence
+
+- H-D, the residual is source data quality.
+  The gap is not produced by the import adjustment, the index formula, or
+  component-growth dispersion, and it concentrates by country.
+  Confirmed to about ninety percent by the three rejected tests and the
+  country-level concentration.
+
+- H-E, mean-reverting measurement noise versus cumulative drift.
+  For most high-dispersion countries the annual gap reverts (negative
+  autocorrelation, cumulative drift below the independent-noise benchmark of
+  $\text{sd}\sqrt{n}$); for a minority (Ukraine, Brunei) it accumulates.
+  Reaching 95 percent confidence requires separating the two by testing whether
+  the cumulative drift of each country exceeds its independent-noise band.
+
+- H-F, deflator choice versus source volumes (open).
+  The mean-reverting noise is consistent either with a national deflator that is
+  itself noisy for high-inflation transition economies or with noisy WIOD volume
+  estimates.
+  The discriminating test is to re-deflate one high-dispersion country (Ukraine
+  or Viet Nam) with the national GDP deflator applied uniformly and observe
+  whether the annual gap collapses; a collapse implicates the deflator, its
+  persistence implicates the source volumes.
+  This is the path to raising the diagnosis from ninety to ninety-five percent
+  and to deciding whether the residual is reducible.
 
 * Decision
 
@@ -111,8 +236,11 @@ The next work is a per-country and per-year gap audit whose target is to drive
 the gap toward zero across the base, treating each gap above a threshold as a
 defect and separating the regimes above.
 The 56 clean countries need no further work.
-The 7 spike countries require detecting and splicing the exchange-rate-regime
-level breaks in the raw tables.
+Six of the seven spike countries (NGA, MLT, CYP, BLR, CIV, PAK) require splicing
+a single break year; the splice method is the open decision (drop the
+unmeasurable break-year growth, or rescale one segment by an external factor).
+Myanmar requires the splice and, separately, the volatile-regime treatment for
+its pre-2012 segment.
 The 12 volatile countries require tracing the year-to-year dispersion into the
 component deflators and import shares of their IO tables.
 
