@@ -115,6 +115,27 @@ get_xr_infl <- function() {
     select(ISO, Year, dln_e, pi, e_src, P_src)
 }
 
+## --- Task 4: assemble the Gap panel and classify the series (H0) ------------
+
+build_gap_panel <- function() {
+  get_gIO() |>
+    inner_join(get_gOff(),    by = c("ISO", "Year")) |>
+    inner_join(get_xr_infl(), by = c("ISO", "Year")) |>
+    mutate(Gap = gY_io - gY_off)
+}
+
+## First-order classification from simple correlations of the gap.
+classify_series <- function(panel) {
+  ce <- cor(panel$Gap, panel$dln_e, use = "complete.obs")
+  cp <- cor(panel$Gap, panel$pi,    use = "complete.obs")
+  dplyr::case_when(
+    ce > 0.5 & cp < 0.3 ~ "real",
+    cp > 0.5 & ce < 0.3 ~ "nominal_lcu",
+    ce > 0.5 & cp > 0.5 ~ "nominal_usd",
+    TRUE                ~ "ambiguous"
+  )
+}
+
 ## --- Task 8: exclusion checks (H6, base-year invariance) --------------------
 
 ## H6 (base year) cannot move a growth rate: fixed-base scaling is
