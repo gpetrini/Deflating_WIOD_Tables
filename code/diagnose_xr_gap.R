@@ -172,6 +172,29 @@ quarantine_panel <- function(panel = build_gap_panel()) {
   dplyr::filter(panel, ISO %in% QUARANTINE_ISO | Year %in% QUARANTINE_YEARS)
 }
 
+## --- Operational gap threshold (ticket #2) ---------------------------------
+
+## "Gap zeroed for the majority" means |Gap| below this many percentage points.
+## Set at the knee of the coverage curve, where the marginal coverage bought per
+## 0.05pp collapses (from ~4.6pp/step below to ~2.8pp/step above): 62% of majority
+## country-years and 70% of countries (by median year) clear it. The coverage
+## curve, not the scalar, is the deliverable (map #1, ticket #2).
+GAP_THRESHOLD_PP <- 0.5
+
+## Coverage of the majority panel below a sweep of |Gap| thresholds (in pp),
+## reported as the share of country-years and the share of countries whose
+## median year clears the threshold.
+gap_coverage <- function(panel = majority_panel(),
+                         grid = c(0.1, 0.25, 0.36, 0.5, 0.75, 1.0, 1.5, 2.0)) {
+  ag <- abs(panel$Gap) * 100
+  cs <- tapply(ag, panel$ISO, median)
+  tibble(
+    thr_pp        = grid,
+    cy_share      = vapply(grid, function(t) mean(ag < t), numeric(1)),
+    country_share = vapply(grid, function(t) mean(cs < t), numeric(1))
+  )
+}
+
 ## First-order classification from simple correlations of the gap.
 classify_series <- function(panel) {
   ce <- cor(panel$Gap, panel$dln_e, use = "complete.obs")

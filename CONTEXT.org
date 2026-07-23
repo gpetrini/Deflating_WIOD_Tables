@@ -41,6 +41,20 @@ _Avoid_: true growth, actual growth.
 The difference $g^{IO} - g^{off}$ for a country-year, the object the diagnosis
 explains.
 
+** Operational gap threshold
+The absolute gap, in percentage points, below which a country-year counts as
+having the gap zeroed for the purpose of the majority objective.
+It is set at the knee of the coverage curve over the majority panel, the point
+past which each additional 0.05 percentage points of threshold admits fewer than
+three percentage points of country-years, and equals one half of a percentage
+point.
+At that threshold sixty-two percent of majority country-years and seventy percent
+of majority countries, judged by each country's median year, clear the gap.
+The deliverable is the coverage curve, not the scalar; the curve is
+=figs/gap_coverage_curve.pdf= and the scalar is =GAP_THRESHOLD_PP= in
+=code/diagnose_xr_gap.R=, with =gap_coverage()= producing the sweep.
+_Avoid_: tolerance, acceptable error.
+
 ** Quarantine set
 The minority of country-years withheld from every pooled majority statistic and
 reported separately, fixed once and cited rather than re-derived per table.
