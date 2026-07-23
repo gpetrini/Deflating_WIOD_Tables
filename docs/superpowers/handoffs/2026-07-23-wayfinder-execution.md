@@ -43,7 +43,16 @@ zero), quarantining the minority; every verdict carries the vintage/inter-year c
 | 3 | task | **DONE** (b54729b) | Canonical quarantine set fixed in code + glossary. |
 | 4 | task | **DONE** (0ea6103) | H4 (exchange rate) **rejected at 95%** for the majority. |
 | 5 | task | **DONE** (b9943ae) | H2 (applied deflator, OECD-covered) **rejected at 95%**. |
-| 6 | task | **IN PROGRESS** (this session) | H1 direct level test — the terminal test. |
+| 6 | task | **DONE** (2dba2c4) | H1 **confirmed at 95%** as the *location* of the majority gap: the ICIO nominal aggregate. |
+
+**ROUTE COMPLETE (2026-07-23).** All six tickets closed; the frontier is empty. The two
+substitutable channels are rejected for the majority (H4 exchange, H2 deflator) and the
+residual is located in the ICIO nominal aggregate at 95% (H1). The majority gap is already
+small (median 0.36 pp/yr, ~2% cumulative in level) and bounded by the IO tables, not
+removable by any deflation/exchange choice on disk. The map's destination is reached for
+the majority. Open for a later effort: the paper write-up (`/to-spec`), volatile-country
+remediation (COL/TUR/IDN/ARG and the 12 volatile), and a current-vintage current-USD fetch
+to split inherited-defect from vintage in H1.
 
 ### Single sources of truth (in `code/diagnose_xr_gap.R`)
 
