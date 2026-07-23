@@ -767,3 +767,21 @@ current-dollar vintage artefact is not reachable on disk; it would require a cur
 current-dollar series covering 1996 to 2016, which is a fetch not authorised.
 Reproduce with =code/retest_h1_nominal_levels.R=; the level figure is
 =figs/h1_nominal_level_divergence.pdf=.
+
+* Conditionality of H1: the pipeline-error audit (opened 2026-07-23)
+
+Every verdict above treats the identity $g^{IO} = \Delta\ln(\text{ICIO nominal, USD}) +
+\Delta\ln e - \pi$ as an exact property of the Stage-A pipeline.
+It was verified only that the identity holds algebraically by construction inside the
+decomposition, never that $g^{IO}$ is computed correctly from the tables.
+A methodological error in the scripts that generate the input-output data, in the
+aggregation $\sum_j (1 - m_j) F_j$ or in the deflation, would present exactly as the
+H1 residual.
+The H1 verdict is therefore conditional on the pipeline being correct.
+
+A second stage audits that assumption before any write-up asserts H1.
+The decisive test is a cell-for-cell closure of the identity against the raw nominal
+tables in =inputs/NATIODOMIMP/=, which are on disk and require no fetch.
+The audit is charted as wayfinder map issue #8 on =gpetrini/PrivateClaude=, with the
+write-up spec at issue #7 blocked by the audit's terminal decision.
+Resume from =docs/superpowers/handoffs/2026-07-23-wayfinder-execution.md=.

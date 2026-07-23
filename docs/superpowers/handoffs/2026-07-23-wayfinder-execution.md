@@ -50,9 +50,47 @@ substitutable channels are rejected for the majority (H4 exchange, H2 deflator) 
 residual is located in the ICIO nominal aggregate at 95% (H1). The majority gap is already
 small (median 0.36 pp/yr, ~2% cumulative in level) and bounded by the IO tables, not
 removable by any deflation/exchange choice on disk. The map's destination is reached for
-the majority. Open for a later effort: the paper write-up (`/to-spec`), volatile-country
+the majority. **A second stage is now open (see below).** Also deferred: volatile-country
 remediation (COL/TUR/IDN/ARG and the 12 volatile), and a current-vintage current-USD fetch
 to split inherited-defect from vintage in H1.
+
+## SECOND STAGE (opened 2026-07-23): pipeline-error audit + write-up
+
+The first map's H1 verdict rests on an **untested assumption**: that
+`g^IO = Δln(ICIO nominal, USD) + Δln e − π` is an *exact* property of the Stage-A
+pipeline. It was only ever verified to hold *algebraically by construction* inside
+`decompose_gap()`, never that `g^IO` is computed correctly from the tables. A Stage-A or
+aggregation bug would masquerade as H1. So H1-at-95% is conditional on the pipeline being
+correct, and that is now audited before any write-up asserts it.
+
+**Phase B — write-up spec = issue #7** (`gpetrini/PrivateClaude`, labels
+`ready-for-agent` + `spec`), **BLOCKED by #12**. An Org-mode write-up of the falsification
+chain; its central verdict paragraph is gated on the audit, with two pre-written forms
+(pipeline confirmed → H1 stands; defect found → report the correction). Do not start it
+until #12 closes.
+
+**Phase A — pipeline-error audit = wayfinder map #8.** Destination: reclassify H1
+(confirmed at 95%, or defect found + corrected gap), which unblocks #7. Execution is
+in-scope. Tickets:
+
+| # | Type | State | What |
+|---|------|-------|------|
+| 9  | task | **FRONTIER** | `prepare_data()` correctness: synthetic hand-computable input + internal consistency (`GDP ≡ Ft_total − M_total`, `m` invariant to a uniform scalar, `M_I = Am·Z·Fn` orientation, lag/alignment). |
+| 10 | research | **FRONTIER** | Recover the nominal-aggregate **extraction recipe** from the raw `inputs/NATIODOMIMP/` tables, by reading `etc/Modelo/base/` (read-only). AFK `/research`, not auto-fired. |
+| 11 | task | blocked by #10 | **THE DECISIVE TEST:** identity closure — recompute the nominal aggregate from the raw tables and check `g^IO(deflated) = Δln(nominal) + Δln e − π` cell-for-cell. Tests deflation uniformity + aggregation end-to-end. Pre-register the tolerance. |
+| 12 | grilling | blocked by #9, #11 | Terminal decision: reclassify H1 given the audit; unblocks #7. |
+
+**Key enabling fact:** the raw nominal ICIO tables ARE on disk (`inputs/NATIODOMIMP/`,
+1976 files ≈ 76×26), so the decisive identity closure (#11) needs **no fetch**.
+**Seam:** `code/support_functions.R::prepare_data()` — the single function turning the
+supplied tables into `g^IO` (`GDP = Σ(1−m_j)F_j`, which reduces to `Ft_total − M_total`;
+`m = M/Ft`; `M = M_F + M_I`; `M_I = Am·Z·Fn`). No `testthat` in the repo; verify via
+standalone scripts like `code/retest_*.R`. `code/tests.R` is an exploratory script, not a
+test suite.
+**Out of scope on the map:** executing/fixing Stage-A in `etc/Modelo/` (read-only,
+ADR-0012), any fetch, the volatile remediation, and the write-up itself (#7).
+**Work-through:** one ticket per session, claim (assign) before work, clear context
+between. Frontier now: #9 and #10.
 
 ### Single sources of truth (in `code/diagnose_xr_gap.R`)
 
