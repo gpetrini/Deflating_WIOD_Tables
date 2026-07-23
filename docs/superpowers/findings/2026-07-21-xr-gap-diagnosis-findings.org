@@ -666,3 +666,48 @@ Caution: the two providers may embed different vintages, but the effect is small
 and of the wrong sign for H4, so a vintage difference does not threaten the
 rejection.
 Reproduce with =code/retest_h4_xr_swap.R=.
+
+* H2 restated at the country level: deflator swap (2026-07-23, ticket #5)
+
+The pooled deflator swap landed inside the refutation region but its mean concealed
+country-level movement of opposite sign, so the verdict was withheld.
+The restatement counts countries rather than pooling.
+Only the deflator log-change moves in the identity, so the gap moves by
+$\mathrm{Gap}_{WB} = \mathrm{Gap} - (\pi_{WB} - \pi_{applied})$, substituting the World
+Bank =NY.GDP.DEFL.ZS= for Economic Outlook 116, on the OECD-covered majority: 1128
+country-years, forty-seven countries, of which the swap moves forty-one.
+
+Pre-registered at the country level before running: a country whose mean absolute gap
+falls more than twenty percent is improved; if few improve, the rejection holds for the
+group and not merely for the average.
+
+Result: of the forty-one moved countries, two improve (Brazil, minus thirty-one percent;
+Ireland, minus twenty-six percent), thirty-five are unchanged within twenty percent, and
+four worsen: Colombia, Turkey, Indonesia and Argentina.
+The pooled mean rises thirteen percent and the pooled median one percent, and the four
+deteriorating countries account for the mean's rise.
+
+The four are the OECD-covered countries with the highest inflation, and the swap injects
+annual disagreement between the two deflator series rather than removing gap.
+Colombia is the clearest case: mean inflation is 11.57 against 11.62 percentage points a
+year under the two providers, nearly identical, yet the gap rises seven hundred eighty
+percent, so the deterioration is timing disagreement year by year and not a level
+difference.
+Turkey, Indonesia and Argentina add a mean-inflation gap of four to five percentage
+points a year on top of the timing disagreement.
+This identifies a genuine divergence between the two deflator series for high-inflation
+countries; it does not establish which series is correct, so the four are flagged for the
+volatile-country remediation rather than treated as a fix.
+
+Verdict: H2 is rejected at ninety-five percent for the OECD-covered group.
+The applied Economic Outlook deflator is not the source of the majority gap; substituting
+the World Bank deflator fixes essentially no country and worsens the high-inflation ones.
+
+Limits stated with the verdict: the substitute shares its provider with the benchmark and
+may embed a different vintage than Economic Outlook 116, so the test conflates provider and
+vintage; but a mechanical contraction is the only way that conflation could manufacture a
+rejection, and the swap does not contract the gap, it leaves it or worsens it, so the
+conflation does not threaten this verdict.
+The four moved-year counts are below the full window (Colombia ten, Turkey seven, Indonesia
+eight, Argentina nine), so their country statistics are read with that caution.
+Reproduce with =code/retest_h2_deflator_swap.R=.
