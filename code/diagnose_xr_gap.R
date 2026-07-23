@@ -150,6 +150,28 @@ build_gap_panel <- function(vintage = c("current", "repo2018")) {
     mutate(Gap = gY_io - gY_off)
 }
 
+## --- Quarantine set (H5): the canonical exclusion list --------------------
+
+## The minority of country-years withheld from every pooled majority statistic.
+## Fixed once here and cited, never re-derived per table (map #1, ticket #3).
+## Spikes carry a one-time multiplicative re-expression of every final-demand
+## component; drifters carry a cumulative deflator-driven drift; 2020 is a
+## distinct pandemic regime deferred by decision.
+QUARANTINE_SPIKES   <- c("MMR", "NGA", "MLT", "CYP", "BLR", "CIV", "PAK")
+QUARANTINE_DRIFTERS <- c("UKR", "BRN", "KAZ", "VNM", "EGY")
+QUARANTINE_ISO      <- c(QUARANTINE_SPIKES, QUARANTINE_DRIFTERS)
+QUARANTINE_YEARS    <- 2020L
+
+## The majority panel: the rows every pooled verdict is computed on.
+majority_panel <- function(panel = build_gap_panel()) {
+  dplyr::filter(panel, !ISO %in% QUARANTINE_ISO, !Year %in% QUARANTINE_YEARS)
+}
+
+## The complement, reported separately, never pooled with the majority.
+quarantine_panel <- function(panel = build_gap_panel()) {
+  dplyr::filter(panel, ISO %in% QUARANTINE_ISO | Year %in% QUARANTINE_YEARS)
+}
+
 ## First-order classification from simple correlations of the gap.
 classify_series <- function(panel) {
   ce <- cor(panel$Gap, panel$dln_e, use = "complete.obs")
