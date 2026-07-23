@@ -13,7 +13,14 @@ nominal-aggregate divergence on-disk, then decide the fetch." Read the map body 
 Destination, Notes (seams + rules), fog, and out-of-scope; it is self-sufficient to work
 a ticket cold.
 
-**Issue snapshot (gpetrini/PrivateClaude), 2026-07-23:**
+**TRACKER MOVED (2026-07-23):** this project's wayfinder issues were migrated from
+`gpetrini/PrivateClaude` to the project repo **`gpetrini/Deflating_WIOD_Tables`** (issues
+enabled there; #1-16 recreated with matching numbers, labels, state, and resolution
+comments). The PrivateClaude originals are closed and annotated. **Use
+`gpetrini/Deflating_WIOD_Tables` as the tracker for this project from now on** (the global
+CLAUDE.md default of PrivateClaude no longer applies here).
+
+**Issue snapshot (now on gpetrini/Deflating_WIOD_Tables, numbers unchanged), 2026-07-23:**
 
 | # | Type | State | Gist |
 |---|------|-------|------|
