@@ -75,9 +75,9 @@ in-scope. Tickets:
 
 | # | Type | State | What |
 |---|------|-------|------|
-| 9  | task | **FRONTIER** | `prepare_data()` correctness: synthetic hand-computable input + internal consistency (`GDP ≡ Ft_total − M_total`, `m` invariant to a uniform scalar, `M_I = Am·Z·Fn` orientation, lag/alignment). |
-| 10 | research | **FRONTIER** | Recover the nominal-aggregate **extraction recipe** from the raw `inputs/NATIODOMIMP/` tables, by reading `etc/Modelo/base/` (read-only). AFK `/research`, not auto-fired. |
-| 11 | task | blocked by #10 | **THE DECISIVE TEST:** identity closure — recompute the nominal aggregate from the raw tables and check `g^IO(deflated) = Δln(nominal) + Δln e − π` cell-for-cell. Tests deflation uniformity + aggregation end-to-end. Pre-register the tolerance. |
+| 9  | task | **DONE** (ce05e71) | `prepare_data()` correct in isolation from deflation: **17/17 PASS** (`code/verify_prepare_data.R`). `GDP ≡ Ft_total − M_total` (max rel err 4e-16 over 75×26), `M ≡ M_F + M_I`, `M_I = Am·Z·Fn` orientation, `m` scalar-invariant, GDP linear in scalar, `gY` lag/index aligned. No error in the assembly seam; a defect (if any) lives in the raw-table extraction → #11. |
+| 10 | research | **DONE** (2026-07-23) | Extraction recipe recovered: raw `*dom.csv` = nominal current-USD-M ICIO NIOT; `Ft_total − M_total = Fn_total − M_I_total` (Fm cancels); exact reconstruction = `sum(Fn) − sum(Am·Z·Fn)` per CSV, caveats (7-sector agg, `OUTPUT`-row GO, `ginv`+zerofill, currency basis). Recipe: `docs/superpowers/findings/2026-07-23-nominal-aggregate-extraction-recipe.md`. |
+| 11 | task | **FRONTIER** (unblocked by #10) | **THE DECISIVE TEST:** identity closure — recompute the nominal aggregate from the raw tables and check `g^IO(deflated) = Δln(nominal) + Δln e − π` cell-for-cell. Tests deflation uniformity + aggregation end-to-end. Pre-register the tolerance. Recipe + blockers in #10 findings. |
 | 12 | grilling | blocked by #9, #11 | Terminal decision: reclassify H1 given the audit; unblocks #7. |
 
 **Key enabling fact:** the raw nominal ICIO tables ARE on disk (`inputs/NATIODOMIMP/`,
@@ -90,7 +90,8 @@ test suite.
 **Out of scope on the map:** executing/fixing Stage-A in `etc/Modelo/` (read-only,
 ADR-0012), any fetch, the volatile remediation, and the write-up itself (#7).
 **Work-through:** one ticket per session, claim (assign) before work, clear context
-between. Frontier now: #9 and #10.
+between. Frontier now: **#11 only** (#9, #10 closed 2026-07-23). #11 is THE decisive
+test; #12 (terminal reclassification) stays blocked until #11 closes.
 
 ### Single sources of truth (in `code/diagnose_xr_gap.R`)
 
