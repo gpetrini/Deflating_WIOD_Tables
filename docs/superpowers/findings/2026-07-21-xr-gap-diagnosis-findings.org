@@ -433,6 +433,71 @@ change above about fifty percent establishes it; between the two, no claim.
 The test conflates provider and vintage and cannot separate them, and it shares
 a provider with the benchmark, so contraction is partly mechanical.
 
+* Data-provenance review and re-test on the 2020 panel (2026-07-23)
+
+This section supersedes prior statements that the persisted panel spans 1996 to
+2020 and that H1 can be reconstructed to 2020 without a download.
+Reproducibility: =code/reconstruct_and_retest.R=.
+
+** The persisted artifacts were the legacy 2016 panels
+
+Both =results/diagnostics/gap_panel.rds= and =gap_panel_repo2018.rds= held 1575
+country-years over 1996 to 2016.
+The 1850-country-year panel over 1996 to 2020 that the handoff and the plan
+described as the current state had never been persisted; it was computed in an
+earlier session and lost.
+The documentary record and the reproducible artifact therefore diverged, and
+every figure recorded as measured on the current benchmark lacked a backing
+artifact until this session.
+Both files are now rebuilt: =gap_panel.rds= holds the current panel, 1850
+country-years, 1996 to 2020, seventy-four countries; =gap_panel_repo2018.rds=
+retains the legacy panel.
+
+** Data coverage, canonical versus legacy
+
+All series the diagnosis reads reach 2020 except one.
+The OECD and World Bank deflators, the OECD and World Bank exchange rates, and
+the World Bank real-GDP benchmark =test/g_GDP.xlsx= all cover 1995 or 1996 to
+2020.
+The only file in the live diagnostic path that stops at 2016 is the World Bank
+current-dollar series =NY.GDP.MKTP.CD= (release 2018-03-01), read by
+=decompose_gap()=.
+
+** The discarded exchange-rate and inflation conjecture is re-refuted on 2020
+
+The two-regressor fit was previously estimated on the legacy 1575-obs panel.
+Re-estimated on the current panel it is confirmed and tighter.
+
+| Panel             | full $\beta_e$/$\beta_\pi$ | trimmed $|Gap|\le 0.5$ | robust rlm      |
+|-------------------+----------------------------+------------------------+-----------------|
+| repo2018 (legacy) | -0.629 / -0.690            | -0.078 / -0.167        | -0.020 / -0.033 |
+| current (2020)    | -0.176 / -0.214            | -0.054 / -0.103        | -0.009 / -0.011 |
+
+The correlation $\text{cor}(\text{Gap}, \Delta\ln e)$ falls from -0.625 on the
+legacy full sample to -0.231 on the current panel and to -0.014 after trimming.
+The repointing removed the leverage points that inflated the full-sample
+coefficients, so the refutation is not an artifact of the legacy release.
+The base-year invariance check continues to hold.
+
+** Correction: H1 is not reconstructable to 2020 on disk
+
+An earlier claim held that official nominal-dollar growth could be reconstructed
+to 2020 from on-disk series as $\Delta\ln e + \pi + g^{off}$, extending H1's
+decomposition past 2016.
+The claim is withdrawn.
+Reconstructing $\Delta\ln \text{CD}$ from the deflator and exchange rate the
+pipeline itself applies drives =deflator_mm= to $4\times10^{-16}$ and
+=nominal_mm= to $\text{Gap}$ within $2\times10^{-16}$: the cancellation is exact,
+verified numerically.
+The decomposition requires an independent nominal-dollar series, which is the
+World Bank current-dollar file, present only in the 2018 vintage ending 2016.
+The pooled attribution reproduces on the current panel over the World Bank
+current-dollar window: 6.9 percent nominal-aggregate, 93.1 percent deflator over
+1996 to 2016.
+H1's direct decomposition past 2016 requires a current-dollar series the disk
+does not hold, so it is genuinely blocked and not merely a matter of which file
+=decompose_gap()= reads.
+
 * Execution on the current benchmark (2026-07-21, later session)
 
 This section reports the spec =2026-07-21-gap-diagnosis-revised.org= as executed.
