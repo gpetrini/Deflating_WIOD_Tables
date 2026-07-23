@@ -78,7 +78,7 @@ in-scope. Tickets:
 | 9  | task | **DONE** (ce05e71) | `prepare_data()` correct in isolation from deflation: **17/17 PASS** (`code/verify_prepare_data.R`). `GDP ≡ Ft_total − M_total` (max rel err 4e-16 over 75×26), `M ≡ M_F + M_I`, `M_I = Am·Z·Fn` orientation, `m` scalar-invariant, GDP linear in scalar, `gY` lag/index aligned. No error in the assembly seam; a defect (if any) lives in the raw-table extraction → #11. |
 | 10 | research | **DONE** (2026-07-23) | Extraction recipe recovered: raw `*dom.csv` = nominal current-USD-M ICIO NIOT; `Ft_total − M_total = Fn_total − M_I_total` (Fm cancels); exact reconstruction = `sum(Fn) − sum(Am·Z·Fn)` per CSV, caveats (7-sector agg, `OUTPUT`-row GO, `ginv`+zerofill, currency basis). Recipe: `docs/superpowers/findings/2026-07-23-nominal-aggregate-extraction-recipe.md`. |
 | 11 | task | **DONE** (dfba45d) | **DECISIVE TEST, 4/4 PASS.** Reconstructed the nominal-USD aggregate independently from raw `inputs/NATIODOMIMP/` for all 1950 c-y; `g^IO = Δln(NomUSD_raw) + Δln e − π` closes cell-for-cell (max resid **8.8e-15 lp** « 1e-8), deflation uniform (4e-16), aggregation composes (4e-15), scalar==e/P exactly on 1196 OCDE c-y. No pipeline artifact; **H1 stands**. Suite: `code/retest_h1_identity_closure.R`. |
-| 12 | grilling | **FRONTIER** (unblocked) | Terminal decision: reclassify H1 given the audit; unblocks #7. **HITL** — resolve WITH the human via `/grilling`; do not auto-resolve. The audit came out clean (pipeline confirmed), so the operative branch is "H1 stands / confirmed at 95%". |
+| 12 | grilling | **DONE** (2026-07-23) | Terminal decision via `/grilling`: **H1 confirmed at 95%**, basis upgraded elimination→verified-pipeline (not raised). Inherited-defect-vs-vintage split left open (fetch named, OOS). Majority-scoped verdict; pipeline correctness universal. 3 typed falsifiers. Majority account survives unchanged. Findings §"H1 reclassified". **Map #8 destination reached; Phase B #7 unblocked on branch (a).** |
 
 **Key enabling fact:** the raw nominal ICIO tables ARE on disk (`inputs/NATIODOMIMP/`,
 1976 files ≈ 76×26), so the decisive identity closure (#11) needs **no fetch**.
@@ -90,10 +90,13 @@ test suite.
 **Out of scope on the map:** executing/fixing Stage-A in `etc/Modelo/` (read-only,
 ADR-0012), any fetch, the volatile remediation, and the write-up itself (#7).
 **Work-through:** one ticket per session, claim (assign) before work, clear context
-between. Frontier now: **#12 only** (#9, #10, #11 all closed 2026-07-23). The audit is
-complete and the pipeline is confirmed (identity closes to 9e-15 log points), so #12 is
-the terminal HITL grilling that records "H1 confirmed at 95%" and unblocks Phase B #7.
-#12 must be worked WITH the human, not auto-resolved.
+between. Frontier now: **EMPTY** — #9, #10, #11, #12 all closed 2026-07-23. **Map #8's
+destination is reached:** the pipeline is verified end-to-end (identity closes to 9e-15
+log points), H1 is confirmed at 95% on a verified-pipeline basis, and the majority-gap
+account survives unchanged. **Next effort (not this map): Phase B write-up spec #7**,
+now unblocked on its pipeline-confirmed branch (a); start it in its own session via the
+spec. Deferred beyond both maps: the current-vintage current-USD fetch (splits
+inherited-defect from vintage) and the volatile-country remediation.
 
 ### Single sources of truth (in `code/diagnose_xr_gap.R`)
 

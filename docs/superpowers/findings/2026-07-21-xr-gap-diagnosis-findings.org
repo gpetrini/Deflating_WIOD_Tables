@@ -785,3 +785,63 @@ tables in =inputs/NATIODOMIMP/=, which are on disk and require no fetch.
 The audit is charted as wayfinder map issue #8 on =gpetrini/PrivateClaude=, with the
 write-up spec at issue #7 blocked by the audit's terminal decision.
 Resume from =docs/superpowers/handoffs/2026-07-23-wayfinder-execution.md=.
+
+* H1 reclassified after the pipeline-error audit (2026-07-23, ticket #12)
+
+The audit is complete and both tests passed.
+Ticket #9 verified the assembly seam =prepare_data()= in isolation from the deflation
+with a synthetic hand-computable fixture and internal-consistency checks on the real
+tables, seventeen of seventeen assertions passing.
+Ticket #11 is the decisive test.
+It reconstructed the nominal-dollar ICIO aggregate independently from the raw
+=inputs/NATIODOMIMP/= tables for all 1950 country-years, using its own read, its own
+sector aggregator and its own generalized inverse, then closed the identity
+$g^{IO}(\text{deflated}) = \Delta\ln(\text{NomUSD}_{\text{raw}}) + \Delta\ln e - \pi$
+cell-for-cell.
+Deflation is uniform per country-year to a maximum cell spread of $4\times10^{-16}$.
+Aggregation and deflation compose to a maximum relative difference of $4\times10^{-15}$.
+The identity residual is at most $8.8\times10^{-15}$ log points, seven orders below the
+pre-registered tolerance of $10^{-8}$.
+The recovered deflation scalar equals the external exchange-rate over deflator ratio
+exactly on the 1196 country-years the OECD sources cover.
+
+Verdict: H1 is confirmed at ninety-five percent, now on a verified-pipeline basis rather
+than by elimination alone.
+The concern that a Stage-A or aggregation error could masquerade as the H1 residual is
+falsified: $g^{IO}$ is a faithful transform of the raw ICIO nominal aggregate, so the
+surviving majority gap is a genuine ICIO-versus-official nominal difference and not a
+methodological error in the input-output scripts.
+The confidence stays at ninety-five percent and is not raised, because the audit removes
+a specific alternative but does not resolve the residual interpretive uncertainty that
+set the ceiling.
+
+The inherited-defect-versus-vintage split remains open.
+The audit proves the pipeline computes $g^{IO}$ correctly from the tables on disk.
+It says nothing about whether those balanced ICIO tables match transcribed official
+nominal GDP, and it does not separate an inherited-table defect from the vintage
+mismatch between the World Bank current-dollar file (2018 vintage, data to 2016) and the
+ICIO 2023 volumes.
+The discriminating experiment is a current-vintage current-dollar series to replace the
+single 2018 file, which is a fetch and is out of scope for this map.
+
+Scope: the causal verdict is stated for the majority, the map's destination.
+The pipeline verification itself holds for every country-year, including the quarantined
+minority, so the quarantine reflects input pathologies (volatile exchange rates,
+redenominations, the 2020 shock) and never a computational defect.
+The volatile-country remediation stays deferred and unchanged.
+
+Evidence that would change the verdict, typed by what each would move:
+first, a spot comparison showing the raw =NATIODOMIMP= totals themselves diverge from
+OECD's published nominal GDP would reopen the pipeline finding, since the audit verified
+computation from the tables and not the tables' fidelity to source.
+Second, a current-vintage current-dollar series that collapses the divergence when the
+vintage is matched would reclassify the interpretation toward the vintage artifact
+without overturning H1.
+Third, a re-estimated gap panel from corrected inputs that materially moved the majority
+median gap or the coverage shares would move the account's magnitude.
+
+The majority-gap account survives unchanged.
+The majority partition, the operational threshold of 0.5 percentage points, and the
+rejections of H4 and H2 are untouched by the audit.
+This is the terminal decision of map #8, which reaches its destination here.
+The Phase B write-up spec at issue #7 is unblocked on its pipeline-confirmed branch.
