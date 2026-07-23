@@ -119,6 +119,28 @@ The comment at =etc/Modelo/base/deflator.R:5= describes the OECD series as a
 consumer-price measure; that description is incorrect and is not the data.
 _Avoid_: consumer-price deflator, the deflator.
 
+** ICIO nominal aggregate
+The nominal-dollar GDP aggregate implicit in the raw OECD ICIO tables, built on the
+expenditure side as total final demand net of import content,
+$\sum_j (1 - m_j) F_j = \text{Ft}_{\text{total}} - \text{M}_{\text{total}} =
+\text{Fn}_{\text{total}} - \text{M\_I}_{\text{total}}$, before any deflation.
+It is the one term of the identity $g^{IO} = \Delta\ln(\text{ICIO nominal, USD}) +
+\Delta\ln e - \pi$ that no substitution can reach, so it is where Hypothesis H1 locates
+the residual majority gap.
+Its divergence from official nominal GDP is the object of map #13.
+_Avoid_: nominal GDP, the aggregate.
+
+** Identity closure
+The decisive test of the pipeline-error audit (map #8, ticket #11): reconstructing the
+ICIO nominal aggregate independently from the raw tables for every country-year and
+checking $g^{IO}(\text{deflated}) = \Delta\ln(\text{nominal}_{\text{raw}}) + \Delta\ln e
+- \pi$ cell for cell.
+It closed to a residual of order $10^{-15}$ log points, so $g^{IO}$ is a faithful
+transform of the raw aggregate and no Stage-A or aggregation error masquerades as H1.
+On that basis H1 is confirmed at ninety-five percent on a /verified-pipeline basis/
+rather than by elimination alone.
+_Avoid_: the reconciliation, the sanity check.
+
 ** Inherited defect
 A gap component originating in the supplied OECD volumes themselves, which no
 change to this repository can remove.

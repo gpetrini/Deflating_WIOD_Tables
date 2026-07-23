@@ -5,6 +5,37 @@ still holds the deeper provenance narrative; read it if a term is unclear).
 **Repo:** `/home/gpetrini/Documents/Deflating_WIOD_Tables` — **Branch:** `diagnosis/xr-gap-debug`
 **Data:** present and gitignored. Work in the main checkout, not a fresh worktree.
 
+## ACTIVE EFFORT (2026-07-23): wayfinder map #13 — RESUME HERE
+
+Maps #1 (located the gap) and #8 (verified the pipeline) are CLOSED; the Phase B
+write-up #7 is DELIVERED. The active effort is **map #13** "characterize the ICIO
+nominal-aggregate divergence on-disk, then decide the fetch." Read the map body for its
+Destination, Notes (seams + rules), fog, and out-of-scope; it is self-sufficient to work
+a ticket cold.
+
+**Issue snapshot (gpetrini/PrivateClaude), 2026-07-23:**
+
+| # | Type | State | Gist |
+|---|------|-------|------|
+| 1  | map | CLOSED | Located the majority gap in the ICIO nominal aggregate (H1, 95%). |
+| 2–6 | — | CLOSED | Threshold 0.5pp; quarantine set; H4 rejected; H2 rejected; H1 located. |
+| 7  | spec | **DONE** (35a3793) | Phase B write-up delivered (branch a). `docs/superpowers/writeups/2026-07-23-gap-diagnosis-writeup.org` + `code/writeup_numbers.R`. |
+| 8  | map | CLOSED | Pipeline-error audit; destination reached (identity closes to 9e-15 lp). |
+| 9  | task | CLOSED (ce05e71) | `prepare_data()` verified, 17/17. `code/verify_prepare_data.R`. |
+| 10 | research | CLOSED | Extraction recipe recovered. Findings md 2026-07-23. |
+| 11 | task | CLOSED (dfba45d) | Identity closure, 4/4. `code/retest_h1_identity_closure.R`. |
+| 12 | grilling | CLOSED | H1 confirmed at 95%, verified-pipeline basis; split left open. |
+| 13 | **map** | **OPEN (ACTIVE)** | Characterize the nominal divergence on-disk, then decide the fetch. |
+| 14 | task | **OPEN (frontier)** | **2a** income-side vs expenditure-side GDP per raw table → internal or external divergence. |
+| 15 | task | **OPEN (frontier)** | **2b** regress `nominal_mm` on structural covariates (import share, openness, size, INVNT). |
+| 16 | task | **OPEN (frontier)** | **2c** bound the nominal/deflator split across on-disk benchmark vintages (`get_gOff` repo2018 vs current). |
+
+**Frontier = #14, #15, #16** (all `wayfinder:task`, on-disk, unclaimed, independent/parallel;
+no fetch). Fog: the fetch decision 1a/1b (grilling, graduates after 2a–2c); outcome-dependent
+localization if 2a finds an internal inconsistency; the minority extension. **Uncommitted/
+unpushed:** all this session's commits and GitHub actions are local on `diagnosis/xr-gap-debug`.
+The completed-stage record for maps #1/#8 and every seam and verdict is below.
+
 ## Standing rules (do not violate)
 
 - No hypothesis decided below **95% confidence**; below the bar, state the evidence
