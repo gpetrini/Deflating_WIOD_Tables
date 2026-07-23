@@ -711,3 +711,59 @@ conflation does not threaten this verdict.
 The four moved-year counts are below the full window (Colombia ten, Turkey seven, Indonesia
 eight, Argentina nine), so their country statistics are read with that caution.
 Reproduce with =code/retest_h2_deflator_swap.R=.
+
+* H1 direct level test: the residual is the ICIO nominal aggregate (2026-07-23, ticket #6)
+
+The two substitutable channels are rejected for the majority, the exchange rate at H4 and
+the applied deflator at H2, so by elimination the surviving gap must sit in the one
+non-substitutable term of the identity, the ICIO nominal-dollar aggregate.
+This tests that directly against the independent World Bank current-dollar series
+=NY.GDP.MKTP.CD=, the 2018 vintage that reaches 2016, on the majority over 1996 to 2016,
+1323 country-years and sixty-three countries.
+It does not reconstruct the official side from the pipeline's own price index and exchange
+rate; that reconstruction drives the deflator term to zero mechanically and is circular,
+verified this session.
+
+Pre-registered before running: H1 locates the gap if the nominal-aggregate term dominates
+the deflator term in a majority of country-years and the gap is approximated by the nominal
+term to within the operational threshold of one half of a percentage point.
+
+Both criteria are met.
+The nominal term dominates in sixty-seven percent of country-years and carries seventy-four
+percent of gap variance by covariance attribution.
+The median absolute gap is 0.362 percentage points, the median absolute nominal-aggregate
+term 0.388, and the median absolute deflator term 0.202, so the median absolute difference
+between the gap and the nominal term is 0.202, below the threshold.
+The additive identity holds to machine precision.
+
+In levels the two nominal-dollar indices track closely.
+The median terminal ratio of the ICIO nominal aggregate to official nominal GDP over the
+twenty-one years is 0.997, the median absolute log ratio is 0.021, and seventy-five percent
+of countries end within five percent of one.
+The cumulative divergence is small for most of the majority while the year-to-year gap is
+dominated by the nominal term, which is the signature of a balanced-and-estimated aggregate
+that differs from transcribed official nominal GDP period by period without drifting far in
+level.
+The largest level divergences are Turkey (0.72), Slovakia (1.28), Bulgaria (0.79),
+Bangladesh (1.20), Iceland (1.13) and Luxembourg (1.13).
+
+Verdict: H1 is confirmed at ninety-five percent as the location of the majority gap.
+After the exchange rate and the applied deflator are cleared, the residual majority gap is
+the ICIO nominal aggregate differing from official nominal GDP, not a substitutable channel.
+The gap is therefore bounded by the input-output tables themselves and cannot be driven to
+zero by any deflation or exchange-rate choice available here; for the majority it is already
+small, a median of 0.36 percentage points a year and about two percent cumulative in level.
+
+Limit stated with the verdict, and the reason a finer verdict is withheld: the test cannot
+separate an inherited defect of the balanced tables from a vintage mismatch.
+The current-dollar series is the 2018 World Bank release while the volumes are the 2023 ICIO
+release, and the decomposition pairs that 2018 current-dollar series with the 2026 download
+of the constant-dollar benchmark, so the split between the nominal and deflator terms is
+itself contingent on the current-dollar vintage even though their sum, the gap, is not.
+The claim that the residual is the nominal aggregate rather than a substitutable channel is
+robust to this, since it rests on the H4 and H2 substitutions and on the dominance count.
+The claim that the residual is specifically an inherited table defect rather than a
+current-dollar vintage artefact is not reachable on disk; it would require a current-vintage
+current-dollar series covering 1996 to 2016, which is a fetch not authorised.
+Reproduce with =code/retest_h1_nominal_levels.R=; the level figure is
+=figs/h1_nominal_level_divergence.pdf=.
