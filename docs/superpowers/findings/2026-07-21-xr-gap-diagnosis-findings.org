@@ -617,3 +617,52 @@ An identity does not attribute cause.
 A term of the decomposition being large establishes where the gap sits in the
 identity, not what produced it, so every verdict rests on a substitution or an
 external comparison and never on the size of a term.
+
+* H4 executed: exchange-rate substitution through the identity (2026-07-23, ticket #4)
+
+The substitution the identity raised has been run.
+Because $\Delta\ln e$ enters $g^{IO}$ with a coefficient of one, replacing the
+applied rate with a second series moves the gap by exactly the difference in
+log-changes, $\mathrm{Gap}_{WB} = \mathrm{Gap} + (\Delta\ln e_{WB} - \Delta\ln
+e_{applied})$, with no re-run of Stage A.
+The applied rate is OECD-primary with a World Bank fallback; the substitute is
+the World Bank series =PA.NUS.FCRF= for the whole panel.
+The test is stated on the majority (quarantine excluded), 1512 country-years,
+sixty-three countries; the swap moves the 1100 country-years whose applied rate
+is OECD.
+
+Pre-registered rule, fixed before running: a change in mean absolute gap below
+twenty percent refutes H4 for the majority, above fifty percent establishes it,
+and the median must corroborate the mean.
+
+The raw pooled mean rises by five hundred percent while the median rises ten
+percent.
+The divergence is diagnostic: fifteen country-years carry a one-year log change
+above one half in the substitute, each an exact currency reconversion at euro
+adoption (Italy, Spain, Portugal, Luxembourg, Belgium, Austria, France, Finland,
+the Netherlands and Germany in 1999; Greece in 2001; Slovenia in 2007; Slovakia
+in 2009; Estonia in 2011; Lithuania in 2015).
+Italy's 1999 value is $7.52 = \ln(1936.27)$, the lira-to-euro conversion factor.
+The World Bank series carries the pre-euro national currency and the OECD applied
+rate back-casts the euro, so these are the exogenous re-expression H5 quarantines,
+appearing here in the substitute rather than in the applied series.
+A single break-year of that magnitude dominates a twenty-four-year mean, which is
+why the pooled mean is uninformative and the median is not.
+
+With the fifteen reconversion break-years removed, the moved subset of 1085
+country-years changes by seventeen percent in the mean and thirteen percent in
+the median.
+Both lie below the pre-registered twenty-percent bound and corroborate each other.
+The direction is decisive: the substitution raises the gap rather than lowering
+it, so the independent rate does not fit better than the applied rate.
+Were the applied series in error, the correct rate would reduce the gap.
+
+Verdict: H4 is rejected for the majority at ninety-five percent.
+The exchange-rate series is not the source of the majority gap.
+For World Bank-fallback countries the applied rate already equals the substitute,
+so the swap is a null operation and the rejection is trivial there.
+
+Caution: the two providers may embed different vintages, but the effect is small
+and of the wrong sign for H4, so a vintage difference does not threaten the
+rejection.
+Reproduce with =code/retest_h4_xr_swap.R=.
