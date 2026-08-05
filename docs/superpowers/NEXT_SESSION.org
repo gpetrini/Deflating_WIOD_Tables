@@ -1,0 +1,101 @@
+#+title: Next session
+#+date: 2026-08-04
+#+filetags: :IODefl:session:pointer:
+
+This file is OVERWRITTEN at the end of every session, never appended.
+It describes one session: the next one.
+History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
+
+Previous session: charted maps #17, #18 and #19; resolved ticket #20.
+
+* Ticket to claim
+
+*#21, A2: CDX-sign diagnostic, composition effect or defect*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/21
+Map: #17, deliver the seven Stage-B reporting refinements.
+
+Claim it first: =gh issue edit 21 --add-assignee gpetrini=.
+One ticket per session.
+
+* Why this one
+
+It is the only ticket on the frontier of map #17 that resolves a question rather
+than applying a specified edit, and the map's "Not yet specified" section
+(Item 2, merging CDI into the imports term) is gated on its answer.
+Tickets #22 and #23 are mechanical and can run later or be delegated.
+Ticket #24 is blocked until all four close.
+
+* Recommended model
+
+*Opus 5.*
+The ticket requires judging whether a sign divergence is a composition effect or
+a defect, and the plan forbids forcing a fix.
+That judgement, plus its implication for Item 2, is the reasoning-heavy part of
+map #17.
+Tickets #22 and #23 are specified line by line in the plan and suit a cheaper
+model or a subagent.
+
+* Ideal opening prompt
+
+#+begin_example
+Continuar o wayfinder map #17. Assumir o ticket #21 (diagnóstico de sinal do
+CDX). Seguir docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md
+Task 2: acrescentar diagnose_cdx_sign() a code/tests.R e rodá-lo para USA 2012 e
+MEX 2014.
+
+Investigar, não forçar correção. Decidir com evidência se a divergência de sinal
+entre Import Content e Average Import Content é efeito de composição (um
+componente domina a soma) ou defeito (parcela fora de [0,1], NA, Inf). Registrar
+a conclusão junto ao FIXME em code/support_functions.R:365 com a redação que o
+diagnóstico sustentar; se for defeito, abrir ticket em vez de redigir como
+sucesso.
+
+Declarar o que a conclusão implica para o Item 2 (fundir CDI no termo de
+importações), que está na névoa do mapa #17 aguardando esta resposta.
+
+Trabalhar no ramo reporting/refinements.
+#+end_example
+
+* Context this session needs
+
+- Plan: =docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md=, Task 2.
+- Map #17 body; its Notes carry the standing rules and the ordering against the migration.
+- Branch =reporting/refinements=, currently at 3c3c9ae.
+
+* Facts carried forward
+
+- *The plan's blocking PREREQUISITE is stale.*
+  =etc/Modelo/NIOTs_resultados.rdata= and =results/NIOTs_resultados.rdata= both
+  exist, so Tier-B verification runs.
+  No ticket on map #17 closes on a parse check alone.
+- *Tier-B harness exists:* =code/verify_reporting_refinements.R=.
+  It rebuilds =results= and =decomp= and writes a numeric fingerprint to
+  =objs/reporting_refinements_fingerprint.rds=.
+  Reuse it to show whether a change moved a number.
+  A full rebuild takes a few minutes.
+- *The gap diagnosis is resolved upstream in the new repository.*
+  Do not write or run scripts associated with the growth-rate gap debugging.
+- *The grouped path of =plot_differenteces= is broken.*
+  =support_functions.R:965= reads a =vrbl= leaked from the loop above it.
+  Latent because =group_plots= reaches it only with =verbose = TRUE=.
+  Belongs to ticket #32, not to map #17.
+- *Three =free_y= facets outside the plan's enumeration* were left in place at
+  =support_functions.R:680=, =:1098= and =:1101=.
+  Recorded in map #17's fog.
+
+* Decision waiting on the user
+
+Map #13, characterize the ICIO nominal-aggregate divergence on-disk, and its
+tickets #14, #15 and #16 were charted before the gap was resolved upstream.
+If that resolution supersedes them, they should be closed and recorded under the
+map's "Out of scope", and the diagnosis scripts in =code/= reconsidered.
+Ask before touching them.
+
+* Board state
+
+| Map                       | Frontier: open, unblocked, unclaimed                    |
+|---------------------------+---------------------------------------------------------|
+| #17 reporting refinements | #21, #22, #23; #24 blocked by all four; #20 closed      |
+| #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25 |
+| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                       |
+| #13 gap characterization  | #14, #15, #16, possibly superseded, see above           |
