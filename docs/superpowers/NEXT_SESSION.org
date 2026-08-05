@@ -94,11 +94,10 @@ aqui tabs/*.tex é versionado e figs/ é ignorado, o que é incoerente.
 * State of the working tree
 
 Clean.
-Branch =reporting/refinements=, dez commits, *not pushed*: 3c3c9ae, 2bfe2c4,
-b3ef6d5, 4a56c91, 1ef450b, 3bb43e0, 6e714f5, 1232394, ef31ebb, 8c86038.
-It branched off =diagnosis/xr-gap-debug=, which is the pushed tip; =master= is far
-behind both.
-The push decision is still open.
+Branch =reporting/refinements=, *pushed* and tracking
+=origin/reporting/refinements=.
+It branched off =diagnosis/xr-gap-debug=; =master= is far behind both, and whether
+this work reaches =master= is still undecided.
 
 Three stray files in =tabs/= from an exploratory call to =tabulate_period_means()=,
 left in place by author decision on 2026-08-05: =Period_Means_Attribution.tex=,
@@ -142,6 +141,11 @@ They are not a deliverable of any ticket.
   #39 carries the finding forward.
 - *=tabulate_period_means()= writes to =../tabs/= on every call*, so exploratory
   use contaminates published output. Redirect its =tabs= argument.
+- *The =figs= argument of every plotting function is dead.*
+  No =save_figs()= call passes it, so the argument is accepted and ignored and
+  output always lands in =../figs/=.
+  An attempt to render into a scratch directory silently overwrote the published
+  set instead. Filed on #32.
 - *The gap diagnosis is resolved upstream.* Do not run the archived diagnosis
   scripts.
 - *Tracker mechanics.* Sub-issues:
