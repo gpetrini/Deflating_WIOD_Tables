@@ -1,0 +1,183 @@
+#+title: Layout skeleton inherited from the model project folder
+#+date: 2026-08-05
+#+filetags: :IODefl:migration:layout:spec:
+
+Deliverable of ticket #41 of map #18.
+It records the layout of the model folder, which of its choices the new
+repository inherits, the conflicts found against constraints this map already
+recorded, and what the folder does not answer and therefore remains a free
+decision for #29.
+
+This is a skeleton, not a copy.
+It states which directories exist and what belongs in each, independently of the
+files that happen to be in them today.
+
+* Provenance
+
+Absolute path on this machine: =/HDD/Model_OCDE=.
+Downloaded by the author on 2026-08-05, to the machine that does *not* hold
+=etc/Modelo/NIOTs_resultados.rdata=.
+
+The folder originates on the co-author's machine at
+=/home/andre/Documentos/MEGA/Estudos/Extra/Artigo_taxas/Model=, a MEGA
+synchronised directory.
+That path is not inferred from the folder name: it is written literally into
+=organize_workspace.sh= and into every script under =scripts/=.
+
+=Artigo_taxas.Rproj= at the root names the project =Artigo_taxas=.
+
+*It is not a git repository.*
+=git rev-parse= fails and no dotfile exists at the root.
+Nothing is under version control, so no history is bloated and every exclusion
+below is preventive.
+
+* What is there
+
+Total 338 MB.
+
+| Directory           | Size    | What it holds                                                        |
+|---------------------+---------+----------------------------------------------------------------------|
+| =data-raw/=         | 94 MB   | external releases: =IOTs_2025_RData/= (six =.rdata=), six World Bank and OECD spreadsheets, =titulos.xlsx= |
+| =data-processed/=   | 135 MB  | =NIOTs_2021.rdata=, =NIOTs_2023.rdata=, =country_groups.rds=          |
+| =archive/=          | 71 MB   | =legacy_data/= (spreadsheets, a Bruegel REER file, an =ICIO_exemplo.xlsx= of 51 MB) and =legacy_scripts/= including a =base/= subtree |
+| =reports/=          | 36 MB   | 81 generated per-country PDFs                                         |
+| =ioOECD/=           | 208 KB  | the R package: =R/= (12 files), =man/= (25 =.Rd=), =tests/testthat/= (4 test files), =DESCRIPTION=, =NAMESPACE= |
+| =ioOECD.Rcheck/=    | 532 KB  | output of =R CMD check=                                               |
+| =scripts/=          | 164 KB  | nine numbered execution scripts plus =2021_validation/= with nine more |
+| =testes/=           | 768 KB  | Excel results, plus =2021_validation/= and =archive/= subdirectories   |
+| =outputs/=          | 2 MB    | four PDFs, including =Figs_Tabs.pdf=                                  |
+| =quality_reports/=  | 16 KB   | a package review and three dated checkpoints, in Markdown             |
+| root                |         | =README.md=, =Artigo_taxas.Rproj=, =ioOECD_0.1.0.tar.gz=, =organize_workspace.sh=, =archive_unused_data.sh= |
+
+Two files were added to the folder by ticket #37: =docs/zenodo-manifest.org= and
+=SHA256SUMS=.
+
+* The skeleton
+
+Inherited, with the role of each directory stated independently of its contents.
+
+| Directory         | Role                                                                 | In git |
+|-------------------+----------------------------------------------------------------------+--------|
+| =data-raw/=       | external releases, consumed and never produced here                   | no     |
+| =data-processed/= | objects produced by the treatment and consumed by the reporting stage | no     |
+| =ioOECD/=         | the R package: all mathematics, validation and estimation             | yes    |
+| =scripts/=        | short execution scripts that import the package and produce results   | yes    |
+| =docs/=           | manifest, ADRs, findings, checkpoints                                 | yes    |
+| products          | figures, tables and reports written by the code                       | no     |
+| =archive/=        | material outside the main flow, retained for provenance               | no     |
+
+Two choices are worth inheriting on their own merits.
+
+The separation of =data-raw/= from =data-processed/= names precisely the boundary
+the Zenodo deposit needs, and #37 used it directly as the inclusion criterion.
+
+The separation of =ioOECD/= from =scripts/= puts the mathematics behind a package
+interface and leaves the scripts short.
+That is the arrangement ADR-0004 of this repository already prescribes, a pure
+core with a thin wrapper, reached independently.
+
+* Conflicts against constraints already recorded on this map
+
+Flagged, not resolved.
+
+** Every script hardcodes the co-author's absolute path
+
+=scripts/01_baccaro_replication.R:10= sets
+=data_dir <- "/home/andre/Documentos/MEGA/Estudos/Extra/Artigo_taxas/Model/data-raw"=,
+and the same literal appears in at least ten other scripts, in
+=organize_workspace.sh=, and in =scripts/2021_validation/test_6_sectors.R= which
+=source()=s the package files by absolute path.
+
+*This is the direct contradiction of the destination.*
+The map is reached when a stranger can clone and run =make=; nothing under
+=scripts/= runs on any machine other than the co-author's.
+It is a larger correction than a layout decision and belongs to the ticket that
+adapts Stage B, not to #29.
+
+** The folder mixes data, products and code in one tree
+
+229 MB of data, 36 MB of generated PDFs, 71 MB of archive and the Excel outputs
+under =testes/= all sit beside the code.
+The constraint that no binary serialisation enters git history is satisfiable
+without moving anything: the directories are inherited and the =.gitignore=
+excludes them, with Zenodo carrying =data-raw/= and =data-processed/= (#37).
+
+** The product directories do not match what the reporting code writes
+
+The reporting stage writes =../figs=, =../tabs=, =../objs= and =../reports= by
+relative path from inside =code/=, and =group_plots= fails outright when
+=../reports= is absent.
+
+The model folder has =reports/= and =outputs/=, and no =figs/=, =tabs/= or
+=objs/=.
+=outputs/= holds =Figs_Tabs.pdf=, so it is the compiled manuscript rather than
+the figure directory.
+The names collide only partly, and #29 must decide the mapping rather than
+assume it.
+
+** Moving the figure directory requires a code change, not configuration
+
+The =figs= argument of every plotting function is dead: no =save_figs()= call
+passes it, so output always lands in =../figs/= whatever the caller asks for.
+Filed as #32.
+Any layout that renames or relocates the figure directory has to fix that first.
+
+** The package licence contradicts ADR-0008
+
+=ioOECD/DESCRIPTION= declares =License: MIT + file LICENSE=.
+This repository is GPL-3, and ADR-0008 fixed GPL-3 for the package work.
+There is *no LICENSE file anywhere in the folder*, so the declaration is also
+unsatisfied on its own terms and =R CMD check= would flag it.
+
+=Authors@R= is a placeholder: =person("Andre", email = "andre@example.com")=.
+
+Neither is a layout question, and neither can be settled without the co-author.
+
+** Check output and session residue are in the tree
+
+=ioOECD.Rcheck/= is the output of =R CMD check=.
+=.Rhistory= files exist in =data-processed/=, =scripts/= and
+=quality_reports/checkpoints/=.
+Both are covered by the rule that nothing generated is tracked.
+
+** =testes/= holds outputs, not tests
+
+The actual test suite is =ioOECD/tests/testthat/=, with four files.
+=testes/= holds Excel comparison workbooks, which are products.
+The name misleads, and #29 should decide whether it survives.
+
+** Two files referenced by the scripts do not exist
+
+=scripts/02_compare_legacy_modular.R:13= and two other scripts load
+=data-processed/dados_escalares.rdata=, which is not in =data-processed/=.
+
+=scripts/2021_validation/build_2021_array.R:7= reads
+=archive/legacy_data/OECD,DF_IOTS_2021,+DOMIMP....csv=, which is not in
+=archive/legacy_data/=.
+
+This corroborates the finding of #37 that the 2021 and 2023 editions cannot be
+rebuilt inside the folder, and it extends it: the rebuild path exists as code but
+its input is absent.
+
+* What the model folder does not answer
+
+Handed to #29 as free decisions.
+
+- *Where the reporting code lives.* The folder holds Stage A and the package.
+  Whether =code/support_functions.R= of this repository arrives as a =code/=
+  directory, as scripts under =scripts/=, or is absorbed into =ioOECD/= is not
+  settled by anything in the folder.
+- *Where products land*, given the mismatch recorded above.
+- *Whether the manuscript lives here.* =outputs/Figs_Tabs.pdf= is present but no
+  =.org= source is.
+- *Dependency management.* There is no =renv=, no lockfile and no project-level
+  manifest; only the =Imports= field of the package. The =Makefile= of #38 has to
+  install dependencies from something.
+- *Build entry point.* There is no =Makefile=. The two shell scripts at the root
+  are one-off reorganisation tools, not entry points, and one of them begins with
+  =cd= to an absolute path.
+- *Whether git history travels* or the files arrive as a fresh commit.
+- *The repository name.* The =.Rproj= says =Artigo_taxas=; the folder says
+  =Model_OCDE=; neither is a decision.
+- *Whether =archive/= travels at all*, or stays behind as provenance on the
+  co-author's disk.
