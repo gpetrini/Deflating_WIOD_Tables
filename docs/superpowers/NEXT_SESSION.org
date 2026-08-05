@@ -132,3 +132,10 @@ The zero-growth threshold was decided with the author at 0.5 p.p. on 2026-08-05.
 | #17 reporting refinements | #24 only; #34 blocked by #25, #35 by #34; #20-23 closed      |
 | #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25 |
 | #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                            |
+| (no map)                  | #36, cross-method sign disagreement, requested by the co-author |
+
+#36 is deliberately outside every map: map #17 fixes its destination at the seven
+plan refinements, and this is an eighth item.
+It carries its own measured evidence in the body, so it can be executed without
+re-deriving anything.
+Re-run its numbers after map #18 lands the new vintage.
