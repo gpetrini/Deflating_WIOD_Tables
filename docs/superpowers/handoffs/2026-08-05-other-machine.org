@@ -96,13 +96,13 @@ substituting a parse check for the evidence the ticket asked for.
 
 * Work in flight on the other machine
 
-Ticket #24, the full integration run of =generate_reports.R=, completed on the
-other machine at 12:46 on 2026-08-05: exit code 0, all 77 groups, no error.
-The ticket is still *open*, because the run was the necessary and not the
-sufficient part; what remains is reading the figure set and two rulings, both of
-which need the data.
-*Do not attempt any of it here*, and do not treat map #17 as closed: #24 is open,
-and #34 and #35 are deferred behind the migration.
+*Map #17 is closed.* All five of its tickets (#20 to #24) resolved on 2026-08-05.
+Tickets #34 and #35 were reparented to map #18, where you will now find them,
+both blocked behind #25.
+
+Two items wait on the machine that holds the data, and *neither can be attempted
+here*: #40, verifying a figure republication left running when that session
+ended, and #36, the cross-method sign disagreement.
 
 * Branch
 
