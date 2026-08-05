@@ -10,21 +10,27 @@ Previous session (2026-08-05): closed map #17 entire, resolving #21, #22, #23 an
 #24; opened #34, #35, #36 and #40; revised map #18 from the Syncthing arrangement
 to the Zenodo arrangement and opened #37, #38 and #39.
 
-* If you are the agent on the second machine
+* FIRST: find out which machine you are on
 
-Read =docs/superpowers/handoffs/2026-08-05-other-machine.org= first.
-It covers what is specific to working without the data on disk, and then sends
-you back here.
+Run this from the repository root, before choosing a ticket:
 
-* The machine decides the ticket
+: test -f etc/Modelo/NIOTs_resultados.rdata && echo "DATA PRESENT" || echo "NO DATA"
 
-The author works part of the time on a machine that does not hold
-=NIOTs_resultados.rdata=.
-Tickets that run there carry the *=no-data-required=* label on the tracker:
+*NO DATA* — you are on the second machine.
+Read =docs/superpowers/handoffs/2026-08-05-other-machine.org= before anything
+else; it covers what changes when the data is absent, then sends you back here.
+Work only tickets carrying the =no-data-required= label:
 
-: gh issue list --state open --label no-data-required
+: gh issue list -R gpetrini/Deflating_WIOD_Tables --state open --label no-data-required
 
-Everything else needs the data and must wait for the machine that has it.
+*DATA PRESENT* — you are on the primary machine.
+Ignore that handoff, which is addressed to the other one.
+Every ticket is available to you, and the two waiting here are named below.
+
+Do not infer the machine from the hostname, from this file, or from what a
+previous session said.
+The data file is the thing that actually constrains what can be verified, so it
+is the thing to test.
 
 * Ticket to claim, on a machine WITHOUT the data
 
