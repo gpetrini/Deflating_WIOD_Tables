@@ -6,94 +6,68 @@ This file is OVERWRITTEN at the end of every session, never appended.
 It describes one session: the next one.
 History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
 
-Previous session (2026-08-05, second of the day, on the machine without the
-data): resolved #37 and #41, both on map #18.
-The premise of both changed mid-session, because the author downloaded the future
-target repository to =/HDD/Model_OCDE= on that machine.
+Previous session (2026-08-05, third of the day, on the machine without the
+data): closed #25 and #29, both on map #18, and filed #42.
+*The new repository now exists*, which is the largest change to the routing.
 
 * FIRST: find out where you are
 
-Two tests now, not one.
-They are independent and both matter.
+Three locations now, not two.
 
 : test -f etc/Modelo/NIOTs_resultados.rdata && echo "DATA PRESENT" || echo "NO DATA"
-: test -d /HDD/Model_OCDE && echo "MODEL FOLDER PRESENT" || echo "NO MODEL FOLDER"
+: test -d /HDD/Model_OCDE && echo "SOURCE FOLDER PRESENT" || echo "NO SOURCE FOLDER"
+: test -d ~/Documents/GrowthDecomposition && echo "NEW REPO PRESENT" || echo "NO NEW REPO"
 
-*The second test is new and it changes the routing.*
-Until 2026-08-05 the two were assumed to coincide.
-They do not: the model folder was downloaded to the machine *without* the data.
-=/HDD/Model_OCDE= is the future target repository of map #18, and several tickets
-need only it.
+The third is new.
+=~/Documents/GrowthDecomposition= is the *target repository of map #18*, created
+by #29 on the machine without the data.
+It has no remote, so it does not travel by =git clone= yet; on the primary
+machine it is absent.
 
-- *NO DATA + MODEL FOLDER PRESENT* — the second machine, as it now stands.
-  Read =docs/superpowers/handoffs/2026-08-05-other-machine.org=, whose section
-  "Which tickets run here" is *out of date*: the =no-data-required= label no
-  longer describes what is workable, because the model folder arrived after the
-  label was applied. Everything else in that handoff still holds.
+- *NO DATA + SOURCE + NEW REPO* — the second machine, as it now stands.
 - *DATA PRESENT* — the primary machine. #36 and #40 wait there and nowhere else.
 
-Do not infer either answer from the hostname or from what a previous session
-said.
+Do not infer any answer from the hostname or from what a previous session said.
 
 * Ticket to claim
 
-*#25, B1: synchronise Super Decomposição locally and inventory the new treatment*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/25
+*#26, B2: derive the Stage-B input contract from the consuming code*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/26
 
-Claim it first: =gh issue edit 25 -R gpetrini/Deflating_WIOD_Tables --add-assignee gpetrini=.
+Claim it: =gh issue edit 26 -R gpetrini/Deflating_WIOD_Tables --add-assignee gpetrini=.
 
-*It is the only open blocker of #29*, which the author named as the next
-frontier and which in turn gates #38 and #39.
-It also gates #27 and #34.
+It is a frontier ticket, it gates #27 and through it #28, and it reads
+=code/support_functions.R= rather than the data, so it runs on either machine.
+Verify that last claim before committing to it: if it turns out to need
+=NIOTs_resultados.rdata= to establish what the consuming code actually receives,
+stop and switch to #30, #31 or #32 on map #19.
 
-*It is partly done already.* See the comment left on it on 2026-08-05.
-Established: the consumed object binds one =NIOTs=, a list of 74 countries with
-14 slots each and 26 years per slot; =data-raw/= holds only =IOTs_2025_RData/=,
-so the 2021 and 2023 editions cannot be rebuilt there.
+#25 has already handed it two of the facts it needs: the fourteen slots of a
+=NIOTs= object and the code that composes them (=archive/legacy_scripts/base/salva_dados.R=),
+and the fact that =ioOECD::parse_niot_tables()= produces only three of the
+fourteen.
 
-What remains, all of it workable from =/HDD/Model_OCDE= on the second machine:
+** After #26
 
-1. Which script turns the 2025 raw release into a =NIOTs= object.
-   =scripts/01_baccaro_2025_from_scratch.R= is the candidate; read it rather than
-   assume it.
-2. The country and year coverage of the 2025 vintage.
-   =data-processed/= holds no 2025 object, so the coverage has to be read from
-   the raw tables or produced.
-3. Whether =Super Decomposição= and =Model_OCDE= are the same folder under two
-   names, or two different things. The map still speaks of the former and the
-   author of the latter.
-
-*#25 is mislabelled.* It has no =no-data-required= label and its body says it
-needs the folder, which is now on the second machine.
-Fix the label when you claim it.
-
-** After #25
-
-*#29, B5: create the new git repository, its layout and its .gitignore.*
-The author stated the intent directly: decide what leaves git and what stays.
-Its two inputs are already written.
-The =.gitignore= specification is in a comment on #29.
-The layout skeleton is
-=docs/superpowers/specs/2026-08-05-new-repository-layout-skeleton.org=.
+*#28, B4: adapt Stage B in place, or insert an adaptation layer?* — becomes the
+frontier once #26 and #27 report, and it now also gates #42.
+On the primary machine instead, *#36* and *#40*.
 
 * Recommended model
 
-*Opus 5* for #29, which has to weigh eight recorded conflicts against the
-destination and settle a licence contradiction.
-*A cheaper model suffices for #25*, which is reading and recording, not deciding.
+*Opus 5* for #26, which has to read 1640 lines and decide what the contract is
+rather than record what is there.
 
 * Ideal opening prompt
 
 #+begin_example
-Continuar o mapa #18. Estou na máquina SEM os dados, mas COM a pasta modelo em
-/HDD/Model_OCDE, que é o repositório-alvo futuro. Verifique os dois testes do
-NEXT_SESSION antes de escolher ticket.
+Continuar o mapa #18. Rode os TRÊS testes do NEXT_SESSION antes de escolher
+ticket: agora existe um terceiro local, ~/Documents/GrowthDecomposition, que é o
+repositório-alvo criado pelo #29.
 
-Assumir o #25, que está parcialmente feito: falta identificar qual script
-transforma o bruto de 2025 em objeto NIOTs, a cobertura de países e anos dessa
-safra, e se Super Decomposição e Model_OCDE são a mesma pasta.
-
-O #25 é o único bloqueio aberto do #29, que é a próxima fronteira que eu quero.
+Assumir o #26: derivar o contrato de entrada do Stage B a partir de
+code/support_functions.R. O #25 já entregou os catorze slots do objeto NIOTs e o
+código que os compõe.
 
 gh precisa de -R gpetrini/Deflating_WIOD_Tables neste checkout, porque existe um
 remote upstream apontando para GICN.
@@ -101,119 +75,152 @@ remote upstream apontando para GICN.
 
 * Context this session needs
 
-- Mapa #18, cujo corpo foi atualizado em 2026-08-05 com os dois ponteiros novos.
-- Os comentários de resolução de #37 e #41, que carregam as decisões em detalhe.
+- Mapa #18.
+- =docs/superpowers/specs/2026-08-05-new-repository-created.org= — o que o #29
+  construiu e decidiu.
+- =docs/superpowers/findings/2026-08-05-2025-vintage-and-the-niots-path.org= — o
+  inventário do #25.
 - =docs/superpowers/specs/2026-08-05-new-repository-layout-skeleton.org=.
-- =docs/superpowers/findings/2026-08-05-zenodo-deposit-and-model-ocde-folder.org=.
 
 * State of the working tree
 
 Clean.
 Branch =reporting/refinements=, tracking =origin/reporting/refinements=.
-*Two commits ahead of origin and not pushed*: =e910aac= (the Zenodo record) and
-=b9cfb01= (the layout skeleton), plus whatever this session adds.
+*Six commits ahead of origin and not pushed*: =e910aac=, =b9cfb01=, =e94bb80=,
+=5bdd876= (the #25 inventory), =23a4251= (the #29 record) and =33ffb24= (this
+pointer).
 
 Three stray files in =tabs/= from an exploratory call to
-=tabulate_period_means()=, left in place by author decision on 2026-08-05:
-=Period_Means_Attribution.tex=, =Period_Means_AverageImportContent.tex=,
-=Period_Means_NetExports.tex=.
+=tabulate_period_means()=, left in place by author decision on 2026-08-05.
 
 * Facts carried forward
 
-- *=/HDD/Model_OCDE= is the future target repository*, 338 MB, *not yet a git
-  repository*. Nothing is bloated; every exclusion decided so far is preventive.
-  It originates at =/home/andre/Documentos/MEGA/Estudos/Extra/Artigo_taxas/Model=
-  on the co-author's machine. The author confirmed on 2026-08-05 that *the MEGA
-  arrangement is superseded in full by Zenodo plus git*.
+** The new repository
+
+- *=~/Documents/GrowthDecomposition=, created 2026-08-05 by #29.* One commit on
+  =main=, 71 files, =.git= 452 KB, working tree 368 KB. Working tree clean.
+- *No remote, deliberately.* The GitHub name is the author's decision, and
+  publishing is blocked on substance: =ioOECD/DESCRIPTION= declares MIT against
+  GPL-3 in ADR-0008, there is no LICENSE file, and =Authors@R= is the placeholder
+  =person("Andre", email = "andre@example.com")=. Both need the co-author.
+- *=/HDD/Model_OCDE= is the untouched source*, not the repository. Only files to
+  be tracked were copied out of it.
+- *Every directory name is English*, by author instruction. =testes/= became
+  =tests/= and holds suites (=testthat= and the like), which is code and is
+  tracked; its Excel comparison workbooks were reclassified as products and go to
+  =outputs/=. The package keeps =ioOECD/tests/testthat/=.
+- *Markdown is tracked there*, unlike here: the =.gitignore= uses =*= plus =!*/=
+  rather than this repository's =*.*=. Documents in the new repository need not be
+  Org.
+- *Stage-B code lands in =scripts/=*, by author decision, leaving roughly 1640
+  lines outside any package interface — against ADR-0004, recorded as taken and
+  not as agreed. *The move itself is #28*; nothing of Stage B was copied yet.
+- *=country_groups= is now =scripts/country_groups.R=*, eight countries in two
+  groups, not the roughly 77 groups of =global_variables.R= here. Evidence for
+  #26 and #27.
+
+** The 2025 vintage, from #25
+
+- *No script anywhere builds a =NIOTs= object from the 2025 release.* The
+  candidate, =scripts/01_baccaro_2025_from_scratch.R=, writes an xlsx.
+- *The only working =NIOTs= builders are in =archive/legacy_scripts/=*:
+  =compilacao.R= (7 sectors, 1995–2020) and =compilacao_ICIO.R= (45 sectors,
+  1995–2018), both CSV-based, composing the fourteen slots in
+  =base/salva_dados.R=.
+- =ioOECD::parse_niot_tables()= returns 3 of the 14 slots and hardcodes the
+  45-sector geometry. =ioOECD::load_io_tables()= *cannot run*: it wants
+  =data-raw/ICIO_<version>/NATIODOMIMP/*.csv=, absent, and its =lapply= body
+  returns file paths because the =read.csv= call is missing.
+- *Coverage: 28 years (1995–2022), 81 country slices, 50 sectors.* A strict
+  superset of the 2023 edition; new are AGO, ARE, COD, MMR, STP, TWN, ROW.
+- *50 sectors, not 45.* Splits C24A/C24B, C301/C302T309, H49–H53,
+  J58T60/J61/J62_63, plus an =IMP_OTHER= row with no domestic counterpart, which
+  the 2025 script silently drops. Every 45-sector assumption in =ioOECD=,
+  including the 7-sector aggregator, is incompatible.
+- 2021 and 2022 are discarded by the script because *deflators stop at 2020*.
+  Extending coverage is a deflator question, not a table question.
+- =Super Decomposição= vs =Model_OCDE= *is not settled and cannot be settled on
+  the second machine*: the former is described as Google Drive under Insync, the
+  latter originates on the co-author's MEGA, the string appears nowhere in the
+  folder, and there are no Insync mounts there. It changes nothing downstream.
+
+** archive/
+
+- *The deletion is reversed.* Retained by author decision on 2026-08-05, after
+  #25 measured the second objection above. The first objection stands: the four
+  =*_original= spreadsheets all differ from the deposited working copies.
+- *Its only copy is on =/HDD= on the second machine* — not in git, not in the
+  deposit, not copied into the new repository. Retention preserves it from
+  deletion, not from disk failure.
+- Two follow-ups open: whether =archive/legacy_scripts/= should be tracked in git
+  as the reference builder (text, roughly 50 KB), and whether the four originals
+  join the deposit or the #37 manifest wording is corrected.
+
+** Unchanged
+
 - *The Zenodo deposit is designed and its manifest written*, into
-  =/HDD/Model_OCDE/docs/zenodo-manifest.org=, with =SHA256SUMS= at that folder's
-  root, verified clean over fourteen files.
-  Fourteen files, 238905858 bytes, 227.8 MB: all of =data-raw/= plus
-  =NIOTs_2021.rdata= and =NIOTs_2023.rdata=.
-  CC BY 4.0, no conversion, a new version on any change of bytes, SHA-256 as the
-  contract, the manuscript citing the version DOI and never the concept DOI.
-- *One verification can still change what is deposited.* The licence statement on
-  the OECD National IOTs page was not read: the page returns HTTP 403 here.
-  If it is more restrictive than CC BY 4.0, =data-raw/= leaves the deposit.
-- *The processed objects cannot be regenerated.* The raw inputs of the ICIO 2021
-  and 2023 editions are absent from the whole folder, =archive/= included.
-  That, and not convenience, is why =data-processed/= is deposited.
-- *The order-of-magnitude puzzle is explained.* Two editions of the OECD National
-  IOTs, =NIOTs_2023.rdata= at 8.2 MB against =NIOTs_2021.rdata= at 126.3 MB.
-  Not WIOD-43 against OECD-75.
-- *74 countries against 75.* =data-processed/NIOTs_2023.rdata= holds 74;
-  =etc/Modelo/NIOTs_resultados.rdata= holds 75. The two objects are not the same
-  file. Evidence for #26 and #27.
+  =/HDD/Model_OCDE/docs/zenodo-manifest.org=, =SHA256SUMS= at that root, verified
+  over fourteen files, 238905858 bytes, 227.8 MB. CC BY 4.0, no conversion, a new
+  version on any change of bytes, SHA-256 as the contract, the version DOI cited
+  and never the concept DOI.
+- *One verification can still change what is deposited*: the licence statement on
+  the OECD National IOTs page returns HTTP 403 from here and was not read.
 - *Every script in =/HDD/Model_OCDE/scripts/= hardcodes
-  =/home/andre/Documentos/MEGA/...=.* Nothing there runs on another machine.
-  This is the direct contradiction of the map's destination and it belongs to the
-  Stage-B adaptation ticket, not to #29.
-- *=ioOECD/DESCRIPTION= declares MIT* against GPL-3 in ADR-0008, and there is *no
-  LICENSE file anywhere in the folder*. =Authors@R= is the placeholder
-  =person("Andre", email = "andre@example.com")=. Needs the co-author.
-- *=archive/= is to be deleted*, decided 2026-08-05. It is in neither git nor the
-  deposit, so it survives nowhere.
-  *An objection was measured and is not yet answered*: the four
-  =*_original= spreadsheets in =archive/legacy_data/= all differ from the working
-  copies in =data-raw/= that the deposit carries, so those four deposited files
-  are not the publisher's files and the originals are the only record of what
-  changed. Roughly 700 KB of the 71 MB. See the layout skeleton document.
-- *=tabulate_period_means()= writes to =../tabs/= on every call*, so exploratory
-  use contaminates published output. Redirect its =tabs= argument.
-- *The =figs= argument of every plotting function is dead*, so any layout that
-  moves the figure directory needs a code fix first. Filed as #32.
-- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells. #34, behind
-  #25.
-- *Rebuild costs on the primary machine, measured 2026-08-05.* Full
-  reconstruction 27 seconds; regenerating one group's figures about a minute; the
-  full driver 66 minutes for 77 groups. Verifying a code change is cheap; only a
-  deliberate republication costs an hour.
+  =/home/andre/Documentos/MEGA/...=*, carried unchanged into the new repository.
+  Nothing under =scripts/= runs on another machine. This belongs to #28.
+- *=tabulate_period_means()= writes to =../tabs/= on every call.* Redirect its
+  =tabs= argument.
+- *The =figs= argument of every plotting function is dead.* #32.
+- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells. #34, now
+  unblocked.
+- *Rebuild costs on the primary machine:* full reconstruction 27 seconds; one
+  group's figures about a minute; the full driver 66 minutes for 77 groups.
 - *Tier-B harness:* =code/verify_reporting_refinements.R=. The =decomp=
   fingerprint is unchanged at tolerance zero across every ticket of map #17.
-- *=gh= needs =-R gpetrini/Deflating_WIOD_Tables= inside this checkout.*
-  An =upstream= remote points at GICN, so =repos/:owner/:repo= resolves there and
-  returns HTTP 404 for every issue. This is not the failure the older handoff
-  describes.
-  =gh issue view= separately fails with a Projects-classic deprecation error;
-  read bodies with =gh api repos/gpetrini/Deflating_WIOD_Tables/issues/N --jq '.body'=.
+- *=gh= needs =-R gpetrini/Deflating_WIOD_Tables= inside this checkout.* An
+  =upstream= remote points at GICN. =gh issue view= fails with a Projects-classic
+  deprecation error; read bodies with
+  =gh api repos/gpetrini/Deflating_WIOD_Tables/issues/N --jq '.body'=.
 - *Tracker mechanics.* Sub-issues:
   =gh api repos/<owner>/<repo>/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
   Blocking: =.../issues/N/dependencies/blocked_by -F issue_id=<numeric id>=.
-  Use =-F=, not =-f=. The numeric id is =gh api .../issues/N --jq .id=, not the
-  issue number.
-- *The repository =.gitignore= excludes Markdown.* Write documents in Org.
+  Use =-F=, not =-f=. The numeric id is =gh api .../issues/N --jq .id=.
+- *This repository's =.gitignore= excludes Markdown.* Write documents here in Org.
+  The new repository does not have that constraint.
 
 * Waiting on the author
 
-- *The four =*_original= spreadsheets*, above. Deleting =archive/= wholesale
-  discards them; the alternative is to keep roughly 700 KB and correct the
-  deposit manifest.
 - *The licence contradiction* between =ioOECD/DESCRIPTION= (MIT) and ADR-0008
-  (GPL-3), which needs the co-author rather than a decision here.
+  (GPL-3), and the placeholder =Authors@R=. Both need the co-author, and both
+  block creating the remote.
+- *The name of the repository on GitHub*, which the author reserved.
+- *The four =*_original= spreadsheets*: keep roughly 700 KB and correct the
+  deposit manifest, or leave the manifest describing four files as unaltered
+  external releases when they are not.
 
-Decisions already taken and not open: the deposit contents, serialisation,
-versioning, licence and checksums (#37); the =.gitignore= specification and the
-deletion of =archive/= (recorded on #29 and in the layout skeleton).
+Decisions taken and not open: the deposit contents, serialisation, versioning,
+licence and checksums (#37); the layout, the =.gitignore=, English directory
+names, products regenerated rather than tracked, and the retention of =archive/=
+(#29).
 
 * Board state
 
 Frontier means open, unblocked and unclaimed.
 
-| Map                       | Frontier                                                    |
-|---------------------------+-------------------------------------------------------------|
-| #18 Zenodo-backed repo    | *#25* (gates #29, #27, #34), *#26*; #29 blocked by #25;      |
-|                           | #38 and #39 blocked by #29; #27 by #25 and #26; #28 by #27;  |
-|                           | #34 by #25; #35 by #34                                      |
-| #19 retire and inventory  | *#30*, *#31*, *#32*; #33 blocked by #32                      |
-| (no map)                  | *#36* sign disagreement, *#40* verify the republication;     |
-|                           | both need the data                                          |
+| Map                      | Frontier                                                   |
+|--------------------------+------------------------------------------------------------|
+| #18 Zenodo-backed repo   | *#26*, *#34*, *#38*, *#39*; #27 blocked by #26; #28 by #27; |
+|                          | #35 by #34; #42 by #28                                     |
+| #19 retire and inventory | *#30*, *#31*, *#32*; #33 blocked by #32                     |
+| (no map)                 | *#36* sign disagreement, *#40* verify the republication;    |
+|                          | both need the data                                         |
 
-Closed on 2026-08-05: #37 and #41 on map #18, after #20 to #24 closed map #17
-earlier the same day.
+Closed on 2026-08-05: #20 to #24 (map #17), then #37, #41, #25 and #29 on map #18.
+Opened: #42.
 
 ** Maps to open later
 
 - A *manuscript map* becomes chartable once #36 reports.
-- A *Stage-A map* is now more likely than it was: #37 decided the deposit carries
-  the raw release, which puts the deflation stage back inside reproduction scope,
-  and the Stage-A code sits in =/HDD/Model_OCDE=.
+- A *Stage-A map* is now well motivated: #25 established that the 2025 vintage has
+  no route to a =NIOTs= object, that its geometry is 50 sectors rather than 45,
+  and that the only working builder is the legacy one in =archive/=.
