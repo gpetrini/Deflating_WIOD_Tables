@@ -96,11 +96,13 @@ substituting a parse check for the evidence the ticket asked for.
 
 * Work in flight on the other machine
 
-Ticket #24, the full integration run of =generate_reports.R=, was interrupted
-partway through on 2026-08-05.
-Its resolution comment records where it stopped.
-*Do not attempt it here*, and do not treat map #17 as closed: #24 is open, and
-#34 and #35 are deferred behind the migration.
+Ticket #24, the full integration run of =generate_reports.R=, completed on the
+other machine at 12:46 on 2026-08-05: exit code 0, all 77 groups, no error.
+The ticket is still *open*, because the run was the necessary and not the
+sufficient part; what remains is reading the figure set and two rulings, both of
+which need the data.
+*Do not attempt any of it here*, and do not treat map #17 as closed: #24 is open,
+and #34 and #35 are deferred behind the migration.
 
 * Branch
 

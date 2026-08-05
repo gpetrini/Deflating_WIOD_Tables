@@ -42,9 +42,14 @@ unblocked data-free ticket and settles the deposit manifest instead.
 * Ticket to claim, on the machine WITH the data
 
 *#24, A5: full integration run of the reporting driver (plan Task 8)*
-Already assigned. Its resolution comment records exactly where the run stopped.
-Rerun =source("generate_reports.R")= from inside =code/=; the run reached about
-15 of 77 groups in fifteen minutes with no error, so budget an hour.
+Already assigned.
+*Step 1 is done*: the run completed at 12:46 on 2026-08-05 with exit code 0, all
+77 groups, no error, and the full output set on disk.
+Do not rerun it.
+
+What remains is the part the ticket calls necessary but not sufficient: read the
+full figure set, answer the three fog patches of map #17, and rule explicitly on
+whether the map closes with #34 and #35 outstanding.
 
 * Recommended model
 
