@@ -145,12 +145,16 @@ corrected.
 data, does not belong in the deposit, and cannot be reviewed in a diff while
 serialised.
 
-Recorded while reading it: the model folder's definition covers *eight*
-countries in two groups, =Developed= = USA, DEU, NLD, JPN and =Developing= =
-BRA, MEX, CHN, IND.
-That is not the =country_groups= of this repository, whose =global_variables.R=
-defines the roughly 77 groups the published tables report.
-Evidence for #26 and #27.
+*Correction, made while resolving #26.* This section first recorded that the
+model folder's definition differs from this repository's.
+It does not: both define the same two groups over the same eight countries,
+=Developed= = USA, DEU, NLD, JPN and =Developing= = BRA, MEX, CHN, IND
+(=global_variables.R:25-39=).
+The roughly 77 groups the driver iterates are =all_groups=, which
+=global_variables.R:44-47= *derives* by appending one single-country group per
+element of =WIOD_countries=.
+So there is no divergence here and nothing for #26 or #27 to reconcile; the
+earlier claim of evidence for them is withdrawn.
 
 Whether configuration objects of this kind belong in an environment rather than
 loose in the global namespace, and what the surrounding practice should be, is a
