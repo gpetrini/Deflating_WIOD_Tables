@@ -41,19 +41,18 @@ unblocked data-free ticket and settles the deposit manifest instead.
 
 * Ticket to claim, on the machine WITH the data
 
-*#24, A5: full integration run of the reporting driver (plan Task 8)*
-Already assigned.
-*Step 1 is done*: the run completed at 12:46 on 2026-08-05 with exit code 0, all
-77 groups, no error, and the full output set on disk.
-Do not rerun it.
+*Map #17 is CLOSED.* #24 resolved on 2026-08-05 and the map reached its
+destination; #34 and #35 were reparented to map #18.
 
-What remains is the part the ticket calls necessary but not sufficient: read the
-full figure set, answer the three fog patches of map #17, and rule explicitly on
-whether the map closes with #34 and #35 outstanding.
+A full republication of the figure set was launched in the background at 13:47
+(=~/integration_rerun.log=, about an hour), because the three facet fixes change
+published figures.
+*Check that it finished before trusting =figs/=*: the Developed group was
+regenerated first, so a partial run leaves the set on mixed scales.
 
-Budget: *15 to 25 minutes*, dominated by reading and writing rather than by
-computation.
-Nothing here needs the driver rerun.
+: grep -c "Producing results for" ~/integration_rerun.log   # 77 when complete
+
+The remaining data-dependent work is #36, the cross-method sign disagreement.
 
 * Recommended model
 
@@ -163,8 +162,9 @@ of which exists yet.
 
 | Map                       | Frontier: open, unblocked, unclaimed                          |
 |---------------------------+---------------------------------------------------------------|
-| #17 reporting refinements | #24 only, needs the data; #34 blocked by #25, #35 by #34      |
+| #17 reporting refinements | *CLOSED 2026-08-05*; #34 and #35 moved to map #18            |
 | #18 Zenodo-backed repo    | *#29*, *#37* data-free; #25, #26 (#26 data-free to write);    |
+|                           | #34 and #35 inherited, both blocked behind #25;               |
 |                           | #38 blocked by #29 and #37; #39 by #29; #27 by #25 and #26;   |
 |                           | #28 by #27                                                    |
 | #19 retire and inventory  | #30, #31, #32 all data-free; #33 blocked by #32               |
