@@ -265,6 +265,11 @@ decompose_growth <- function(data_base = results) {
 
     df <- merge(df, M)
 
+    ## CDI (Import Content method): negative aggregate import-content leakage.
+    ## CDI = sum_v [ -lag(imp_v) * lag(wei_v) * gms_v ] over all demand components v,
+    ## where imp_v = component import share, wei_v = component weight in GDP,
+    ## gms_v = component import growth. Negative because imported content does
+    ## not accrue to domestic value added.
     CDI <- map(vars, ~ ( - lag(imp[, .x])) * lag(wei[, .x]) * gms[, .x]) |>
       reduce(`+`)
     colnames(CDI) <- c("CDI")
@@ -355,6 +360,9 @@ decompose_growth <- function(data_base = results) {
 
     df[, "CDD_CDX"] <- total
 
+    ## CDI (Average Import Content method): same leakage built from aggregates.
+    ## CDI = -lag(m_bar) * lag(DA) * gM, where m_bar = aggregate import share (Total),
+    ## DA = domestic-absorption ratio (Ft_Total / GDP), gM = aggregate import-share growth.
     df[,"CDI"] <- (lag(mAvg) * lag(DA) * gM[["Total"]]) * (-1)
 
     ## FIXME: CDI does not match
@@ -562,7 +570,7 @@ plot_external_contrib <- function(
 
   if (grouped) {
     p <- p +
-      facet_grid(rows = vars(Variable), cols = vars(ISO), scales = "free_y")
+      facet_grid(rows = vars(Variable), cols = vars(ISO))
   } else {
     p <- p +
       facet_wrap(~ Variable, ncol = 1)
@@ -603,7 +611,7 @@ plot_external_contrib <- function(
 
   if (grouped) {
     p <- p +
-      facet_grid(ISO ~ Method, scales = "free_y")
+      facet_grid(ISO ~ Method)
   } else {
     p <- p +
       facet_wrap(~Method, ncol = 1)
@@ -706,7 +714,7 @@ report_import_coeff <- function(
 
   if (grouped) {
     p <- p +
-      facet_wrap(~ ISO, scales = "free_y")
+      facet_wrap(~ ISO)
   }
 
   print(p)
@@ -964,9 +972,10 @@ plot_differenteces <- function(
     labs(
       title = paste0("Scaled divergence distribution between different methods and ", target_meth, " for ", tag),
       subtitle = "Across Variables",
-      x = NULL, y = NULL, fill = NULL,
+      x = "Difference in contribution to GDP growth (p.p.)", y = NULL, fill = NULL,
       caption = "Authors' own elaboration",
       ) +
+    scale_x_continuous(labels = scales::percent_format(scale = 100)) +
     custom_theme()
 
   if (grouped) {
@@ -1036,10 +1045,10 @@ plot_decomp <- function(
 
   if (!grouped) {
     p <- p +
-      facet_wrap(~Method, scales = "free_y")
+      facet_wrap(~Method)
   } else {
     p <- p +
-      facet_wrap(ISO~Method, scales = "free_y")
+      facet_wrap(ISO~Method)
   }
 
   print(p)
