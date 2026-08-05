@@ -1,78 +1,79 @@
 #+title: Next session
-#+date: 2026-08-04
+#+date: 2026-08-05
 #+filetags: :IODefl:session:pointer:
 
 This file is OVERWRITTEN at the end of every session, never appended.
 It describes one session: the next one.
 History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
 
-Previous session (2026-08-04): charted maps #17, #18 and #19; resolved ticket #20;
-closed map #13 and tickets #14, #15 and #16 as superseded; archived the eight
-gap-diagnosis scripts to =archive/=.
+Previous session (2026-08-05): resolved ticket #21 on map #17; opened #34 (E-component
+defect) and #35 (Item 2, graduated from the fog).
 
 * State of the working tree
 
 Clean.
-Branch =reporting/refinements=, five commits, *not pushed*: 3c3c9ae, 2bfe2c4,
-b3ef6d5, 4a56c91, 1ef450b.
+Branch =reporting/refinements=, six commits, *not pushed*: 3c3c9ae, 2bfe2c4,
+b3ef6d5, 4a56c91, 1ef450b, 3bb43e0.
 It branched off =diagnosis/xr-gap-debug=, which is the pushed tip; =master= is far
 behind both.
-Decide early whether to push, and whether the reporting work should eventually
-reach =master= or only travel to the new repository under map #18.
+The push decision is still open, as is whether the reporting work reaches =master=
+or only travels to the new repository under map #18.
 
 * Ticket to claim
 
-*#21, A2: CDX-sign diagnostic, composition effect or defect*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/21
+*#34, the E (INVNT) import share leaves [0,1] and contaminates CDI and CDX*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/34
 Map: #17, deliver the seven Stage-B reporting refinements.
 
-Claim it first: =gh issue edit 21 --add-assignee gpetrini=.
+Claim it first: =gh issue edit 34 --add-assignee gpetrini=.
 One ticket per session.
 
 * Why this one
 
-It is the only ticket on the frontier of map #17 that resolves a question rather
-than applying a specified edit, and the map's "Not yet specified" section
-(Item 2, merging CDI into the imports term) is gated on its answer.
-Tickets #22 and #23 are mechanical and can run later or be delegated.
-Ticket #24 is blocked until all four close.
+It is the only open ticket on map #17 that carries a substantive risk to the
+reported numbers, and #35 is blocked on it.
+The plotted GDP decomposition currently sums an inventory term that reaches
+96 p.p. of GDP growth in the tail, while every plotted component drops that same
+term via =filter(Variable != "E")=.
+Tickets #22 and #23 are specified line by line in the plan and can run later or
+be delegated; #24 waits on all of them.
 
 * Recommended model
 
 *Opus 5.*
-The ticket requires judging whether a sign divergence is a composition effect or
-a defect, and the plan forbids forcing a fix.
-That judgement, plus its implication for Item 2, is the reasoning-heavy part of
-map #17.
-Tickets #22 and #23 are specified line by line in the plan and suit a cheaper
-model or a subagent.
+The decision is whether to exclude E from the CDI and CDX sums, and that changes
+reported numbers rather than presentation.
+It needs a judgement about the accounting, not the execution of a written recipe.
+#22 and #23 suit a cheaper model or a subagent.
 
 * Ideal opening prompt
 
 #+begin_example
-Continuar o wayfinder map #17. Assumir o ticket #21 (diagnóstico de sinal do
-CDX). Seguir docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md
-Task 2: acrescentar diagnose_cdx_sign() a code/tests.R e rodá-lo para USA 2012 e
-MEX 2014.
+Continuar o wayfinder map #17. Assumir o ticket #34 (share de importação do
+componente E fora de [0,1]).
 
-Investigar, não forçar correção. Decidir com evidência se a divergência de sinal
-entre Import Content e Average Import Content é efeito de composição (um
-componente domina a soma) ou defeito (parcela fora de [0,1], NA, Inf). Registrar
-a conclusão junto ao FIXME em code/support_functions.R:365 com a redação que o
-diagnóstico sustentar; se for defeito, abrir ticket em vez de redigir como
-sucesso.
+Decidir se o componente E (INVNT) deve sair das somas de CDI e CDX em
+decompose_growth(), como já sai de todos os gráficos via filter(Variable != "E").
+A evidência está no comentário de resolução do #21 e na NOTE em
+code/support_functions.R:363.
 
-Declarar o que a conclusão implica para o Item 2 (fundir CDI no termo de
-importações), que está na névoa do mapa #17 aguardando esta resposta.
+Reproduzir com diagnose_cdx_sign() em code/tests.R antes de decidir.
+Se a decisão for excluir, verificar o impacto com
+code/verify_reporting_refinements.R: o fingerprint DEVE mudar, e a mudança
+precisa ser explicada, não apenas registrada.
+
+Declarar o que a decisão implica para o #35 (fundir CDI no termo de importações),
+que está bloqueado por este ticket.
 
 Trabalhar no ramo reporting/refinements.
 #+end_example
 
 * Context this session needs
 
-- Plan: =docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md=, Task 2.
+- Resolution comment of #21, which carries every number behind #34.
+- Plan: =docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md=.
 - Map #17 body; its Notes carry the standing rules and the ordering against the migration.
-- Branch =reporting/refinements=, currently at 3c3c9ae.
+- Branch =reporting/refinements=, currently at 3bb43e0.
 
 * Facts carried forward
 
@@ -83,22 +84,26 @@ Trabalhar no ramo reporting/refinements.
 - *Tier-B harness exists:* =code/verify_reporting_refinements.R=.
   It rebuilds =results= and =decomp= and writes a numeric fingerprint to
   =objs/reporting_refinements_fingerprint.rds=.
-  Reuse it to show whether a change moved a number.
   A full rebuild takes a few minutes.
+- *=diagnose_cdx_sign()= now exists* at the end of =code/tests.R=.
+  Sourcing =tests.R= whole runs the entire script; evaluate only the definition.
+- *Plan Task 2 named the wrong country-years.*
+  USA 2012 and MEX 2014 do not diverge in sign between the two import-content
+  methods; the divergence there is against Attribution.
+  Do not trust the plan's diagnostic examples without re-running them.
+- *=lag(DA)= equals the summed lagged weights to 4.4e-16.*
+  The two import-content methods share a weighting base and differ only through
+  heterogeneous per-component import growth.
+- *The 375 non-finite input cells are the 1995 first-year lag*, 75 countries
+  times 5 components, and are benign.
 - *The gap diagnosis is resolved upstream in the new repository.*
   Do not write or run scripts associated with the growth-rate gap debugging.
 - *The grouped path of =plot_differenteces= is broken.*
-  =support_functions.R:965= reads a =vrbl= leaked from the loop above it.
+  =support_functions.R= reads a =vrbl= leaked from the loop above it.
   Latent because =group_plots= reaches it only with =verbose = TRUE=.
   Belongs to ticket #32, not to map #17.
-- *Three =free_y= facets outside the plan's enumeration* were left in place at
-  =support_functions.R:680=, =:1098= and =:1101=.
-  Recorded in map #17's fog.
-- *Line numbers in the plan have drifted.* The Task 1 edits added comment lines,
-  so the plan's references (Task 2 cites the FIXME at line 360, Task 3 cites
-  =tabulate_statistics= near 1470, Task 5 cites 1012-1034 and 716-733, Task 6
-  cites =get_dGDP= near 533) now sit a few lines lower.
-  The FIXME is at =support_functions.R:365=.
+- *Line numbers in the plan have drifted*, and the Item 3 note added eleven more
+  lines at the FIXME site.
   Locate by the code the plan quotes, not by its line numbers.
 - *Tracker mechanics on this repository.* Sub-issues:
   =gh api repos/:owner/:repo/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
@@ -106,25 +111,14 @@ Trabalhar no ramo reporting/refinements.
   Use =-F=, not =-f=; a string id returns "Invalid request".
   =gh issue view= fails on this repository with a Projects-classic deprecation
   error; read bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
-- *The repository =.gitignore= excludes Markdown.* Write documents in Org, which
-  is the house format anyway, or they will not be tracked without =-f=.
+- *The repository =.gitignore= excludes Markdown.* Write documents in Org.
 
 * Nothing waiting on the user
 
-Map #13 and its tickets #14, #15 and #16 were closed on 2026-08-04 as superseded,
-unanswered, because the gap was resolved upstream.
-They are recorded under that map's "Out of scope" and do not graduate.
-Every open issue on the tracker now belongs to map #17, #18 or #19.
-The eight gap-diagnosis scripts were archived to =archive/= on the same day
-(commit 4a56c91); they remain executable from inside that directory, and
-=archive/README.org= records why they are there.
-=code/= now holds only the reporting stage, the deflation stage and the Tier-B
-harness.
-
 * Board state
 
-| Map                       | Frontier: open, unblocked, unclaimed                         |
-|---------------------------+--------------------------------------------------------------|
-| #17 reporting refinements | #21, #22, #23; #24 blocked by all four; #20 closed           |
-| #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25 |
-| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                            |
+| Map                       | Frontier: open, unblocked, unclaimed                            |
+|---------------------------+-----------------------------------------------------------------|
+| #17 reporting refinements | #34, #22, #23; #35 blocked by #34; #24 blocked; #20, #21 closed  |
+| #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25     |
+| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                               |
