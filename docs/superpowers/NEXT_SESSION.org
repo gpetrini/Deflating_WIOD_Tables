@@ -6,14 +6,14 @@ This file is OVERWRITTEN at the end of every session, never appended.
 It describes one session: the next one.
 History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
 
-Previous session (2026-08-05): resolved ticket #21 on map #17; opened #34 (E-component
-defect) and #35 (Item 2, graduated from the fog).
+Previous session (2026-08-05): resolved #21, #22 and #23 on map #17; opened #34 and
+#35; deferred #34 behind the migration.
 
 * State of the working tree
 
 Clean.
-Branch =reporting/refinements=, six commits, *not pushed*: 3c3c9ae, 2bfe2c4,
-b3ef6d5, 4a56c91, 1ef450b, 3bb43e0.
+Branch =reporting/refinements=, nine commits, *not pushed*: 3c3c9ae, 2bfe2c4,
+b3ef6d5, 4a56c91, 1ef450b, 3bb43e0, 6e714f5, 1232394, ef31ebb.
 It branched off =diagnosis/xr-gap-debug=, which is the pushed tip; =master= is far
 behind both.
 The push decision is still open, as is whether the reporting work reaches =master=
@@ -21,89 +21,97 @@ or only travels to the new repository under map #18.
 
 * Ticket to claim
 
-*#34, the E (INVNT) import share leaves [0,1] and contaminates CDI and CDX*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/34
+*#24, A5: full integration run of the reporting driver (plan Task 8)*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/24
 Map: #17, deliver the seven Stage-B reporting refinements.
 
-Claim it first: =gh issue edit 34 --add-assignee gpetrini=.
-One ticket per session.
+Claim it first: =gh issue edit 24 --add-assignee gpetrini=.
+It became unblocked when #23 closed, and it is the ticket that closes the map.
 
 * Why this one
 
-It is the only open ticket on map #17 that carries a substantive risk to the
-reported numbers, and #35 is blocked on it.
-The plotted GDP decomposition currently sums an inventory term that reaches
-96 p.p. of GDP growth in the tail, while every plotted component drops that same
-term via =filter(Variable != "E")=.
-Tickets #22 and #23 are specified line by line in the plan and can run later or
-be delegated; #24 waits on all of them.
+Every other ticket on map #17 is closed or deferred.
+#34 is deferred behind the Super Decomposição synchronisation (#25), because the
+E-component defect lives upstream and may already be fixed there; #35 is blocked
+by #34.
+#24 is therefore the only open, unblocked ticket on the map, and reaching its
+destination is what makes the Stage-B code ready to migrate.
+
+Three patches of fog graduate with it, all recorded in the map:
+the spike countries in the period-means table, the residual share spikes at the
+5e-3 guard, and the three unenumerated =free_y= facets.
 
 * Recommended model
 
 *Opus 5.*
-The decision is whether to exclude E from the CDI and CDX sums, and that changes
-reported numbers rather than presentation.
-It needs a judgement about the accounting, not the execution of a written recipe.
-#22 and #23 suit a cheaper model or a subagent.
+The run itself is mechanical, but the ticket says a parse-clean run is necessary
+and not sufficient, and it carries three scoping questions that only become
+answerable once the full figure set exists.
+Reading whether the regenerated set holds together as a document is the
+reasoning-heavy part.
 
 * Ideal opening prompt
 
 #+begin_example
-Continuar o wayfinder map #17. Assumir o ticket #34 (share de importação do
-componente E fora de [0,1]).
+Continuar o wayfinder map #17. Assumir o ticket #24, a rodada de integração que
+fecha o mapa.
 
-Decidir se o componente E (INVNT) deve sair das somas de CDI e CDX em
-decompose_growth(), como já sai de todos os gráficos via filter(Variable != "E").
-A evidência está no comentário de resolução do #21 e na NOTE em
-code/support_functions.R:363.
+Rodar source("generate_reports.R") de dentro de code/ e exigir conclusão sem erro.
+Conferir que ../figs/ e ../tabs/ ficam populados, incluindo
+Period_Means_ImportContent.tex e CDX_Detail.
+Confirmar que o Item 2 continua adiado: CDI ainda é calculado e reportado
+separado do termo de importações.
 
-Reproduzir com diagnose_cdx_sign() em code/tests.R antes de decidir.
-Se a decisão for excluir, verificar o impacto com
-code/verify_reporting_refinements.R: o fingerprint DEVE mudar, e a mudança
-precisa ser explicada, não apenas registrada.
-
-Declarar o que a decisão implica para o #35 (fundir CDI no termo de importações),
-que está bloqueado por este ticket.
+Uma rodada limpa é necessária e não suficiente. Ler o conjunto completo de
+figuras e responder as três névoas que o mapa registra:
+(a) os países-spike na tabela de médias por período, MMR tem média pós-crise de
+    12,21 vindo de um evento cambial de 2012;
+(b) os picos residuais de share com o guarda em 5e-3, o máximo do painel ainda é
+    20,3 em SGP 2009 e BRN 2015;
+(c) os três facets free_y fora da enumeração do plano.
 
 Trabalhar no ramo reporting/refinements.
 #+end_example
 
 * Context this session needs
 
-- Resolution comment of #21, which carries every number behind #34.
-- Plan: =docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md=.
-- Map #17 body; its Notes carry the standing rules and the ordering against the migration.
-- Branch =reporting/refinements=, currently at 3bb43e0.
+- Map #17 body, whose Decisions-so-far e fog carregam tudo o que a sessão precisa.
+- Plan: =docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md=, Task 8.
+- Branch =reporting/refinements=, currently at ef31ebb.
 
 * Facts carried forward
 
-- *The plan's blocking PREREQUISITE is stale.*
-  =etc/Modelo/NIOTs_resultados.rdata= and =results/NIOTs_resultados.rdata= both
-  exist, so Tier-B verification runs.
-  No ticket on map #17 closes on a parse check alone.
-- *Tier-B harness exists:* =code/verify_reporting_refinements.R=.
+- *Tier-B harness:* =code/verify_reporting_refinements.R=.
   It rebuilds =results= and =decomp= and writes a numeric fingerprint to
   =objs/reporting_refinements_fingerprint.rds=.
+  The fingerprint is unchanged across every ticket closed so far, at tolerance
+  zero, since none of them moved a number.
   A full rebuild takes a few minutes.
-- *=diagnose_cdx_sign()= now exists* at the end of =code/tests.R=.
-  Sourcing =tests.R= whole runs the entire script; evaluate only the definition.
-- *Plan Task 2 named the wrong country-years.*
-  USA 2012 and MEX 2014 do not diverge in sign between the two import-content
-  methods; the divergence there is against Attribution.
-  Do not trust the plan's diagnostic examples without re-running them.
-- *=lag(DA)= equals the summed lagged weights to 4.4e-16.*
-  The two import-content methods share a weighting base and differ only through
-  heterogeneous per-component import growth.
+- *New objects this session.*
+  =tabulate_period_means()=, called once after the group loop of =group_plots=
+  because the table carries no group dimension.
+  =get_cdx_detail()= and =plot_cdx_detail()=, wired into the per-group loop.
+  =diagnose_cdx_sign()= at the end of =code/tests.R=.
+  Globals =crisis_start= and =crisis_end=.
+- *The plan code is unrun and has defects.*
+  Two were corrected this session: a =get0()= default that resolves to its own
+  promise, and a zero-growth guard three orders of magnitude too tight.
+  Do not transcribe the plan without running it.
+- *Plan Task 2 named the wrong country-years*, and USA 2012 and MEX 2014 do not
+  diverge in sign between the two import-content methods.
+- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells because
+  =Ft_E= crosses zero.
+  Deferred as #34 behind #25: it may already be fixed upstream.
+  Do not fix it inside this repository before the synchronisation.
 - *The 375 non-finite input cells are the 1995 first-year lag*, 75 countries
   times 5 components, and are benign.
 - *The gap diagnosis is resolved upstream in the new repository.*
   Do not write or run scripts associated with the growth-rate gap debugging.
-- *The grouped path of =plot_differenteces= is broken.*
-  =support_functions.R= reads a =vrbl= leaked from the loop above it.
+- *The grouped path of =plot_differenteces= is broken*, reading a =vrbl= leaked
+  from the loop above it.
   Latent because =group_plots= reaches it only with =verbose = TRUE=.
-  Belongs to ticket #32, not to map #17.
-- *Line numbers in the plan have drifted*, and the Item 3 note added eleven more
-  lines at the FIXME site.
+  Belongs to ticket #32.
+- *Line numbers in the plan have drifted* by well over a hundred lines now.
   Locate by the code the plan quotes, not by its line numbers.
 - *Tracker mechanics on this repository.* Sub-issues:
   =gh api repos/:owner/:repo/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
@@ -115,10 +123,12 @@ Trabalhar no ramo reporting/refinements.
 
 * Nothing waiting on the user
 
+The zero-growth threshold was decided with the author at 0.5 p.p. on 2026-08-05.
+
 * Board state
 
-| Map                       | Frontier: open, unblocked, unclaimed                            |
-|---------------------------+-----------------------------------------------------------------|
-| #17 reporting refinements | #34, #22, #23; #35 blocked by #34; #24 blocked; #20, #21 closed  |
-| #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25     |
-| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                               |
+| Map                       | Frontier: open, unblocked, unclaimed                         |
+|---------------------------+--------------------------------------------------------------|
+| #17 reporting refinements | #24 only; #34 blocked by #25, #35 by #34; #20-23 closed      |
+| #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25 |
+| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                            |
