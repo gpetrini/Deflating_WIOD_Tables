@@ -1,0 +1,87 @@
+#+title: What was written into the future repository, and what is in it
+#+date: 2026-08-05
+#+filetags: :IODefl:zenodo:migration:finding:
+
+Record of ticket #37, resolved on 2026-08-05 on the machine without
+=etc/Modelo/NIOTs_resultados.rdata=.
+
+The deliverables of #37 were written outside this repository, into the folder
+that will become the target repository of map #18.
+This document exists so that this repository holds a record of them, since
+nothing in =/HDD/Model_OCDE= is under version control yet.
+
+* The folder
+
+=/HDD/Model_OCDE=, downloaded by the author on 2026-08-05.
+It holds the Stage-A code, the =ioOECD= package that supersedes the equations in
+=etc/Modelo/*.R=, and 338 MB of data.
+
+*It is not a git repository.* =git rev-parse= fails.
+No history is bloated, so every exclusion decided here is preventive.
+
+Its full inventory is on ticket #41.
+
+* Files written into it by #37
+
+| Path                        | Role                                              |
+|-----------------------------+---------------------------------------------------|
+| =docs/zenodo-manifest.org=  | the manifest: contents, exclusions, structure, serialisation, licence, versioning, MD5 |
+| =SHA256SUMS=                | the integrity contract, verified with =sha256sum -c SHA256SUMS= |
+
+=sha256sum -c SHA256SUMS= verified clean over all fourteen files on 2026-08-05.
+
+Neither file exists in this repository.
+They are not migrated here; they belong to the target repository and stay there.
+
+* The deposit, in one paragraph
+
+Fourteen files, 238905858 bytes, 227.8 MB: the whole of =data-raw/= (the OECD
+2025 raw release, six =.rdata=, plus six World Bank and OECD spreadsheets) and
+both processed objects, =NIOTs_2021.rdata= (126.3 MB) and =NIOTs_2023.rdata=
+(8.2 MB).
+No file is converted.
+The record is CC BY 4.0, with per-file provenance stated in the manifest.
+A new version is created on any change of bytes, and each version is
+self-contained; the manuscript cites the version DOI, never the concept DOI.
+SHA-256 is the contract and MD5 is recorded because the Zenodo API returns it.
+
+* The two findings that matter to this repository
+
+** The raw inputs of the 2021 and 2023 editions do not exist in the folder
+
+=data-raw/= holds only =IOTs_2025_RData/=, and =archive/legacy_data/= holds no
+ICIO matrices of either edition.
+=NIOTs_2021.rdata= and =NIOTs_2023.rdata= therefore cannot be regenerated there,
+and they carry the results the reporting stage currently rests on.
+That is why =data-processed/= is deposited, and the reason is irreproducibility
+rather than convenience.
+
+** The boundary objects are not the same file
+
+=data-processed/NIOTs_2023.rdata= binds one object named =NIOTs=: a list of *74*
+countries, each with 14 slots (=CIn=, =Fn=, =CIm=, =Fm=, =CI=, =Ft=, =Recurso=,
+=lista_An=, =lista_Am=, =lista_A=, =lista_Z=, =Ghosh=, =lista_BL=, =lista_FL=),
+each slot a list of 26 years of matrices.
+
+=etc/Modelo/NIOTs_resultados.rdata= holds *75* countries.
+
+This is evidence for tickets #26 and #27, and it also explains the
+order-of-magnitude puzzle stated in the body of #37: the two copies differing by
+a factor of ten are two *editions* of the OECD National IOTs, 8.2 MB for 2023
+against 126.3 MB for 2021, and not WIOD-43 against OECD-75.
+The correspondence with the 8.7 MB and 88 MB copies in this repository is
+suggestive and was not established.
+
+* Outstanding, and able to change what is deposited
+
+The licence statement on the OECD National Input-Output Tables page was not
+verified: the page returns HTTP 403 to this environment.
+If it states terms more restrictive than CC BY 4.0, =data-raw/= leaves the
+deposit and the =Makefile= instructs a download from the publisher instead.
+
+* Where the rest is recorded
+
+The nine decisions in full are the resolution comment on ticket #37.
+The =.gitignore= specification the author settled is on #29.
+The inventory of the folder is on #41.
+The object structure and the raw coverage are on #25.
