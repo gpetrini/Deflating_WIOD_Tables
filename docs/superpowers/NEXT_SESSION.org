@@ -83,19 +83,19 @@ Trabalhar no ramo reporting/refinements.
   =support_functions.R:680=, =:1098= and =:1101=.
   Recorded in map #17's fog.
 
-* Decision waiting on the user
+* Nothing waiting on the user
 
-Map #13, characterize the ICIO nominal-aggregate divergence on-disk, and its
-tickets #14, #15 and #16 were charted before the gap was resolved upstream.
-If that resolution supersedes them, they should be closed and recorded under the
-map's "Out of scope", and the diagnosis scripts in =code/= reconsidered.
-Ask before touching them.
+Map #13 and its tickets #14, #15 and #16 were closed on 2026-08-04 as superseded,
+unanswered, because the gap was resolved upstream.
+They are recorded under that map's "Out of scope" and do not graduate.
+Every open issue on the tracker now belongs to map #17, #18 or #19.
+The gap-diagnosis scripts in =code/= are listed for archival review under ticket
+#32; do not delete them outside that ticket.
 
 * Board state
 
-| Map                       | Frontier: open, unblocked, unclaimed                    |
-|---------------------------+---------------------------------------------------------|
-| #17 reporting refinements | #21, #22, #23; #24 blocked by all four; #20 closed      |
+| Map                       | Frontier: open, unblocked, unclaimed                         |
+|---------------------------+--------------------------------------------------------------|
+| #17 reporting refinements | #21, #22, #23; #24 blocked by all four; #20 closed           |
 | #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25 |
-| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                       |
-| #13 gap characterization  | #14, #15, #16, possibly superseded, see above           |
+| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                            |
