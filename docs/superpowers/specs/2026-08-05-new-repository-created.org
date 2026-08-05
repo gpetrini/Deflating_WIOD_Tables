@@ -1,0 +1,196 @@
+#+title: The new repository: layout as built, .gitignore, and what was left behind
+#+date: 2026-08-05
+#+filetags: :IODefl:migration:layout:spec:
+
+Deliverable of ticket #29 of map #18.
+It records what was created, the free decisions #41 handed over and how each was
+settled, and the verification.
+
+The inherited skeleton is
+=docs/superpowers/specs/2026-08-05-new-repository-layout-skeleton.org=; this
+document does not repeat it.
+
+* What was created
+
+Location: =~/Documents/GrowthDecomposition=, on the machine without the data.
+Named by the author.
+
+*No remote.* Nothing was pushed, and the name of the repository on GitHub remains
+the author's decision, separate from the directory name.
+Two reasons make deferring correct rather than merely cautious: the licence
+contradiction between =ioOECD/DESCRIPTION= (MIT) and ADR-0008 (GPL-3) is
+unresolved, and =Authors@R= is still the placeholder
+=person("Andre", email = "andre@example.com")=.
+Publishing before either is settled publishes them.
+
+*Fresh directory, not =git init= in place.*
+=/HDD/Model_OCDE= is untouched and remains the source.
+Only files that were to be tracked were copied, so no excluded byte ever entered
+the working tree, and the =.gitignore= is preventive in the strict sense: there
+was nothing for it to hide.
+
+** The initial commit
+
+71 files, one commit on =main=, working tree clean.
+=.git= 452 KB, working tree 368 KB, under 1 MB in total against 338 MB in the
+source folder.
+
+| Path                    | Files | Content                                                  |
+|-------------------------+-------+----------------------------------------------------------|
+| =ioOECD/=               |    42 | =R/= 12, =man/= 25 =.Rd=, =tests/testthat/= 4, =DESCRIPTION=, =NAMESPACE= |
+| =scripts/=              |    19 | 9 numbered drivers, =2021_validation/= 9, =country_groups.R= |
+| =docs/=                 |     5 | =zenodo-manifest.org=, =quality_reports/= 4 Markdown       |
+| root                    |     3 | =README.md=, =SHA256SUMS=, =.gitignore=                    |
+| =data-raw/=, =data-processed/= | 0 | present as directories, contents excluded                |
+| =tests/=                |     0 | present, empty; git cannot track an empty directory       |
+
+* The free decisions of #41, settled
+
+** Directory names are English
+
+Author instruction, 2026-08-05.
+=testes/= was the only Portuguese name in the tree and it does not survive under
+that name *or* that role.
+It held Excel comparison workbooks, which are products; those go to =outputs/=.
+
+The name becomes =tests/= and holds the suites — =testthat= and the like — so it
+is code and is tracked, deliberately absent from the exclusion list.
+The package keeps its own =ioOECD/tests/testthat/=, where =R CMD check= requires
+it; the two coexist without ambiguity because both now mean tests.
+
+This resolves the conflict #41 recorded under "=testes/= holds outputs, not
+tests" by correcting the role rather than translating the name.
+
+** Where the Stage-B reporting code lands: =scripts/=
+
+Author decision.
+=code/support_functions.R=, =generate_reports.R= and =global_variables.R= of this
+repository arrive as scripts, not as a =code/= directory and not absorbed into
+=ioOECD/=.
+
+Stated plainly: this leaves roughly 1640 lines of library code outside any
+package interface, which ADR-0004 argues against.
+The decision is the author's and is recorded as taken, not as agreed.
+*The move itself is #28, not this ticket* — nothing of Stage B was copied here.
+
+** Where products land
+
+=figs/=, =tabs/=, =objs/=, =reports/=, =outputs/=, all excluded.
+The model folder's =reports/= and =outputs/= are kept as names: =outputs/= is the
+compiled manuscript and the comparison workbooks, =reports/= the per-country
+PDFs.
+=figs/=, =tabs/= and =objs/= are the names the reporting code already writes to
+by relative path, so keeping them costs no code change beyond #32.
+
+** Products are regenerated, never tracked
+
+The reason, which #29 step 3 asked for: a figure or table in history is a claim
+about which code produced it, and nothing enforces that claim.
+This repository tracks =tabs/*.tex= and ignores =figs/=, an inconsistency worth
+not reproducing.
+
+** Whether git history travels: it does not
+
+The source is not a git repository, so there is no history to carry.
+The initial commit is the first.
+
+** Not carried over
+
+- =archive/=, 71 MB. *Retained in =/HDD/Model_OCDE= by author decision on
+  2026-08-05, second decision, reversing the deletion*; see below.
+- =reports/= 36 MB, =outputs/= 2 MB, =testes/= 768 KB, =ioOECD.Rcheck/= 532 KB,
+  =ioOECD_0.1.0.tar.gz= — all generated.
+- =organize_workspace.sh= and =archive_unused_data.sh=: one-off reorganisation
+  tools, both hardcoding the co-author's absolute path, one beginning with =cd=
+  to it. Not entry points; =.sh= is outside the whitelist.
+- =Artigo_taxas.Rproj=. The project name is not a decision taken, and IDE
+  configuration is regenerable.
+- Four =.Rhistory= files, from =data-processed/=, =scripts/=, =ioOECD/R/= and
+  =quality_reports/checkpoints/=.
+
+=README.md= is carried *as inherited*, describing the superseded arrangement.
+Rewriting it belongs to #38, which defines the entry point it must document.
+
+* =archive/= is retained, not deleted
+
+The deletion decided on 2026-08-05 is *reversed by the author on the same day*,
+after #25 measured a second objection.
+
+The first objection was already recorded: the four =*_original= spreadsheets in
+=archive/legacy_data/= all differ from the working copies in =data-raw/= that the
+deposit carries, so the deposit's four external releases are not the publisher's
+files and the originals are the only record of what changed.
+
+The second, from #25: =archive/legacy_scripts/= holds *the only working code that
+builds a =NIOTs= object* — =compilacao.R=, =compilacao_ICIO.R= and the
+=base/*.R= chain that composes the fourteen slots in =salva_dados.R=.
+=ioOECD= does not replace it: =parse_niot_tables()= returns three of the fourteen
+slots, and =load_io_tables()= cannot run at all.
+Deleting =archive/= would have discarded the reference implementation of the
+data-construction stage.
+
+*Residual risk, recorded and not resolved.*
+=archive/= is in neither git nor the Zenodo deposit, and it was not copied here,
+so its only copy is now the one on =/HDD= on this machine.
+Retention preserves it from deletion, not from disk failure.
+Two follow-ups remain open: whether =archive/legacy_scripts/= should be tracked
+in git as the reference builder, being text and roughly 50 KB, and whether the
+four =*_original= spreadsheets join the deposit or the #37 manifest wording is
+corrected.
+
+* =country_groups= restated as code
+
+=data-processed/country_groups.rds=, 132 bytes, became
+=scripts/country_groups.R=, per the specification on #29: configuration is not
+data, does not belong in the deposit, and cannot be reviewed in a diff while
+serialised.
+
+Recorded while reading it: the model folder's definition covers *eight*
+countries in two groups, =Developed= = USA, DEU, NLD, JPN and =Developing= =
+BRA, MEX, CHN, IND.
+That is not the =country_groups= of this repository, whose =global_variables.R=
+defines the roughly 77 groups the published tables report.
+Evidence for #26 and #27.
+
+Whether configuration objects of this kind belong in an environment rather than
+loose in the global namespace, and what the surrounding practice should be, is a
+general review the author asked to be filed separately rather than settled here.
+
+* The =.gitignore=
+
+The specification settled on #29 while resolving #37 is implemented as written:
+ignore everything and whitelist by extension; never =.rds=, =.rda=, =.rdata=,
+=.qs=, =.qs2=; never PDFs nor anything generated; =SHA256SUMS= as a named
+exception; =data-raw/= and =data-processed/= excluded and carried by Zenodo.
+=Makefile= is the second named exception, for #38.
+
+One deviation of form, not of substance.
+The specification says "ignore everything, whitelist by extension", and this
+repository's =.gitignore= achieves that with =*.*= on line 1 — which also
+excludes Markdown, and is why documents here have to be written in Org to be
+versioned at all.
+The new file uses =*= followed by =!*/= instead: contents are ignored while git
+still descends into directories, so a document is tracked because of what it is
+rather than because of a workaround.
+*Markdown is therefore tracked in the new repository*, and the four
+=quality_reports= Markdown files are in the initial commit unconverted.
+
+* Verification
+
+Both checks #29 asks for, plus a probe.
+
+=git status= is clean on =main=.
+No excluded extension appears in the staged tree: the 71 files are 36 =.R=, 25
+=.Rd=, 5 =.md=, 1 =.org=, =DESCRIPTION=, =NAMESPACE=, =SHA256SUMS= and
+=.gitignore=; the grep for =rds|rda|rdata|qs|qs2|pdf|docx|xlsx|xls|csv|tar.gz=
+returns nothing.
+
+The rules were then probed rather than assumed.
+Files =probe.rdata=, =probe.rds=, =probe.pdf=, =probe.csv= were created under
+=data-raw/=, =data-processed/=, =outputs/=, =ioOECD/= and =scripts/=, alongside
+=tests/test-probe.R= and =Makefile=.
+=git add -A= picked up *only* =tests/test-probe.R= and =Makefile=.
+All probes were then removed.
+
+Repository size after the initial commit: =.git= 452 KB, working tree 368 KB, 84
+loose objects, under 1 MB in total.
