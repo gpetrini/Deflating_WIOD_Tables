@@ -550,6 +550,64 @@ get_dGDP <- function(IO = results) {
   return(df)
 }
 
+## CDX under the Import Content method splits into domestic export content plus the
+## per-component import-content leakage, and the stack reproduces CDX by construction.
+get_cdx_detail <- function(IO = results) {
+  countries <- names(IO)
+  out <- data.frame()
+  for (country in countries) {
+    data  <- IO[[country]]
+    imp   <- data[["m"]]
+    dates <- zoo::index(imp)
+    vars  <- setdiff(colnames(imp), "Total")
+
+    imp <- tibble::as_tibble(imp)
+    wei <- tibble::as_tibble(data[["Weights"]])
+    gms <- tibble::as_tibble(data[["gm"]])
+    grw <- tibble::as_tibble(data[["g"]])
+
+    comp <- data.frame(Time = dates)
+    for (v in vars) {
+      comp[[paste0("ImportContent_", v)]] <-
+        (-dplyr::lag(imp[[v]])) * dplyr::lag(wei[[v]]) * gms[[v]]
+    }
+    comp[["DomesticExportContent"]] <-
+      (1 - imp[["X"]]) * dplyr::lag(wei[["X"]]) * grw[["X"]]
+    comp$ISO <- country
+    out <- rbind(out, comp)
+  }
+  out |>
+    tidyr::pivot_longer(cols = !c(Time, ISO),
+                        names_to = "Component", values_to = "Value") |>
+    dplyr::mutate(ISO = as.factor(ISO))
+}
+
+plot_cdx_detail <- function(IO = results, countries, group = NULL,
+                            grouped, fig_extension = c("pdf", "png")) {
+  tag <- group
+  df <- get_cdx_detail(IO) |>
+    dplyr::filter(ISO %in% countries)
+
+  p <- df |>
+    ggplot(aes(x = Time, y = Value, fill = Component)) +
+    geom_col(position = "stack", color = "black") +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+    labs(
+      title = paste0("Decomposition of external-sector contribution (CDX) for ", tag),
+      x = NULL, y = NULL, fill = NULL,
+      caption = "Authors' own elaboration",
+      ) +
+    custom_theme()
+
+  if (grouped) {
+    p <- p + facet_wrap(~ ISO)
+  }
+
+  print(p)
+  save_figs(plot = p, main = "CDX_Detail",
+            fig_extension = fig_extension, suffix = tag)
+}
+
 plot_external_contrib <- function(
                                   df,
                                   group = NULL,
@@ -1695,6 +1753,9 @@ group_plots <- function(
 
     cat(" ...")
     plot_external_contrib(df = df, group = group, countries = countries, grouped = grouped)
+
+    cat(" ...")
+    plot_cdx_detail(IO, countries = countries, group = group, grouped = grouped)
 
     cat(" ...")
     report_import_coeff(group = group, IO = IO, countries = countries, grouped = grouped)
