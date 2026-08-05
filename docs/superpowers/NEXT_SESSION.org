@@ -6,136 +6,151 @@ This file is OVERWRITTEN at the end of every session, never appended.
 It describes one session: the next one.
 History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
 
-Previous session (2026-08-05): resolved #21, #22 and #23 on map #17; opened #34 and
-#35; deferred #34 behind the migration.
+Previous session (2026-08-05): resolved #21, #22 and #23; opened #34, #35 and #36;
+started and interrupted the #24 integration run; revised map #18 from the Syncthing
+arrangement to the Zenodo arrangement and opened #37, #38 and #39.
 
-* State of the working tree
+* The machine decides the ticket
 
-Clean.
-Branch =reporting/refinements=, nine commits, *not pushed*: 3c3c9ae, 2bfe2c4,
-b3ef6d5, 4a56c91, 1ef450b, 3bb43e0, 6e714f5, 1232394, ef31ebb.
-It branched off =diagnosis/xr-gap-debug=, which is the pushed tip; =master= is far
-behind both.
-The push decision is still open, as is whether the reporting work reaches =master=
-or only travels to the new repository under map #18.
+The author works part of the time on a machine that does not hold
+=NIOTs_resultados.rdata=.
+Tickets that run there carry the *=no-data-required=* label on the tracker:
 
-* Ticket to claim
+: gh issue list --state open --label no-data-required
+
+Everything else needs the data and must wait for the machine that has it.
+
+* Ticket to claim, on a machine WITHOUT the data
+
+*#29, B5: create the new git repository, its layout and its .gitignore*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/29
+Map: #18, migrate Stage-B reporting to a new Zenodo-backed repository.
+
+It is the head of the data-free chain: #38 (Makefile) and #39 (ADRs and findings)
+are both blocked by it, and #37 (Zenodo manifest) blocks #38.
+Claim it first: =gh issue edit 29 --add-assignee gpetrini=.
+
+If the repository layout is not something to decide today, #37 is the other
+unblocked data-free ticket and settles the deposit manifest instead.
+
+* Ticket to claim, on the machine WITH the data
 
 *#24, A5: full integration run of the reporting driver (plan Task 8)*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/24
-Map: #17, deliver the seven Stage-B reporting refinements.
-
-Claim it first: =gh issue edit 24 --add-assignee gpetrini=.
-It became unblocked when #23 closed, and it is the ticket that closes the map.
-
-* Why this one
-
-Every other ticket on map #17 is closed or deferred.
-#34 is deferred behind the Super Decomposição synchronisation (#25), because the
-E-component defect lives upstream and may already be fixed there; #35 is blocked
-by #34.
-#24 is therefore the only open, unblocked ticket on the map, and reaching its
-destination is what makes the Stage-B code ready to migrate.
-
-Three patches of fog graduate with it, all recorded in the map:
-the spike countries in the period-means table, the residual share spikes at the
-5e-3 guard, and the three unenumerated =free_y= facets.
+Already assigned. Its resolution comment records exactly where the run stopped.
+Rerun =source("generate_reports.R")= from inside =code/=; the run reached about
+15 of 77 groups in fifteen minutes with no error, so budget an hour.
 
 * Recommended model
 
-*Opus 5.*
-The run itself is mechanical, but the ticket says a parse-clean run is necessary
-and not sufficient, and it carries three scoping questions that only become
-answerable once the full figure set exists.
-Reading whether the regenerated set holds together as a document is the
-reasoning-heavy part.
+*Opus 5* for #29 and #37.
+Both are decisions whose consequences propagate: the layout decision constrains
+every relative path in the migrated code, and the deposit decision constrains
+what a stranger can reproduce.
+#38 and #39 are largely specified and suit a cheaper model once #29 lands.
 
 * Ideal opening prompt
 
 #+begin_example
-Continuar o wayfinder map #17. Assumir o ticket #24, a rodada de integração que
-fecha o mapa.
+Continuar o wayfinder map #18, que foi revisado em 2026-08-05: o destino agora é
+um repositório git novo, criado do zero, com os dados no Zenodo e um Makefile
+como ponto de entrada único. Syncthing saiu de cena.
 
-Rodar source("generate_reports.R") de dentro de code/ e exigir conclusão sem erro.
-Conferir que ../figs/ e ../tabs/ ficam populados, incluindo
-Period_Means_ImportContent.tex e CDX_Detail.
-Confirmar que o Item 2 continua adiado: CDI ainda é calculado e reportado
-separado do termo de importações.
+Assumir o ticket #29: criar o repositório, decidir o layout e escrever o
+.gitignore.
 
-Uma rodada limpa é necessária e não suficiente. Ler o conjunto completo de
-figuras e responder as três névoas que o mapa registra:
-(a) os países-spike na tabela de médias por período, MMR tem média pós-crise de
-    12,21 vindo de um evento cambial de 2012;
-(b) os picos residuais de share com o guarda em 5e-3, o máximo do painel ainda é
-    20,3 em SGP 2009 e BRN 2015;
-(c) os três facets free_y fora da enumeração do plano.
+Estou numa máquina SEM os dados em disco, então só tickets com o rótulo
+no-data-required.
 
-Trabalhar no ramo reporting/refinements.
+Decidir o layout declarando o que ele implica para save_figs e para os caminhos
+relativos ../figs, ../tabs, ../objs e ../reports que o código usa hoje de dentro
+de code/.
+NÃO repetir o padrão de .gitignore deste repositório, cuja linha 1 é *.* com
+whitelist de extensões, e que por isso deixa Markdown, PDF e dados fora do
+versionamento.
+Decidir e justificar se figuras e tabelas geradas são versionadas ou regeneradas;
+aqui tabs/*.tex é versionado e figs/ é ignorado, o que é incoerente.
 #+end_example
 
 * Context this session needs
 
-- Map #17 body, whose Decisions-so-far e fog carregam tudo o que a sessão precisa.
-- Plan: =docs/superpowers/plans/2026-07-10-pre-meeting-reporting-improvements.md=, Task 8.
-- Branch =reporting/refinements=, currently at ef31ebb.
+- Map #18 body, reescrito em 2026-08-05; a seção Notes registra o que mudou e por quê.
+- =docs/adr/=, doze registros, que o #39 vai triar.
+- Este repositório =.gitignore=, como exemplo do que não repetir.
+
+* State of the working tree
+
+Clean.
+Branch =reporting/refinements=, dez commits, *not pushed*: 3c3c9ae, 2bfe2c4,
+b3ef6d5, 4a56c91, 1ef450b, 3bb43e0, 6e714f5, 1232394, ef31ebb, 8c86038.
+It branched off =diagnosis/xr-gap-debug=, which is the pushed tip; =master= is far
+behind both.
+The push decision is still open.
+
+Three stray files in =tabs/= from an exploratory call to =tabulate_period_means()=,
+left in place by author decision on 2026-08-05: =Period_Means_Attribution.tex=,
+=Period_Means_AverageImportContent.tex=, =Period_Means_NetExports.tex=.
+They are not a deliverable of any ticket.
 
 * Facts carried forward
 
+- *Map #18 was revised, not merely extended.*
+  The Syncthing arrangement is recorded under its Out of scope section.
+  Ticket #29 was rewritten; do not read its original body as current.
+- *Neither the target repository nor the Zenodo deposit exists yet.*
+  The Zenodo record identifier is a parameter until the deposit is made, and
+  =make data= cannot be tested end to end before then.
+- *=Super Decomposição= is still the source of the new data treatment* (#25) and
+  is no longer the target repository.
+- *Two copies of the boundary object differ by an order of magnitude*:
+  =etc/Modelo/NIOTs_resultados.rdata= is 8.7 MB, =results/NIOTs_resultados.rdata=
+  is 88 MB. Which one is the boundary object is an open question in #37.
+- *=group_plots= writes =../reports/<group>.pdf= directly* and fails if the
+  directory is absent, which is why =make dirs= exists.
 - *Tier-B harness:* =code/verify_reporting_refinements.R=.
-  It rebuilds =results= and =decomp= and writes a numeric fingerprint to
-  =objs/reporting_refinements_fingerprint.rds=.
-  The fingerprint is unchanged across every ticket closed so far, at tolerance
-  zero, since none of them moved a number.
-  A full rebuild takes a few minutes.
-- *New objects this session.*
-  =tabulate_period_means()=, called once after the group loop of =group_plots=
-  because the table carries no group dimension.
-  =get_cdx_detail()= and =plot_cdx_detail()=, wired into the per-group loop.
-  =diagnose_cdx_sign()= at the end of =code/tests.R=.
-  Globals =crisis_start= and =crisis_end=.
+  The =decomp= fingerprint is unchanged at tolerance zero across every ticket
+  closed on map #17, since none of them moved a number.
 - *The plan code is unrun and has defects.*
-  Two were corrected this session: a =get0()= default that resolves to its own
+  Two were corrected on 2026-08-05: a =get0()= default resolving to its own
   promise, and a zero-growth guard three orders of magnitude too tight.
-  Do not transcribe the plan without running it.
-- *Plan Task 2 named the wrong country-years*, and USA 2012 and MEX 2014 do not
-  diverge in sign between the two import-content methods.
-- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells because
-  =Ft_E= crosses zero.
+- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells.
   Deferred as #34 behind #25: it may already be fixed upstream.
-  Do not fix it inside this repository before the synchronisation.
-- *The 375 non-finite input cells are the 1995 first-year lag*, 75 countries
-  times 5 components, and are benign.
-- *The gap diagnosis is resolved upstream in the new repository.*
-  Do not write or run scripts associated with the growth-rate gap debugging.
-- *The grouped path of =plot_differenteces= is broken*, reading a =vrbl= leaked
-  from the loop above it.
-  Latent because =group_plots= reaches it only with =verbose = TRUE=.
-  Belongs to ticket #32.
-- *Line numbers in the plan have drifted* by well over a hundred lines now.
-  Locate by the code the plan quotes, not by its line numbers.
-- *Tracker mechanics on this repository.* Sub-issues:
+  It is a live constraint on any number the new repository reports, which is why
+  #39 carries the finding forward.
+- *=tabulate_period_means()= writes to =../tabs/= on every call*, so exploratory
+  use contaminates published output. Redirect its =tabs= argument.
+- *The gap diagnosis is resolved upstream.* Do not run the archived diagnosis
+  scripts.
+- *Tracker mechanics.* Sub-issues:
   =gh api repos/:owner/:repo/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
   Blocking: =.../issues/N/dependencies/blocked_by -F issue_id=<numeric id>=.
-  Use =-F=, not =-f=; a string id returns "Invalid request".
-  =gh issue view= fails on this repository with a Projects-classic deprecation
-  error; read bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
+  Use =-F=, not =-f=.
+  =gh issue view= fails here with a Projects-classic deprecation error; read
+  bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
 - *The repository =.gitignore= excludes Markdown.* Write documents in Org.
 
 * Nothing waiting on the user
 
-The zero-growth threshold was decided with the author at 0.5 p.p. on 2026-08-05.
+Two decisions were taken with the author on 2026-08-05: the zero-growth threshold
+at 0.5 p.p., and the target being a new repository with a Zenodo deposit, neither
+of which exists yet.
 
 * Board state
 
-| Map                       | Frontier: open, unblocked, unclaimed                         |
-|---------------------------+--------------------------------------------------------------|
-| #17 reporting refinements | #24 only; #34 blocked by #25, #35 by #34; #20-23 closed      |
-| #18 Stage-B migration     | #25, #26; #27 blocked by #25 and #26; #28 by #27; #29 by #25 |
-| #19 retire and inventory  | #30, #31, #32; #33 blocked by #32                            |
-| (no map)                  | #36, cross-method sign disagreement, requested by the co-author |
+| Map                       | Frontier: open, unblocked, unclaimed                          |
+|---------------------------+---------------------------------------------------------------|
+| #17 reporting refinements | #24 only, needs the data; #34 blocked by #25, #35 by #34      |
+| #18 Zenodo-backed repo    | *#29*, *#37* data-free; #25, #26 (#26 data-free to write);    |
+|                           | #38 blocked by #29 and #37; #39 by #29; #27 by #25 and #26;   |
+|                           | #28 by #27                                                    |
+| #19 retire and inventory  | #30, #31, #32 all data-free; #33 blocked by #32               |
+| (no map)                  | #36 cross-method sign disagreement, needs the data            |
 
-#36 is deliberately outside every map: map #17 fixes its destination at the seven
-plan refinements, and this is an eighth item.
-It carries its own measured evidence in the body, so it can be executed without
-re-deriving anything.
-Re-run its numbers after map #18 lands the new vintage.
+** Maps to open later
+
+- *Nothing new to chart yet.* Map #18 absorbed the Zenodo and Makefile work,
+  which is where it belongs: the destination is a repository a stranger can
+  clone and run.
+- A *manuscript map* becomes chartable once #36 reports, since the
+  sign-disagreement result is a paper section rather than a code deliverable.
+- A *Stage-A map* would be needed only if #37 decides the deposit carries the
+  raw external release, which puts the deflation stage back in reproduction scope.
