@@ -173,3 +173,79 @@ combined_plots <- p_box / p_point
 save_figs(plot = combined_plots, main = "Differences_Database", fig_extension = "pdf", suffix = "All")
 save_figs(plot = p_point, main = "Point_Differences_Database", fig_extension = "pdf", suffix = "All")
 save_figs(plot = p_box, main = "Box_Differences_Database", fig_extension = "pdf", suffix = "All")
+
+
+## Diagnostic (Item 3): why do the Import Content and Average Import Content CDX
+## terms diverge in sign?
+## Prints, per demand component, the inputs to each method's aggregate import term
+## for a given country-year, plus the range checks that separate a composition
+## effect from a defect.
+## Scratch only; not part of the pipeline.
+diagnose_cdx_sign <- function(data_base = results, country, year) {
+  data <- data_base[[country]]
+  imp <- data[["m"]]
+  dates <- zoo::index(imp)
+  vars <- setdiff(colnames(imp), "Total")
+
+  imp <- tibble::as_tibble(imp)
+  wei <- tibble::as_tibble(data[["Weights"]])
+  gms <- tibble::as_tibble(data[["gm"]])
+  DA <- (data[["Ft"]][, "Total"] / data[["GDP"]]) |> tibble::as_tibble()
+
+  row <- which(lubridate::year(dates) == year)
+  stopifnot(length(row) == 1)
+
+  ## Import Content: per-component import term -lag(imp_v) * lag(wei_v) * gms_v.
+  ic <- vapply(vars, function(v) {
+    (-dplyr::lag(imp[[v]]) * dplyr::lag(wei[[v]]) * gms[[v]])[row]
+  }, numeric(1))
+
+  ## Average Import Content: aggregate term -lag(m_bar) * lag(wei_v) * gM.
+  mbar <- imp[["Total"]]
+  gM <- (mbar - dplyr::lag(mbar)) / dplyr::lag(mbar)
+  avg <- vapply(vars, function(v) {
+    (-dplyr::lag(mbar) * dplyr::lag(wei[[v]]) * gM)[row]
+  }, numeric(1))
+
+  out <- data.frame(
+    Component = vars,
+    lag_imp = vapply(vars, function(v) dplyr::lag(imp[[v]])[row], numeric(1)),
+    lag_wei = vapply(vars, function(v) dplyr::lag(wei[[v]])[row], numeric(1)),
+    gms = vapply(vars, function(v) gms[[v]][row], numeric(1)),
+    IC_term = ic,
+    Avg_term = avg,
+    row.names = NULL
+  )
+
+  cat(sprintf("\n== %s %d ==\n", country, year))
+  print(out, digits = 4)
+  cat(sprintf("lag(m_bar) = %.5f   gM = %+.5f\n",
+              dplyr::lag(mbar)[row], gM[row]))
+  cat(sprintf("IC aggregate import term  = %+.5f\n", sum(ic, na.rm = TRUE)))
+  cat(sprintf("Avg aggregate import term = %+.5f\n", sum(avg, na.rm = TRUE)))
+
+  ## Defect screen: any share outside the unit interval, or a non-finite input,
+  ## would make the divergence a data or code fault rather than a composition effect.
+  shares <- c(out$lag_imp, dplyr::lag(mbar)[row])
+  inputs <- c(out$lag_imp, out$lag_wei, out$gms, dplyr::lag(mbar)[row], gM[row])
+  cat(sprintf("shares outside [0,1]: %d   non-finite inputs: %d\n",
+              sum(shares < 0 | shares > 1, na.rm = TRUE),
+              sum(!is.finite(inputs))))
+  cat(sprintf("IC terms positive: %d   negative: %d\n",
+              sum(ic > 0, na.rm = TRUE), sum(ic < 0, na.rm = TRUE)))
+
+  ## FIXME check: the reported CDI of the Average method is built from domestic
+  ## absorption, -lag(m_bar) * lag(DA) * gM, while the import term inside its CDX
+  ## is built from the component weights.
+  ## The two agree only if lag(DA) equals the sum of the lagged weights.
+  cdi_avg <- -dplyr::lag(mbar)[row] * dplyr::lag(DA[[1]])[row] * gM[row]
+  cat(sprintf("sum lag(wei) = %.5f   lag(DA) = %.5f\n",
+              sum(out$lag_wei, na.rm = TRUE), dplyr::lag(DA[[1]])[row]))
+  cat(sprintf("Avg CDI as coded (via DA)  = %+.5f\n", cdi_avg))
+
+  invisible(out)
+}
+
+## Run once results exists:
+## diagnose_cdx_sign(results, "USA", 2012)
+## diagnose_cdx_sign(results, "MEX", 2014)

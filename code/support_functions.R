@@ -365,7 +365,18 @@ decompose_growth <- function(data_base = results) {
     ## DA = domestic-absorption ratio (Ft_Total / GDP), gM = aggregate import-share growth.
     df[,"CDI"] <- (lag(mAvg) * lag(DA) * gM[["Total"]]) * (-1)
 
-    ## FIXME: CDI does not match
+    ## NOTE (Item 3): the CDI of this method does not match the CDI of the Import
+    ## Content method by construction, and that is a composition effect, not a defect.
+    ## Both weight the components identically, since lag(DA) equals the sum of the
+    ## lagged weights to 4.4e-16, so the two differ only in that this method applies
+    ## the aggregate pair (m_bar, gM) where the other applies the component pair
+    ## (m_v, gm_v); heterogeneous per-component import growth then separates them.
+    ## Diagnosed with diagnose_cdx_sign() in tests.R for USA 2012 and MEX 2014, where
+    ## the two CDX terms in fact agree in sign; across all country-years they disagree
+    ## in 5.0 per cent of cases, and two thirds of those carry |CDX| below 0.005.
+    ## One genuine defect surfaced, in the E (INVNT) component rather than in the
+    ## method comparison: m_E leaves [0,1] in 81 of 11700 cells because Ft_E crosses
+    ## zero, and it drives the three largest sign disagreements. See issue #34.
 
     err_sqr <- (df[, "CDD_CDX"] - df[, "GDP"])^2 |>
       unlist(use.names = FALSE) |>
