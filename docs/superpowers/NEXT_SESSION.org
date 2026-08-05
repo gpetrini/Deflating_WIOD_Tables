@@ -51,6 +51,10 @@ What remains is the part the ticket calls necessary but not sufficient: read the
 full figure set, answer the three fog patches of map #17, and rule explicitly on
 whether the map closes with #34 and #35 outstanding.
 
+Budget: *15 to 25 minutes*, dominated by reading and writing rather than by
+computation.
+Nothing here needs the driver rerun.
+
 * Recommended model
 
 *Opus 5* for #29 and #37.
@@ -117,6 +121,16 @@ They are not a deliverable of any ticket.
   is 88 MB. Which one is the boundary object is an open question in #37.
 - *=group_plots= writes =../reports/<group>.pdf= directly* and fails if the
   directory is absent, which is why =make dirs= exists.
+- *Rebuild costs, measured on 2026-08-05.*
+  Reconstructing everything from scratch takes *27 seconds*: 1.9s to source, 17.8s
+  for =prepare_data()=, 3.9s for =decompose_growth()=, 3.4s for the period-means
+  table.
+  Regenerating one group's figures adds about a minute.
+  The expensive act is the full driver, 66 minutes for 77 groups in two formats,
+  roughly 51 seconds per group.
+  *Do not confuse the two.* Verifying a code change costs half a minute; only a
+  deliberate republication of the whole figure set costs an hour, and that is not
+  a requirement of #24.
 - *Tier-B harness:* =code/verify_reporting_refinements.R=.
   The =decomp= fingerprint is unchanged at tolerance zero across every ticket
   closed on map #17, since none of them moved a number.
