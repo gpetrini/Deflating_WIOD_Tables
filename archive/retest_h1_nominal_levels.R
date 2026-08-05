@@ -4,7 +4,7 @@
 ## sit in the ICIO nominal aggregate. This tests that directly, in levels, against
 ## the INDEPENDENT World Bank current-USD series (NY.GDP.MKTP.CD, 2018 vintage, to
 ## 2016). It does NOT reconstruct the official side from the pipeline's own P and e
-## (that cancellation is exact and circular, verified 2026-07-23). Run from code/.
+## (that cancellation is exact and circular, verified 2026-07-23). Run from archive/.
 
 source("diagnose_xr_gap.R")
 

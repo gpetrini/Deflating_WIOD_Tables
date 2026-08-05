@@ -3,7 +3,7 @@
 ## World Bank rate for the whole series changes only Dln e in the identity
 ##   g^IO = Dln(ICIO nominal USD) + Dln e - pi,
 ## so the gap moves by exactly (Dln e_WB - Dln e_applied). The test asks whether
-## the MAJORITY gap (quarantine excluded) is left unchanged. Run from inside code/.
+## the MAJORITY gap (quarantine excluded) is left unchanged. Run from inside archive/.
 
 source("diagnose_xr_gap.R")
 

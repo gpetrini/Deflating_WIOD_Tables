@@ -3,6 +3,13 @@
 #+filetags: :IODefl:diagnosis:findings:
 #+category: paper
 
+#+begin_quote
+*Relocated 2026-08-04.* Every script this document cites as =code/<name>.R= now
+lives at =archive/<name>.R=, moved when the gap was resolved upstream. They remain
+executable from inside =archive/=; see =archive/README.org=. The paths in the body
+below are left as written, as the record of where the work was done.
+#+end_quote
+
 * Purpose
 
 This document records the empirical verdict of the growth-gap diagnosis and the

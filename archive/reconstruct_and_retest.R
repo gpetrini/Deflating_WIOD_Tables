@@ -1,7 +1,7 @@
 ## Reconstruction + re-test wave (2026-07-23).
 ## Rebuilds the gap panel on the CURRENT benchmark (1996-2020) and re-runs the
 ## hypotheses that were previously estimated only on the legacy 1575-obs panel
-## (1996-2016), reporting the two side by side. Run from inside code/.
+## (1996-2016), reporting the two side by side. Run from inside archive/.
 
 source("diagnose_xr_gap.R")
 

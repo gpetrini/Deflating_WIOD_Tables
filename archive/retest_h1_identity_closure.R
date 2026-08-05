@@ -13,10 +13,10 @@
 ## Recipe from #10 (docs/superpowers/findings/2026-07-23-nominal-aggregate-
 ## extraction-recipe.md); assembly seam verified in #9. READ-ONLY: no Stage-A
 ## script executed; NIOTs, agregador, and OCDE rate/deflator files are read as
-## data. On disk, no fetch. Run from code/.
+## data. On disk, no fetch. Run from archive/.
 
 suppressMessages({library(readxl); library(MASS)})
-source("support_functions.R")   # prepare_data(); tidyverse, xts
+source("../code/support_functions.R")   # prepare_data(); tidyverse, xts
 
 ## ---- PRE-REGISTERED CRITERIA (fixed before running) -----------------------
 TOL_UNIF <- 1e-6   # max cell spread max/min-1 of (deflated Fn)/(raw Fn) per c-y

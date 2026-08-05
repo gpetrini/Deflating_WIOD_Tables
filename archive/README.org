@@ -1,0 +1,57 @@
+#+title: Archive: growth-rate gap diagnosis scripts
+#+date: 2026-08-04
+#+filetags: :IODefl:archive:
+
+* Why these are archived
+
+The growth-rate gap between the input-output series and official GDP was resolved
+upstream, in the new repository carrying the new input release and its revised
+data treatment.
+The diagnosis these scripts implement is therefore closed, and its wayfinder map
+(#13) and tickets (#14, #15, #16) were closed as superseded on 2026-08-04.
+
+They are archived rather than deleted because the write-up and the findings
+document cite them as the reproducible source of every number they report.
+Deleting them would make those documents unverifiable.
+
+* What is here
+
+| Script                          | Role                                                        |
+|---------------------------------+-------------------------------------------------------------|
+| =diagnose_xr_gap.R=             | Panel construction and the identity; every other script sources it. Holds =GAP_THRESHOLD_PP=, =QUARANTINE_ISO=, =QUARANTINE_YEARS=, =majority_panel()=, =quarantine_panel()=, =decompose_gap()=, =attribute_gap()=, =get_gOff(vintage=)=. |
+| =retest_h4_xr_swap.R=           | H4, exchange-rate substitution. Rejected.                   |
+| =retest_h2_deflator_swap.R=     | H2, deflator substitution at country level. Rejected.       |
+| =retest_h1_nominal_levels.R=    | H1, direct level test against an independent nominal series. |
+| =verify_prepare_data.R=         | Pipeline audit, =prepare_data()= correctness in isolation.  |
+| =retest_h1_identity_closure.R=  | Pipeline audit, identity closure cell for cell.             |
+| =reconstruct_and_retest.R=      | Panel reconstruction and re-estimation.                     |
+| =writeup_numbers.R=             | The single reproducible source of every number in the write-up; harvests the retest scripts. |
+
+* How to run them
+
+They remain executable.
+The directory sits at the same depth as =code/=, so every path they read
+(=../inputs=, =../results=, =../test=, =../figs=) still resolves.
+
+Run from inside =archive/=, not from =code/=:
+
+#+begin_src sh
+cd archive
+Rscript -e 'source("diagnose_xr_gap.R"); nrow(majority_panel())'
+#+end_src
+
+Verified on 2026-08-04 after the move: the majority panel rebuilds to 1512
+observations over 63 countries, the documented figures.
+
+* What changed in the move
+
+Only the three =source()= calls that reach back into the live codebase, which now
+read =../code/global_variables.R= and =../code/support_functions.R=, and the
+header comments that named =code/= as the working directory.
+No computation was touched.
+
+* Do not
+
+Do not write new scripts against these, and do not resume the diagnosis here.
+The gap is resolved upstream.
+Any residual question belongs to the new repository.

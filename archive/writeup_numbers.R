@@ -2,7 +2,7 @@
 ## Phase B write-up (docs/superpowers/writeups/2026-07-23-gap-diagnosis-writeup.org,
 ## spec #7). It sources the audited diagnosis and retest scripts and returns each
 ## cited table as a data.frame, so no number in the write-up is transcribed: a
-## re-estimation of the scripts propagates here automatically. Run from code/.
+## re-estimation of the scripts propagates here automatically. Run from archive/.
 ## READ-ONLY on data; no Stage-A script executed.
 
 suppressMessages(source("diagnose_xr_gap.R"))

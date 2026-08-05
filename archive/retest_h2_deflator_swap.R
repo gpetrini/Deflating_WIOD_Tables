@@ -4,7 +4,7 @@
 ## pi = Dln P moves in the identity g^IO = Dln(ICIO nominal USD) + Dln e - pi, so
 ## the gap moves by Gap_new = Gap - (pi_wb - pi_applied), no Stage-A re-run.
 ## The pooled mean was near the refutation bound (+9%); this asks whether the
-## rejection holds country by country. Run from inside code/.
+## rejection holds country by country. Run from inside archive/.
 
 source("diagnose_xr_gap.R")
 

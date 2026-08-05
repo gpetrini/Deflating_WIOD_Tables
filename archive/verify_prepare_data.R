@@ -8,9 +8,9 @@
 ##      country-year; M == M_F + M_I with M_I = Am %*% Z %*% Fn in the correct
 ##      orientation; m deflation-invariant on real inputs; index/lag alignment.
 ## READ-ONLY audit: no Stage-A script executed; NIOTs is loaded as a data object
-## (same as global_variables.R / diagnose_xr_gap.R do). Run from code/.
+## (same as global_variables.R / diagnose_xr_gap.R do). Run from archive/.
 
-source("support_functions.R")   # defines prepare_data(); loads tidyverse, xts
+source("../code/support_functions.R")   # defines prepare_data(); loads tidyverse, xts
 
 ## --- tiny assertion harness ------------------------------------------------
 .pass <- 0L; .fail <- 0L

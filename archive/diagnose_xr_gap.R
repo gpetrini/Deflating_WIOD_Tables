@@ -2,7 +2,7 @@
 ## Plan: docs/superpowers/plans/2026-07-08-exchange-rate-growth-gap-diagnosis.org
 ## Spec: docs/superpowers/specs/2026-07-08-exchange-rate-growth-gap-diagnosis.org
 ## Decision: ADR-0011 (reads currency inputs directly, does not source tmp.R).
-## Run from inside code/; every path is relative to it.
+## Run from inside archive/; every path outside it is relative to the repository root.
 
 suppressMessages({
   library(tidyverse)
@@ -17,8 +17,8 @@ suppressMessages({
 load_io <- function() {
   if (is.null(.io_cache$results)) {
     suppressMessages(suppressWarnings(invisible(capture.output({
-      source("global_variables.R")   # loads NIOTs, defines WIOD_countries, years
-      source("support_functions.R")
+      source("../code/global_variables.R")   # loads NIOTs, defines WIOD_countries, years
+      source("../code/support_functions.R")
       .io_cache$results <- prepare_data()
     }))))
   }

@@ -52,7 +52,7 @@ At that threshold sixty-two percent of majority country-years and seventy percen
 of majority countries, judged by each country's median year, clear the gap.
 The deliverable is the coverage curve, not the scalar; the curve is
 =figs/gap_coverage_curve.pdf= and the scalar is =GAP_THRESHOLD_PP= in
-=code/diagnose_xr_gap.R=, with =gap_coverage()= producing the sweep.
+=archive/diagnose_xr_gap.R=, with =gap_coverage()= producing the sweep.
 _Avoid_: tolerance, acceptable error.
 
 ** Quarantine set
@@ -66,7 +66,7 @@ year 2020 as a distinct pandemic regime.
 The seven spikes determine the pooled attribution when included, so the exclusion
 is a precondition of any majority verdict, not a robustness variant.
 The canonical list is =QUARANTINE_ISO= and =QUARANTINE_YEARS= in
-=code/diagnose_xr_gap.R=, applied by =majority_panel()= and =quarantine_panel()=.
+=archive/diagnose_xr_gap.R=, applied by =majority_panel()= and =quarantine_panel()=.
 _Avoid_: outliers, bad countries.
 
 ** Deflation state
