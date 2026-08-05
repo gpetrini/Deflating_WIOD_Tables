@@ -746,7 +746,7 @@ report_import_coeff <- function(
           )
         ) +
       geom_point(size = 1.5) +
-      facet_wrap(~ Variable, scales = "free_y") +
+      facet_wrap(~ Variable) +
       labs(
         title = paste0("Import coefficient vs GDP growth ", tag),
         subtitle = "Arrow indicates the direction of time",
@@ -1176,10 +1176,10 @@ plot_decomp <- function(
 
     if (!grouped) {
       p <- p +
-        facet_wrap(~Variable, scales = "free_y")
+        facet_wrap(~Variable)
     } else {
       p <- p +
-        facet_wrap(~ISO, scales = "free_y")
+        facet_wrap(~ISO)
     }
 
     print(p)
@@ -1590,8 +1590,15 @@ tabulate_period_means <- function(
     tidyr::pivot_wider(names_from = Variable, values_from = Mean) |>
     dplyr::arrange(ISO, Block)
 
+  ## MMR is the only country whose period mean is distorted beyond reading, by the
+  ## 2012 exchange-rate discontinuity classified in
+  ## docs/superpowers/findings/2026-07-21-xr-gap-diagnosis-findings.org.
+  ## Two of the 300 rows exceed 0.5 and both are MMR; the 99th percentile is 0.29.
+  ## The row is flagged rather than dropped, since removing a country from a
+  ## descriptive table is a stronger act than letting the reader see the anomaly.
   tab_title <- paste0(
-    "Mean growth-rate contributions by period (", method, ", 2020 excluded)")
+    "Mean growth-rate contributions by period (", method, ", 2020 excluded). ",
+    "MMR carries a 2012 exchange-rate discontinuity and its means are not comparable.")
 
   tex <- means |>
     knitr::kable(
