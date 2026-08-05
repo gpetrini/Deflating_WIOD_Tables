@@ -1,0 +1,159 @@
+#+title: The 2025 ICIO vintage, its coverage, and which code builds a NIOTs object
+#+date: 2026-08-05
+#+filetags: :IODefl:finding:ticket25:map18:
+
+Answers the three questions left open on
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/25 by the comment of
+2026-08-05, read off =/HDD/Model_OCDE= on the machine without the data.
+
+Nothing in the folder was modified.
+
+* 1. Which script turns the 2025 raw release into a NIOTs object
+
+*None does.*
+The 2025 raw release is read by exactly one script, and that script does not
+build a =NIOTs= object.
+
+** The candidate, read rather than assumed
+
+=scripts/01_baccaro_2025_from_scratch.R= loads
+=data-raw/IOTs_2025_RData/NATIOdomimp.rdata=, deflates each country-year slice by
+a scalar, extracts =Z_d=, =Z_m=, =X=, =Fd=, =Fm=, calls
+=ioOECD::calc_import_adjusted_components()=, and writes
+=testes/Baccaro_Replication_2025_Scratch.xlsx=.
+It never constructs =NIOTs= and never serialises an =.rdata=.
+It is a replication of Baccaro & Hadziabdic, not a data-construction stage.
+
+** The only code that does build NIOTs is in archive/
+
+Two drivers, both in =archive/legacy_scripts/=:
+
+| Driver              | Writes                       | Sectors | Years     |
+|---------------------+------------------------------+---------+-----------|
+| =compilacao.R=        | =NIOTs_resultados.rdata=       | 7 (=flag_agregador = 1=) | 1995–2020 |
+| =compilacao_ICIO.R=   | =NIOTs_2021_resultados.rdata=  | 45      | 1995–2018 |
+
+Both source the same chain of =base/*.R= — =titulos=, =deflator=,
+=exchange_rate_*=, =base=, =matrizes=, =coeficientes_tecnicos=,
+=matriz_impacto=, =indicadores_sinteticos= — and both assemble the fourteen
+slots in =base/salva_dados.R=, which is where the =NIOTs= list is composed.
+Both read CSV tables through =base/base.R=, not the 2025 =.rdata= arrays.
+
+*This is a second measured objection to deleting =archive/=, independent of the
+four =*_original= spreadsheets.*
+The deletion was decided on #29 on the premise that =archive/= holds superseded
+diagnosis material.
+It also holds the only working code path that produces the object the reporting
+stage consumes, and =ioOECD= does not yet replace it (below).
+
+** The modern path is partial and does not run
+
+- =ioOECD::parse_niot_tables()= returns three of the fourteen slots — =CIn=,
+  =Fn=, =Recurso= — and no =CIm=, =Fm=, =CI=, =Ft=, =lista_An=, =lista_Am=,
+  =lista_A=, =lista_Z=, =Ghosh=, =lista_BL=, =lista_FL=.
+  It hardcodes the 45-sector geometry: =raw_df[1:45, 2:46]= for =CIn=,
+  columns 47:56 for =Fn=, rows 91, 92, 94, 95 for =Recurso=.
+- =ioOECD::load_io_tables()= cannot run at all, for two reasons.
+  It expects =data-raw/ICIO_<version>/NATIODOMIMP/*.csv=, a directory absent from
+  the folder, which holds only =IOTs_2025_RData/=.
+  And its =lapply= body ends on the assignment =country_files <- sort(country_files)=,
+  so it returns a vector of file paths rather than the promised nested list of
+  data frames; the =read.csv= call the roxygen block declares is missing.
+
+So the 2025 vintage has no route to a =NIOTs= object anywhere in the folder, by
+either the legacy or the packaged path.
+
+* 2. Coverage of the 2025 vintage
+
+Read from the six objects in =data-raw/IOTs_2025_RData/=.
+All six agree on 28 years, 81 country slices and 50 sectors.
+
+| File              | Object       | Dimensions      |
+|-------------------+--------------+-----------------|
+| =NATIOdomimp.rdata= | =NATIOdomimp=  | 28 × 81 × 105 × 60 |
+| =NATIOttl.rdata=    | =NATIOttl=     | 28 × 81 × 59 × 60  |
+| =natLEONTFD.rdata=  | =natLEONTFD=   | 28 × 81 × 51 × 50  |
+| =natLEONTFT.rdata=  | =natLEONTFT=   | 28 × 81 × 51 × 50  |
+| =ICESHARE.rdata=    | =ICESHRE=      | 28 × 81 × 51 × 1   |
+| =VA.RData=          | =VAROW=        | 81 × 28 × 50 × 6   |
+
+Note that =VA.RData= transposes the first two margins and that the object inside
+=ICESHARE.rdata= is named =ICESHRE=, not =ICESHARE=.
+
+** Years
+
+1995 to 2022, 28 years, against 1995 to 2020, 26 years, in
+=data-processed/NIOTs_2023.rdata=.
+=01_baccaro_2025_from_scratch.R= discards 2021 and 2022 explicitly, because the
+deflators stop at 2020.
+Extending coverage to 2022 is therefore a deflator question, not a table
+question.
+
+** Countries
+
+81 slices: 80 economies plus =ROW=.
+The set is a strict superset of the 2023 edition: nothing in =NIOTs_2023.rdata=
+is absent from 2025.
+New: =AGO=, =ARE=, =COD=, =MMR=, =STP=, =TWN=, and =ROW=.
+
+Against 74 in =data-processed/NIOTs_2023.rdata= and 75 in
+=etc/Modelo/NIOTs_resultados.rdata=.
+=ioOECD::load_io_tables()= defaults to =exclude_countries = c("TWN", "MMR")=,
+which accounts for two of the seven.
+
+** Sectors: 50, not 45
+
+=NATIOdomimp= rows are 50 =DOM_*=, 51 =IMP_*=, and four aggregates
+(=TXS_INT_FNL=, =TTL_INT_FNL=, =VALU=, =OUTPUT=).
+The extra imported row is =IMP_OTHER=, which has no domestic counterpart.
+Columns are the same 50 sector labels plus =HFCE=, =NPISH=, =GGFC=, =GFCF=,
+=INVNT=, =DPABR=, =CONS_NONRES=, =EXPO=, =..=, =TOTAL=.
+
+Against the 45-sector nomenclature the splits are =C24A=/=C24B=,
+=C301=/=C302T309=, =H49=/=H50=/=H51=/=H52=/=H53=, and =J58T60=/=J61=/=J62_63=.
+
+Three consequences follow.
+
+1. Every 45-sector assumption in =ioOECD= is incompatible with this vintage:
+   =parse_niot_tables()= slices =1:45= and =2:46=, and the aggregator matrix that
+   collapses to the seven reporting sectors is built for 45 columns.
+2. =01_baccaro_2025_from_scratch.R= reads the count from the data
+   (=sum(startsWith(row_names, "DOM_"))= = 50), so it is correct, but its header
+   comment says "45-sector" and its fallback is =if (N_sectors == 0) N_sectors <- 45=.
+   The comment is wrong; the fallback is wrong but never exercised.
+3. =IMP_OTHER=, row 101, is silently dropped by
+   =Z_m <- mat_def[(N+1):(2*N), 1:N]=, which stops at row 100.
+   Whether that row belongs in imported intermediate consumption is a
+   substantive question, not a slicing detail, and it bears on #34.
+
+* 3. Are Super Decomposição and Model_OCDE the same folder
+
+*Not settled here, and it cannot be settled on this machine.*
+What can be established is that they are described by incompatible provenance,
+and that the role #25 assigned to the former is now filled by the latter.
+
+Evidence against identity:
+
+- The body of #25 places =Super Decomposição= in *Google Drive*, under one of two
+  Insync mounts (=g155468@dac.unicamp.br=, =gpetrinidasilveira@gmail.com=).
+  =/HDD/Model_OCDE= originates at
+  =/home/andre/Documentos/MEGA/Estudos/Extra/Artigo_taxas/Model= — *MEGA*, on the
+  co-author's machine, a different service and a different account.
+- The string =Super= appears nowhere in =/HDD/Model_OCDE=, and no directory
+  matching it exists on this machine; there are no Insync mounts here at all.
+- The name appears in this repository only in the tracker and in the session
+  pointer, never in code or data, so its referent is author-side knowledge.
+
+Evidence that the role transferred:
+
+- Map #18 states that =Super Decomposição= "remains the source of the new data
+  treatment" and "is no longer the target repository".
+  =/HDD/Model_OCDE= holds the new data treatment: the 2025 raw release, the
+  =ioOECD= package, and the Stage-A scripts.
+
+So either the author copied the same material from Drive to the co-author's MEGA
+folder under a second name, or =Super Decomposição= is a distinct folder that has
+been superseded.
+Both readings leave the inventory in this document valid.
+Only the author can say which holds, and the answer changes nothing that #29
+depends on.
