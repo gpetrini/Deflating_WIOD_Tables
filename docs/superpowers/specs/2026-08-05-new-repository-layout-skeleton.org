@@ -26,6 +26,10 @@ That path is not inferred from the folder name: it is written literally into
 
 =Artigo_taxas.Rproj= at the root names the project =Artigo_taxas=.
 
+Provenance confirmed by the author on 2026-08-05, with the statement that the
+MEGA arrangement *is superseded in full by Zenodo plus git*.
+It is recorded here as origin, not as a channel that remains in use.
+
 *It is not a git repository.*
 =git rev-parse= fails and no dotfile exists at the root.
 Nothing is under version control, so no history is bloated and every exclusion
@@ -64,7 +68,7 @@ Inherited, with the role of each directory stated independently of its contents.
 | =scripts/=        | short execution scripts that import the package and produce results   | yes    |
 | =docs/=           | manifest, ADRs, findings, checkpoints                                 | yes    |
 | products          | figures, tables and reports written by the code                       | no     |
-| =archive/=        | material outside the main flow, retained for provenance               | no     |
+| =archive/=        | *deleted*, see below                                                  | no     |
 
 Two choices are worth inheriting on their own merits.
 
@@ -179,5 +183,41 @@ Handed to #29 as free decisions.
 - *Whether git history travels* or the files arrive as a fresh commit.
 - *The repository name.* The =.Rproj= says =Artigo_taxas=; the folder says
   =Model_OCDE=; neither is a decision.
-- *Whether =archive/= travels at all*, or stays behind as provenance on the
-  co-author's disk.
+* Settled after this document was first written
+
+*=archive/= is deleted.*
+Decided by the author on 2026-08-05.
+It does not enter git and it is not in the Zenodo deposit (#37), so it survives
+nowhere once removed.
+
+Two consequences to weigh before the deletion is carried out, neither of which
+reverses the decision.
+
+=scripts/2021_validation/build_2021_array.R= reads
+=archive/legacy_data/OECD,DF_IOTS_2021,+DOMIMP....csv=.
+That file is already absent, so the deletion removes the directory the script
+expects rather than the input it needs.
+
+=archive/legacy_data/= holds the =*_original= copies of the exchange-rate and
+deflator sources whose working versions are in =data-raw/=, and those working
+versions *are* deposited.
+The four pairs were compared on 2026-08-05 and *all four differ*.
+
+| Working file, deposited              | Bytes  | Original, in =archive/= | Bytes  |
+|--------------------------------------+--------+-------------------------+--------|
+| =data-raw/exchange_rate_OCDE.xlsx=   |  47781 | =exchange_rate_OCDE_original.xlsx=   |  53311 |
+| =data-raw/deflator_GDP_OCDE.xlsx=    | 183027 | =deflator_GDP_OCDE_original.xlsx=    |  58751 |
+| =data-raw/exchange_rate_WB.xls=      | 133120 | =exchange_rate_WB_original.xls=      | 325120 |
+| =data-raw/deflator_GDP_serie_WB.xls= | 442880 | =deflator_GDP_serie_WB_original.xls= | 252928 |
+
+The working files are therefore not the publisher's files.
+The deposit describes them as external releases, and that description is
+inaccurate for these four.
+Deleting =archive/legacy_data/= removes the only record of what the originals
+contained, and with it the only means of establishing what was changed.
+
+This does not reverse the decision to delete =archive/=, and it does bear on two
+other tickets.
+The deposit manifest of #37 must either carry the four originals or stop calling
+these four files unaltered external releases.
+Approximately 700 KB is at stake, against 71 MB for the directory as a whole.

@@ -6,197 +6,214 @@ This file is OVERWRITTEN at the end of every session, never appended.
 It describes one session: the next one.
 History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
 
-Previous session (2026-08-05): closed map #17 entire, resolving #21, #22, #23 and
-#24; opened #34, #35, #36 and #40; revised map #18 from the Syncthing arrangement
-to the Zenodo arrangement and opened #37, #38 and #39.
+Previous session (2026-08-05, second of the day, on the machine without the
+data): resolved #37 and #41, both on map #18.
+The premise of both changed mid-session, because the author downloaded the future
+target repository to =/HDD/Model_OCDE= on that machine.
 
-* FIRST: find out which machine you are on
+* FIRST: find out where you are
 
-Run this from the repository root, before choosing a ticket:
+Two tests now, not one.
+They are independent and both matter.
 
 : test -f etc/Modelo/NIOTs_resultados.rdata && echo "DATA PRESENT" || echo "NO DATA"
+: test -d /HDD/Model_OCDE && echo "MODEL FOLDER PRESENT" || echo "NO MODEL FOLDER"
 
-*NO DATA* — you are on the second machine.
-Read =docs/superpowers/handoffs/2026-08-05-other-machine.org= before anything
-else; it covers what changes when the data is absent, then sends you back here.
-Work only tickets carrying the =no-data-required= label:
+*The second test is new and it changes the routing.*
+Until 2026-08-05 the two were assumed to coincide.
+They do not: the model folder was downloaded to the machine *without* the data.
+=/HDD/Model_OCDE= is the future target repository of map #18, and several tickets
+need only it.
 
-: gh issue list -R gpetrini/Deflating_WIOD_Tables --state open --label no-data-required
+- *NO DATA + MODEL FOLDER PRESENT* — the second machine, as it now stands.
+  Read =docs/superpowers/handoffs/2026-08-05-other-machine.org=, whose section
+  "Which tickets run here" is *out of date*: the =no-data-required= label no
+  longer describes what is workable, because the model folder arrived after the
+  label was applied. Everything else in that handoff still holds.
+- *DATA PRESENT* — the primary machine. #36 and #40 wait there and nowhere else.
 
-*DATA PRESENT* — you are on the primary machine.
-Ignore that handoff, which is addressed to the other one.
-Every ticket is available to you, and the two waiting here are named below.
+Do not infer either answer from the hostname or from what a previous session
+said.
 
-Do not infer the machine from the hostname, from this file, or from what a
-previous session said.
-The data file is the thing that actually constrains what can be verified, so it
-is the thing to test.
+* Ticket to claim
 
-* Ticket to claim, on a machine WITHOUT the data
+*#25, B1: synchronise Super Decomposição locally and inventory the new treatment*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/25
 
-*#37, B6: design the Zenodo deposit and its file manifest*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/37
-Map: #18, migrate Stage-B reporting to a new Zenodo-backed repository.
+Claim it first: =gh issue edit 25 -R gpetrini/Deflating_WIOD_Tables --add-assignee gpetrini=.
 
-Claim it first: =gh issue edit 37 --add-assignee gpetrini=.
+*It is the only open blocker of #29*, which the author named as the next
+frontier and which in turn gates #38 and #39.
+It also gates #27 and #34.
 
-*#29 is no longer available there.* The author settled on 2026-08-05 that the
-layout inherits from an existing project folder, to be downloaded from the cloud
-to the machine that holds the data.
-That made the layout an inheritance rather than a free decision, so #29 is now
-blocked by #41 and lost its =no-data-required= label.
-Since #38 and #39 are blocked by #29, the whole rest of the chain waits on #41.
+*It is partly done already.* See the comment left on it on 2026-08-05.
+Established: the consumed object binds one =NIOTs=, a list of 74 countries with
+14 slots each and 26 years per slot; =data-raw/= holds only =IOTs_2025_RData/=,
+so the 2021 and 2023 editions cannot be rebuilt there.
 
-#37 is unblocked and independent of all of it.
-If it finishes, map #19 has three data-free tickets: #30, #31 and #32.
-Ticket #26 is also data-free to write, with its validator demonstration left
-outstanding.
+What remains, all of it workable from =/HDD/Model_OCDE= on the second machine:
 
-* Ticket to claim, on the machine WITH the data
+1. Which script turns the 2025 raw release into a =NIOTs= object.
+   =scripts/01_baccaro_2025_from_scratch.R= is the candidate; read it rather than
+   assume it.
+2. The country and year coverage of the 2025 vintage.
+   =data-processed/= holds no 2025 object, so the coverage has to be read from
+   the raw tables or produced.
+3. Whether =Super Decomposição= and =Model_OCDE= are the same folder under two
+   names, or two different things. The map still speaks of the former and the
+   author of the latter.
 
-*Map #17 is CLOSED.* #24 resolved on 2026-08-05 and the map reached its
-destination; #34 and #35 were reparented to map #18.
+*#25 is mislabelled.* It has no =no-data-required= label and its body says it
+needs the folder, which is now on the second machine.
+Fix the label when you claim it.
 
-Two things wait on this machine.
+** After #25
 
-*#40, verify the figure republication.*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/40
-A full rerun was launched detached at 13:47 on 2026-08-05 and the session ended
-before it finished.
-Until it is verified =figs/= is in a mixed state, since the Developed group was
-regenerated separately during the decision work.
-Cheap: read a log, sample two figures.
-
-*#36, the cross-method sign disagreement*, which carries its own measured
-evidence in the body and needs no re-derivation.
+*#29, B5: create the new git repository, its layout and its .gitignore.*
+The author stated the intent directly: decide what leaves git and what stays.
+Its two inputs are already written.
+The =.gitignore= specification is in a comment on #29.
+The layout skeleton is
+=docs/superpowers/specs/2026-08-05-new-repository-layout-skeleton.org=.
 
 * Recommended model
 
-*Opus 5* for #37 and, on the other machine, #41.
-The deposit decision constrains what a stranger can reproduce, and #41 has to
-judge which inherited layout choices conflict with constraints this map already
-recorded.
-#38 and #39 are largely specified and suit a cheaper model once #29 lands.
+*Opus 5* for #29, which has to weigh eight recorded conflicts against the
+destination and settle a licence contradiction.
+*A cheaper model suffices for #25*, which is reading and recording, not deciding.
 
 * Ideal opening prompt
 
 #+begin_example
-Continuar o wayfinder map #18, que foi revisado em 2026-08-05: o destino agora é
-um repositório git novo, criado do zero, com os dados no Zenodo e um Makefile
-como ponto de entrada único. Syncthing saiu de cena.
+Continuar o mapa #18. Estou na máquina SEM os dados, mas COM a pasta modelo em
+/HDD/Model_OCDE, que é o repositório-alvo futuro. Verifique os dois testes do
+NEXT_SESSION antes de escolher ticket.
 
-Assumir o ticket #37: desenhar o depósito Zenodo e seu manifesto.
+Assumir o #25, que está parcialmente feito: falta identificar qual script
+transforma o bruto de 2025 em objeto NIOTs, a cobertura de países e anos dessa
+safra, e se Super Decomposição e Model_OCDE são a mesma pasta.
 
-Estou numa máquina SEM os dados em disco, então só tickets com o rótulo
-no-data-required. NÃO pegar o #29, que passou a depender do #41.
+O #25 é o único bloqueio aberto do #29, que é a próxima fronteira que eu quero.
 
-Decidir o que vai no depósito, se o release externo bruto viaja junto, a
-serialização, o versionamento, a licença e os checksums que o Makefile do #38
-vai conferir. O corpo do ticket já traz os tamanhos dos dois candidatos a objeto
-de fronteira, que diferem em uma ordem de grandeza.
-
-gh resolve o repositório pelo remote, então rodar de dentro do checkout ou usar
--R gpetrini/Deflating_WIOD_Tables.
+gh precisa de -R gpetrini/Deflating_WIOD_Tables neste checkout, porque existe um
+remote upstream apontando para GICN.
 #+end_example
 
 * Context this session needs
 
-- Map #18 body, reescrito em 2026-08-05; a seção Notes registra o que mudou e por quê.
-- Ticket #41, que define de onde o layout é herdado.
-- =docs/adr/=, doze registros, que o #39 vai triar.
-- Este repositório =.gitignore=, como exemplo do que não repetir.
+- Mapa #18, cujo corpo foi atualizado em 2026-08-05 com os dois ponteiros novos.
+- Os comentários de resolução de #37 e #41, que carregam as decisões em detalhe.
+- =docs/superpowers/specs/2026-08-05-new-repository-layout-skeleton.org=.
+- =docs/superpowers/findings/2026-08-05-zenodo-deposit-and-model-ocde-folder.org=.
 
 * State of the working tree
 
 Clean.
-Branch =reporting/refinements=, *pushed* and tracking
-=origin/reporting/refinements=.
-It branched off =diagnosis/xr-gap-debug=; =master= is far behind both, and whether
-this work reaches =master= is still undecided.
+Branch =reporting/refinements=, tracking =origin/reporting/refinements=.
+*Two commits ahead of origin and not pushed*: =e910aac= (the Zenodo record) and
+=b9cfb01= (the layout skeleton), plus whatever this session adds.
 
-Three stray files in =tabs/= from an exploratory call to =tabulate_period_means()=,
-left in place by author decision on 2026-08-05: =Period_Means_Attribution.tex=,
-=Period_Means_AverageImportContent.tex=, =Period_Means_NetExports.tex=.
-They are not a deliverable of any ticket.
+Three stray files in =tabs/= from an exploratory call to
+=tabulate_period_means()=, left in place by author decision on 2026-08-05:
+=Period_Means_Attribution.tex=, =Period_Means_AverageImportContent.tex=,
+=Period_Means_NetExports.tex=.
 
 * Facts carried forward
 
-- *Map #18 was revised, not merely extended.*
-  The Syncthing arrangement is recorded under its Out of scope section.
-  Ticket #29 was rewritten; do not read its original body as current.
-- *Neither the target repository nor the Zenodo deposit exists yet.*
-  The Zenodo record identifier is a parameter until the deposit is made, and
-  =make data= cannot be tested end to end before then.
-- *=Super Decomposição= is still the source of the new data treatment* (#25) and
-  is no longer the target repository.
-- *Two copies of the boundary object differ by an order of magnitude*:
-  =etc/Modelo/NIOTs_resultados.rdata= is 8.7 MB, =results/NIOTs_resultados.rdata=
-  is 88 MB. Which one is the boundary object is an open question in #37.
-- *=group_plots= writes =../reports/<group>.pdf= directly* and fails if the
-  directory is absent, which is why =make dirs= exists.
-- *Rebuild costs, measured on 2026-08-05.*
-  Reconstructing everything from scratch takes *27 seconds*: 1.9s to source, 17.8s
-  for =prepare_data()=, 3.9s for =decompose_growth()=, 3.4s for the period-means
-  table.
-  Regenerating one group's figures adds about a minute.
-  The expensive act is the full driver, 66 minutes for 77 groups in two formats,
-  roughly 51 seconds per group.
-  *Do not confuse the two.* Verifying a code change costs half a minute; only a
-  deliberate republication of the whole figure set costs an hour, and that is not
-  a requirement of #24.
-- *Tier-B harness:* =code/verify_reporting_refinements.R=.
-  The =decomp= fingerprint is unchanged at tolerance zero across every ticket
-  closed on map #17, since none of them moved a number.
-- *The plan code is unrun and has defects.*
-  Two were corrected on 2026-08-05: a =get0()= default resolving to its own
-  promise, and a zero-growth guard three orders of magnitude too tight.
-- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells.
-  Deferred as #34 behind #25: it may already be fixed upstream.
-  It is a live constraint on any number the new repository reports, which is why
-  #39 carries the finding forward.
+- *=/HDD/Model_OCDE= is the future target repository*, 338 MB, *not yet a git
+  repository*. Nothing is bloated; every exclusion decided so far is preventive.
+  It originates at =/home/andre/Documentos/MEGA/Estudos/Extra/Artigo_taxas/Model=
+  on the co-author's machine. The author confirmed on 2026-08-05 that *the MEGA
+  arrangement is superseded in full by Zenodo plus git*.
+- *The Zenodo deposit is designed and its manifest written*, into
+  =/HDD/Model_OCDE/docs/zenodo-manifest.org=, with =SHA256SUMS= at that folder's
+  root, verified clean over fourteen files.
+  Fourteen files, 238905858 bytes, 227.8 MB: all of =data-raw/= plus
+  =NIOTs_2021.rdata= and =NIOTs_2023.rdata=.
+  CC BY 4.0, no conversion, a new version on any change of bytes, SHA-256 as the
+  contract, the manuscript citing the version DOI and never the concept DOI.
+- *One verification can still change what is deposited.* The licence statement on
+  the OECD National IOTs page was not read: the page returns HTTP 403 here.
+  If it is more restrictive than CC BY 4.0, =data-raw/= leaves the deposit.
+- *The processed objects cannot be regenerated.* The raw inputs of the ICIO 2021
+  and 2023 editions are absent from the whole folder, =archive/= included.
+  That, and not convenience, is why =data-processed/= is deposited.
+- *The order-of-magnitude puzzle is explained.* Two editions of the OECD National
+  IOTs, =NIOTs_2023.rdata= at 8.2 MB against =NIOTs_2021.rdata= at 126.3 MB.
+  Not WIOD-43 against OECD-75.
+- *74 countries against 75.* =data-processed/NIOTs_2023.rdata= holds 74;
+  =etc/Modelo/NIOTs_resultados.rdata= holds 75. The two objects are not the same
+  file. Evidence for #26 and #27.
+- *Every script in =/HDD/Model_OCDE/scripts/= hardcodes
+  =/home/andre/Documentos/MEGA/...=.* Nothing there runs on another machine.
+  This is the direct contradiction of the map's destination and it belongs to the
+  Stage-B adaptation ticket, not to #29.
+- *=ioOECD/DESCRIPTION= declares MIT* against GPL-3 in ADR-0008, and there is *no
+  LICENSE file anywhere in the folder*. =Authors@R= is the placeholder
+  =person("Andre", email = "andre@example.com")=. Needs the co-author.
+- *=archive/= is to be deleted*, decided 2026-08-05. It is in neither git nor the
+  deposit, so it survives nowhere.
+  *An objection was measured and is not yet answered*: the four
+  =*_original= spreadsheets in =archive/legacy_data/= all differ from the working
+  copies in =data-raw/= that the deposit carries, so those four deposited files
+  are not the publisher's files and the originals are the only record of what
+  changed. Roughly 700 KB of the 71 MB. See the layout skeleton document.
 - *=tabulate_period_means()= writes to =../tabs/= on every call*, so exploratory
   use contaminates published output. Redirect its =tabs= argument.
-- *The =figs= argument of every plotting function is dead.*
-  No =save_figs()= call passes it, so the argument is accepted and ignored and
-  output always lands in =../figs/=.
-  An attempt to render into a scratch directory silently overwrote the published
-  set instead. Filed on #32.
-- *The gap diagnosis is resolved upstream.* Do not run the archived diagnosis
-  scripts.
+- *The =figs= argument of every plotting function is dead*, so any layout that
+  moves the figure directory needs a code fix first. Filed as #32.
+- *The E (INVNT) import share leaves [0,1]* in 81 of 11700 cells. #34, behind
+  #25.
+- *Rebuild costs on the primary machine, measured 2026-08-05.* Full
+  reconstruction 27 seconds; regenerating one group's figures about a minute; the
+  full driver 66 minutes for 77 groups. Verifying a code change is cheap; only a
+  deliberate republication costs an hour.
+- *Tier-B harness:* =code/verify_reporting_refinements.R=. The =decomp=
+  fingerprint is unchanged at tolerance zero across every ticket of map #17.
+- *=gh= needs =-R gpetrini/Deflating_WIOD_Tables= inside this checkout.*
+  An =upstream= remote points at GICN, so =repos/:owner/:repo= resolves there and
+  returns HTTP 404 for every issue. This is not the failure the older handoff
+  describes.
+  =gh issue view= separately fails with a Projects-classic deprecation error;
+  read bodies with =gh api repos/gpetrini/Deflating_WIOD_Tables/issues/N --jq '.body'=.
 - *Tracker mechanics.* Sub-issues:
-  =gh api repos/:owner/:repo/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
+  =gh api repos/<owner>/<repo>/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
   Blocking: =.../issues/N/dependencies/blocked_by -F issue_id=<numeric id>=.
-  Use =-F=, not =-f=.
-  =gh issue view= fails here with a Projects-classic deprecation error; read
-  bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
+  Use =-F=, not =-f=. The numeric id is =gh api .../issues/N --jq .id=, not the
+  issue number.
 - *The repository =.gitignore= excludes Markdown.* Write documents in Org.
 
-* Nothing waiting on the user
+* Waiting on the author
 
-Two decisions were taken with the author on 2026-08-05: the zero-growth threshold
-at 0.5 p.p., and the target being a new repository with a Zenodo deposit, neither
-of which exists yet.
+- *The four =*_original= spreadsheets*, above. Deleting =archive/= wholesale
+  discards them; the alternative is to keep roughly 700 KB and correct the
+  deposit manifest.
+- *The licence contradiction* between =ioOECD/DESCRIPTION= (MIT) and ADR-0008
+  (GPL-3), which needs the co-author rather than a decision here.
+
+Decisions already taken and not open: the deposit contents, serialisation,
+versioning, licence and checksums (#37); the =.gitignore= specification and the
+deletion of =archive/= (recorded on #29 and in the layout skeleton).
 
 * Board state
 
-| Map                       | Frontier: open, unblocked, unclaimed                          |
-|---------------------------+---------------------------------------------------------------|
-| #17 reporting refinements | *CLOSED 2026-08-05*; #34 and #35 moved to map #18            |
-| #18 Zenodo-backed repo    | *#29*, *#37* data-free; #25, #26 (#26 data-free to write);    |
-|                           | #34 and #35 inherited, both blocked behind #25;               |
-|                           | *#41* gates #29, which gates #38 and #39;                     |
-|                           | #38 blocked by #29 and #37; #39 by #29; #27 by #25 and #26;   |
-|                           | #28 by #27                                                    |
-| #19 retire and inventory  | #30, #31, #32 all data-free; #33 blocked by #32               |
-| (no map)                  | #36 sign disagreement, #40 verify the republication; both     |
-|                           | need the data                                                 |
+Frontier means open, unblocked and unclaimed.
+
+| Map                       | Frontier                                                    |
+|---------------------------+-------------------------------------------------------------|
+| #18 Zenodo-backed repo    | *#25* (gates #29, #27, #34), *#26*; #29 blocked by #25;      |
+|                           | #38 and #39 blocked by #29; #27 by #25 and #26; #28 by #27;  |
+|                           | #34 by #25; #35 by #34                                      |
+| #19 retire and inventory  | *#30*, *#31*, *#32*; #33 blocked by #32                      |
+| (no map)                  | *#36* sign disagreement, *#40* verify the republication;     |
+|                           | both need the data                                          |
+
+Closed on 2026-08-05: #37 and #41 on map #18, after #20 to #24 closed map #17
+earlier the same day.
 
 ** Maps to open later
 
-- *Nothing new to chart yet.* Map #18 absorbed the Zenodo and Makefile work,
-  which is where it belongs: the destination is a repository a stranger can
-  clone and run.
-- A *manuscript map* becomes chartable once #36 reports, since the
-  sign-disagreement result is a paper section rather than a code deliverable.
-- A *Stage-A map* would be needed only if #37 decides the deposit carries the
-  raw external release, which puts the deflation stage back in reproduction scope.
+- A *manuscript map* becomes chartable once #36 reports.
+- A *Stage-A map* is now more likely than it was: #37 decided the deposit carries
+  the raw release, which puts the deflation stage back inside reproduction scope,
+  and the Stage-A code sits in =/HDD/Model_OCDE=.
