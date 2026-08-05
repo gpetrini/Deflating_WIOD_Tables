@@ -89,8 +89,11 @@ Map #13 and its tickets #14, #15 and #16 were closed on 2026-08-04 as superseded
 unanswered, because the gap was resolved upstream.
 They are recorded under that map's "Out of scope" and do not graduate.
 Every open issue on the tracker now belongs to map #17, #18 or #19.
-The gap-diagnosis scripts in =code/= are listed for archival review under ticket
-#32; do not delete them outside that ticket.
+The eight gap-diagnosis scripts were archived to =archive/= on the same day
+(commit 4a56c91); they remain executable from inside that directory, and
+=archive/README.org= records why they are there.
+=code/= now holds only the reporting stage, the deflation stage and the Tier-B
+harness.
 
 * Board state
 
