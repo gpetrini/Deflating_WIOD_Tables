@@ -6,7 +6,19 @@ This file is OVERWRITTEN at the end of every session, never appended.
 It describes one session: the next one.
 History belongs to git, to the issue tracker, and to =docs/superpowers/handoffs/=.
 
-Previous session: charted maps #17, #18 and #19; resolved ticket #20.
+Previous session (2026-08-04): charted maps #17, #18 and #19; resolved ticket #20;
+closed map #13 and tickets #14, #15 and #16 as superseded; archived the eight
+gap-diagnosis scripts to =archive/=.
+
+* State of the working tree
+
+Clean.
+Branch =reporting/refinements=, five commits, *not pushed*: 3c3c9ae, 2bfe2c4,
+b3ef6d5, 4a56c91, 1ef450b.
+It branched off =diagnosis/xr-gap-debug=, which is the pushed tip; =master= is far
+behind both.
+Decide early whether to push, and whether the reporting work should eventually
+reach =master= or only travel to the new repository under map #18.
 
 * Ticket to claim
 
@@ -82,6 +94,20 @@ Trabalhar no ramo reporting/refinements.
 - *Three =free_y= facets outside the plan's enumeration* were left in place at
   =support_functions.R:680=, =:1098= and =:1101=.
   Recorded in map #17's fog.
+- *Line numbers in the plan have drifted.* The Task 1 edits added comment lines,
+  so the plan's references (Task 2 cites the FIXME at line 360, Task 3 cites
+  =tabulate_statistics= near 1470, Task 5 cites 1012-1034 and 716-733, Task 6
+  cites =get_dGDP= near 533) now sit a few lines lower.
+  The FIXME is at =support_functions.R:365=.
+  Locate by the code the plan quotes, not by its line numbers.
+- *Tracker mechanics on this repository.* Sub-issues:
+  =gh api repos/:owner/:repo/issues/N/sub_issues -F sub_issue_id=<numeric id>=.
+  Blocking: =.../issues/N/dependencies/blocked_by -F issue_id=<numeric id>=.
+  Use =-F=, not =-f=; a string id returns "Invalid request".
+  =gh issue view= fails on this repository with a Projects-classic deprecation
+  error; read bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
+- *The repository =.gitignore= excludes Markdown.* Write documents in Org, which
+  is the house format anyway, or they will not be tracked without =-f=.
 
 * Nothing waiting on the user
 
