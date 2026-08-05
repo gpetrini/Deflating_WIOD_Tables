@@ -736,7 +736,6 @@ report_import_coeff <- function(
     filter(Variable != "E") |>
     ggplot(aes(x = Time, y = Coefficient, color = Variable)) +
     geom_bump(size = 2) +
-    facet_wrap(~ Variable, scales = "free_y") +
     geom_point(size = 6) +
     scale_color_brewer(palette = "Paired") +
     labs(
@@ -748,7 +747,7 @@ report_import_coeff <- function(
 
   if (grouped) {
     p <- p +
-      facet_wrap(~ ISO, scales = "free_y")
+      facet_wrap(~ ISO)
   }
 
   print(p)
@@ -1029,27 +1028,40 @@ plot_decomp <- function(
   ## Across methods
 
 
+  ## Bars read as share of GDP growth, so the GDP point is dropped: it is 1 by
+  ## construction. Years of near-zero growth would divide by a vanishing
+  ## denominator and are left as gaps rather than spikes.
+  ## The threshold is 0.5 p.p. of annual growth, below which the ratio carries no
+  ## economic reading and one stagnation year flattens every other bar in the panel.
+  ## It takes the panel maximum from 74.7 to 20.3 and the 99th percentile from 5.44
+  ## to 3.05. A tighter guard does not work: GBR 2011 grows at 1.2e-06.
+  min_growth <- 5e-3
+
+  gdp_df <- df |>
+    filter(Variable == "GDP") |>
+    select(Time, ISO, Method, gGDP = Contribution)
+
   p <- df |>
     filter(Variable != "GDP") |>
     filter(Variable != "CDD") |>
     filter(Variable != "CDX") |>
+    left_join(gdp_df, by = c("Time", "ISO", "Method")) |>
+    mutate(Share = ifelse(abs(gGDP) < min_growth, NA_real_, Contribution / gGDP)) |>
     group_by(Time, Variable) |>
-    ggplot(aes(x = Time, y = Contribution, fill = Variable)) +
+    ggplot(aes(x = Time, y = Share, fill = Variable)) +
     geom_col(
       ## width = 0.6,
       color = "black",
       position = "stack"
     ) +
-    geom_point(
-      data = df |> filter(Variable == "GDP"),
-      aes(x = Time, y = Contribution),
-      color = "black"
-    ) +
     labs(
       title = title,
       subtitle = subtitle,
-      x = NULL, y = NULL, fill = NULL,
-      caption = "Authors' own elaboration",
+      x = NULL, y = "Share of GDP growth", fill = NULL,
+      caption = paste0(
+        "Authors' own elaboration. Years whose GDP growth falls below ",
+        format(100 * min_growth, digits = 2), " p.p. in absolute value are omitted, ",
+        "since the share is not defined against a vanishing denominator."),
       ) +
     custom_theme()
 
@@ -1488,6 +1500,54 @@ tabulate_statistics <- function(
 }
 
 
+tabulate_period_means <- function(
+    decomp,
+    method = "Import Content",
+    ## The lookup must name the global environment: a bare get0() resolves in the
+    ## function frame and finds this argument's own promise.
+    crisis_start = get0("crisis_start", envir = globalenv(), ifnotfound = 2007),
+    crisis_end   = get0("crisis_end",   envir = globalenv(), ifnotfound = 2009),
+    vars_keep = c("GDP", "CDD", "CDX", "C", "I", "G", "E", "X"),
+    tabs = "../tabs/"
+) {
+  tidy <- get_tidy(decomp) |>
+    dplyr::filter(Method == method) |>
+    dplyr::mutate(Year = lubridate::year(Time)) |>
+    dplyr::filter(Year != 2020) |>
+    dplyr::filter(Variable %in% vars_keep)
+
+  partition <- tidy |>
+    dplyr::mutate(Block = dplyr::case_when(
+      Year <  crisis_start ~ "Pre-crisis",
+      Year <= crisis_end   ~ "Crisis",
+      TRUE                 ~ "Post-crisis"
+    ))
+  total <- tidy |> dplyr::mutate(Block = "Total")
+
+  means <- dplyr::bind_rows(partition, total) |>
+    dplyr::group_by(ISO, Block, Variable) |>
+    dplyr::summarise(Mean = mean(Contribution, na.rm = TRUE), .groups = "drop") |>
+    dplyr::mutate(Block = factor(
+      Block, levels = c("Pre-crisis", "Crisis", "Post-crisis", "Total"))) |>
+    tidyr::pivot_wider(names_from = Variable, values_from = Mean) |>
+    dplyr::arrange(ISO, Block)
+
+  tab_title <- paste0(
+    "Mean growth-rate contributions by period (", method, ", 2020 excluded)")
+
+  tex <- means |>
+    knitr::kable(
+      format = "latex", booktabs = TRUE, digits = 4, escape = FALSE,
+      longtable = TRUE, caption = tab_title, label = "TAB-PERIOD-MEANS")
+
+  fname <- file.path(
+    tabs, paste0("Period_Means_", stringr::str_remove_all(method, " "), ".tex"))
+  writeLines(as.character(tex), fname)
+
+  invisible(means)
+}
+
+
 save_figs <- function(
                       plot,
                       figs = "../figs/",
@@ -1654,6 +1714,12 @@ group_plots <- function(
     cat(" done!")
 
   }
+
+  ## The period-means table is indexed by ISO over the whole panel, so it carries
+  ## no group dimension and is written once, outside the group loop.
+  cat("\nWriting the period-means table ...")
+  tabulate_period_means(data, method = target_meth, tabs = tabs)
+  cat(" done!\n")
 }
 
 

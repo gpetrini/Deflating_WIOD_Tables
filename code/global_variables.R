@@ -8,6 +8,10 @@ years <- country[[1]] |> names()
 first_year <- years[1]
 last_year <- tail(years, 1)
 
+## Crisis window for grouped-period aggregates (Item 4). Configurable.
+crisis_start <- 2007
+crisis_end   <- 2009
+
 country <- NULL
 
 expenditures_dom <- c("C", "I", "G", "E")
