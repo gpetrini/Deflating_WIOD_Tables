@@ -10,6 +10,12 @@ Previous session (2026-08-05): resolved #21, #22 and #23; opened #34, #35 and #3
 started and interrupted the #24 integration run; revised map #18 from the Syncthing
 arrangement to the Zenodo arrangement and opened #37, #38 and #39.
 
+* If you are the agent on the second machine
+
+Read =docs/superpowers/handoffs/2026-08-05-other-machine.org= first.
+It covers what is specific to working without the data on disk, and then sends
+you back here.
+
 * The machine decides the ticket
 
 The author works part of the time on a machine that does not hold

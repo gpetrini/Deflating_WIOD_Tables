@@ -1,0 +1,118 @@
+#+title: Handoff to the machine without the data
+#+date: 2026-08-05
+#+filetags: :IODefl:handoff:crossmachine:
+
+Written for the agent picking this up on a second machine.
+Read this once, then work from =docs/superpowers/NEXT_SESSION.org=, which is the
+authority on which ticket to claim and why.
+This file covers only what is specific to being on the other machine.
+
+* Read in this order
+
+1. This file.
+2. =docs/superpowers/NEXT_SESSION.org= — the ticket, the opening prompt, the
+   facts carried forward, the board state.
+3. The body of the map named there, via
+   =gh api repos/:owner/:repo/issues/18 --jq '.body'=.
+4. The body of the ticket itself, the same way.
+
+Do not read the whole =docs/= tree up front.
+Zoom into a document when a ticket names it.
+
+* The constraint that defines this machine
+
+=NIOTs_resultados.rdata= is not here and will not arrive by =git pull=.
+It is excluded by =.gitignore= (line 1 is =*.*= with an extension whitelist), and
+under the current plan it moves to Zenodo rather than to git.
+
+Consequences.
+
+- =source("global_variables.R")= *fails on its first line*, which loads
+  =../etc/Modelo/NIOTs_resultados.rdata=.
+  Anything that sources it, or sources =support_functions.R= after it, cannot run.
+- =prepare_data()=, =decompose_growth()=, =group_plots()=,
+  =verify_reporting_refinements.R= and =tests.R= are all unavailable.
+- Verification on this machine is therefore *reading and parsing*, not running:
+  =Rscript -e 'invisible(parse(file="code/support_functions.R"))'= works, and
+  proves only that the file is syntactically valid.
+
+*Do not close a ticket on a parse check when its own text asks for a runtime
+check.* Record the runtime step as outstanding and leave the ticket open.
+This repository has already been bitten twice by plan code that parsed cleanly
+and failed on first execution: a =get0()= default that resolved to its own
+promise, and a zero-growth guard three orders of magnitude too tight.
+
+* Which tickets run here
+
+The tracker carries a label for exactly this.
+
+: gh issue list --state open --label no-data-required
+
+Everything else waits for the machine that holds the data.
+If a ticket looks tempting and lacks that label, check whether it needs the data
+before starting; if it does and you started anyway, stop and say so rather than
+substituting a parse check for the evidence the ticket asked for.
+
+* Tracker mechanics on this repository
+
+- =gh issue view= *fails here* with a Projects-classic deprecation error.
+  Read bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
+- Sub-issues:
+  =gh api repos/:owner/:repo/issues/<map>/sub_issues -F sub_issue_id=<numeric id>=.
+- Blocking:
+  =gh api repos/:owner/:repo/issues/N/dependencies/blocked_by -F issue_id=<numeric id>=.
+- Use =-F=, never =-f=; a string id returns "Invalid request".
+  Get the numeric id with =gh api repos/:owner/:repo/issues/N --jq .id=, which is
+  not the issue number.
+- Claim a ticket *before* working it: =gh issue edit N --add-assignee gpetrini=.
+
+* Conventions that are not negotiable here
+
+- Documents in *Org*, not Markdown.
+  The =.gitignore= excludes Markdown, so a Markdown file will silently fail to be
+  tracked unless forced.
+- One sentence per line. No em-dashes.
+- Native pipe =|>=. =ggplot2= over base. Figures to =../figs/= as PDF via
+  =save_figs=; tables to =../tabs/= via =knitr::kable(booktabs = TRUE, caption = ...)=.
+- Never rename an existing figure or table file.
+- Scripts run from inside =code/=.
+- =etc/Modelo/= is read-only reference and is never executed (ADR-0012).
+
+* What did not travel in the pull
+
+- The data, as above.
+- =figs/=, ignored. Figures regenerated on the other machine stay there.
+- The project memory under
+  =~/.claude/projects/-home-gpetrini-Documents-Deflating-WIOD-Tables/memory/=,
+  which is per-machine.
+  Its substance is duplicated in places that did travel: the resolution comments
+  on issues #21, #22 and #23, the NOTE at =code/support_functions.R:363=, and the
+  "Facts carried forward" section of =NEXT_SESSION.org=.
+  If you write new memory on this machine, understand that it will not travel back.
+- =Meetings.org=, excluded on purpose.
+- Three stray files in =tabs/= (=Period_Means_Attribution.tex=,
+  =Period_Means_AverageImportContent.tex=, =Period_Means_NetExports.tex=), which
+  were left untracked by author decision and are not a deliverable of any ticket.
+
+* Work in flight on the other machine
+
+Ticket #24, the full integration run of =generate_reports.R=, was interrupted
+partway through on 2026-08-05.
+Its resolution comment records where it stopped.
+*Do not attempt it here*, and do not treat map #17 as closed: #24 is open, and
+#34 and #35 are deferred behind the migration.
+
+* Branch
+
+Work on =reporting/refinements=, which is pushed and tracks
+=origin/reporting/refinements=.
+It branched off =diagnosis/xr-gap-debug=; =master= is far behind both.
+Whether this work reaches =master= is undecided, so do not merge it there without
+asking.
+
+* If you finish the session
+
+Overwrite =docs/superpowers/NEXT_SESSION.org= describing the *next* session only:
+ticket to claim, ideal opening prompt, recommended model with the reason, context
+to load, facts carried forward, anything waiting on the author, board state.
+Always overwrite, never append; history lives in git and in the tracker.
