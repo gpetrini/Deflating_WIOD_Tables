@@ -1,0 +1,239 @@
+#+title: The Stage-B input contract, derived from the consuming code
+#+date: 2026-08-05
+#+filetags: :IODefl:contract:spec:
+
+Deliverable of ticket #26 of map #18.
+
+Derived by reading =code/global_variables.R=, =code/support_functions.R= and
+=code/generate_reports.R=, never the producer.
+Every requirement carries a file and line reference to the code that imposes it.
+
+The executable form is =code/validate_niots_contract.R=.
+Run it as a checklist against any candidate:
+
+: source("validate_niots_contract.R"); validate_niots(candidate)
+
+*The demonstration against the current =NIOTs= object is outstanding*, because it
+needs =etc/Modelo/NIOTs_resultados.rdata=, absent from the machine where this was
+written. See "State of the verification" at the end.
+
+* The shape in one sentence
+
+A named list of countries, each a named list of tables, each table a list keyed
+by year — and of the fourteen slots the current object carries, *Stage B reads
+five*: =Ft=, =Fn=, =Fm=, =lista_Am=, =lista_Z=.
+
+The other nine — =CIn=, =CIm=, =CI=, =Recurso=, =lista_An=, =lista_A=, =Ghosh=,
+=lista_BL=, =lista_FL= — are never touched by the reporting stage.
+That is the single most consequential finding here: a producer that emits only
+those five satisfies Stage B completely.
+
+* 1. What =global_variables.R= assumes on load
+
+| # | Requirement | Imposed at |
+|---+-------------+------------|
+| 1.1 | =../etc/Modelo/NIOTs_resultados.rdata= exists and =load()= binds an object named exactly =NIOTs= | =global_variables.R:2= |
+| 1.2 | =names(NIOTs)= are the country identifiers; they become =WIOD_countries= | =:4= |
+| 1.3 | =NIOTs[[1]]= is a named list; its names become =tbls= — *read off the first country only* | =:5-6= |
+| 1.4 | =NIOTs[[1]][[1]]= is a list whose names are years; they become =years=, =first_year=, =last_year= — *read off the first slot of the first country only* | =:7-9= |
+
+1.3 and 1.4 are the two silent failures of the load step.
+Nothing verifies that the remaining 74 countries carry the same slots, or that
+the remaining slots carry the same years.
+A candidate whose first country is complete and whose tenth is not passes this
+file and fails deep inside =prepare_data()=, or worse, silently misaligns.
+
+*The load has a side effect.* =global_variables.R:41= writes
+=../objs/country_groups.qs2= every time the file is sourced.
+=Figs_Tabs.org:17= reads that file back with =qs2::qs_read()=, so sourcing
+=global_variables.R= is a prerequisite of compiling the manuscript.
+(=CLAUDE.md= describes this file as =objs/country_groups.rds=; the extension is
+=.qs2=.)
+
+* 2. What =prepare_data()= requires per country
+
+Reads exactly five slots, each indexed =[[cur_year]]= by the character year.
+
+** The three final-demand tables: =Ft=, =Fn=, =Fm=
+
+| # | Requirement | Imposed at |
+|---+-------------+------------|
+| 2.1 | each is a list keyed by every element of =years= | =support_functions.R:27,50,74= |
+| 2.2 | each year holds a *=data.frame=*, not a matrix: =dplyr::rename()= is called on it | =:29,53,77= |
+| 2.3 | columns named =HFCE=, =GFCF=, =GGFC=, =EXPO=, =INVNT= are present | =:30-34,54-58,78-82= |
+| 2.4 | those five columns are numeric: =colSums()= follows | =:37,61,85= |
+| 2.5 | column *order is irrelevant* — =select()= is by name | =:36,60,84= |
+| 2.6 | extra columns are tolerated and dropped | =:36= |
+
+The renaming is the vocabulary of the whole study and is worth stating
+explicitly, because two of the five are counter-intuitive:
+
+: C <- HFCE    I <- GFCF    G <- GGFC    X <- EXPO    E <- INVNT
+
+*=E= is inventories, not exports; =X= is exports.*
+Every later reference to =E= means =INVNT=.
+
+** The two matrices: =lista_Am=, =lista_Z=
+
+| # | Requirement | Imposed at |
+|---+-------------+------------|
+| 2.7 | each is a list keyed by every element of =years= | =:102-103= |
+| 2.8 | each year holds a numeric matrix, square, of identical order $n$ in both slots | =:116= |
+| 2.9 | =nrow(Fn[[year]]) == n=, so that =Am %*% Z %*% as.matrix(gastos)= conforms | =:105-116= |
+| 2.10 | =lista_Am= is the *imported* technical-coefficient matrix and =lista_Z= the *Leontief inverse* — the product is meaningless if they are swapped, and nothing detects it | =:102-103= |
+
+*2.11, the deepest silent assumption of the contract.* The product at =:116= is
+positional. Nothing requires that the rows of =Fn[[year]]= are the same sectors,
+in the same order, as the rows and columns of =Am= and =Z=. A candidate that
+orders its sectors differently in the final-demand tables than in the matrices
+produces finite, plausible, wrong numbers, and no check anywhere would fire.
+
+** Year alignment
+
+| # | Requirement | Imposed at |
+|---+-------------+------------|
+| 2.12 | every year key must parse as =as.Date(paste0(year, "-01-01"))= | =:19= |
+| 2.13 | the year keys of *every* slot of *every* country must equal =years= *in the same order* | =:27-44= |
+
+2.13 is positional, not by name: =lapply(years, ...) |> bind_rows()= builds the
+rows in the order of =years= and =xts(x, order.by = dates)= then attaches dates
+in the order of =dates=. A slot whose years are complete but permuted attaches
+the wrong date to every observation.
+A missing year does not error either: =bind_rows()= over a shorter list yields
+fewer rows than =dates= has elements, and =xts()= errors only because the lengths
+disagree — which is fortunate rather than designed.
+
+* 3. What =decompose_growth()= requires of =prepare_data()='s output
+
+=prepare_data()= returns =results[[country]]=, a list of fourteen entries.
+=decompose_growth()= reads seven of them.
+
+| # | Requirement | Imposed at |
+|---+-------------+------------|
+| 3.1 | =m= — import share by component; supplies the *variable vocabulary* via =setdiff(colnames(m), "Total")= and the *date index* via =index(m)= | =:232-236= |
+| 3.2 | the vocabulary must contain =X=, used by name for the export terms | =:306,350,411= |
+| 3.3 | =g= — growth rates; must carry a =GDP= column and one column per variable of 3.1, plus =M= | =:240-242,443-445= |
+| 3.4 | =gm= — growth of the import shares | =:245= |
+| 3.5 | =Weights= — component weights in GDP; must carry an =M= column for the Net Exports method | =:246,443-445= |
+| 3.6 | =Import Weights= and =Import Growth= — required by the Attribution method | =:247-248,409= |
+| 3.7 | =Ft[, "Total"]= and =GDP= — the domestic-absorption ratio of the Average Import Content method | =:337= |
+| 3.8 | all seven share one index, since =merge()= and positional =lag()= are applied across them | =:255-260= |
+
+The four methods are written into =tmp[[country]][[method]]= under the labels
+=Import Content=, =Average Import Content=, =Attribution=, =Net Exports=
+(=:319,395,434,475=).
+=group_plots()= takes =methods <- names(data[[1]])= (=:1727=), so *the label set
+is defined by the first country* — the same first-element assumption as 1.3.
+
+* 4. What the tidiers and =group_plots()= require
+
+| # | Requirement | Imposed at |
+|---+-------------+------------|
+| 4.1 | every method's table must contain all of =vars= = =C=, =I=, =G=, =E=, =X=, =CDX=, =CDD=, =CDI=, =M=, =GDP=; =get_tidy()= calls =select(all_of(vars))= and errors on any absence | =:498=, =global_variables.R:17-19= |
+| 4.2 | the methods that do not define a term must set it to a constant rather than omit it: Attribution sets =CDI = 0= and =M = 0=, Net Exports sets =CDI = 0=, Import Content sets =M = 0= | =:388,429-430,471,263-266= |
+| 4.3 | =m= must carry =Total=, renamed to =Average= by =get_imp()= | =:523= |
+| 4.4 | =g= must carry =GDP=, selected by =get_dGDP()= | =:544= |
+| 4.5 | =calculate_metrics()= drops =M= and =CDI= and requires at least two methods to compare | =:1218-1219= |
+| 4.6 | =get_cdx_detail()= re-derives the per-component leakage from =m=, =Weights=, =gm=, =g= | =:560-575= |
+
+Note that =vars= is defined twice: globally as the ten reporting variables
+(=global_variables.R:19=) and locally inside =decompose_growth()= as the demand
+components alone (=:235=).
+=get_tidy()= sees the global one.
+The shadowing is not a defect but it is a trap for anyone editing either.
+
+* 5. Hard-coded paths, file names and external objects
+
+| Path | Direction | Imposed at |
+|------+-----------+------------|
+| =../etc/Modelo/NIOTs_resultados.rdata= | read | =global_variables.R:2= |
+| =../objs/country_groups.qs2= | *written on source* | =global_variables.R:41= |
+| =../figs/= | written | =support_functions.R:615,699,860,1073,1326,1551,1618,1719= |
+| =../tabs/= | written | =:616,700,861,1074,1325,1550,1569,1720= |
+| =../tabs/<ISO>_Import_Coefficients.tex= | written | =:848-850= |
+| =../tabs/Period_Means_<Method>.tex= | written | =:1608-1610= |
+| =../reports/<group>.pdf= | written, via =pdf()= | =:1746= |
+
+Everything is relative to =code/=, so Stage B runs only with =code/= as the
+working directory.
+
+Two facts about these paths that any migration must carry:
+
+- *The =figs= argument is dead.* =save_figs()= defaults to =../figs/=
+  (=:1618=) and no caller passes =figs=, so the argument of every plotting
+  function is inert and output always lands in =../figs/=. Filed as #32.
+  The =figs= argument =generate_reports.R:18= supplies is therefore ignored.
+- *=../reports/= must exist before =group_plots()= runs.* =pdf()= at =:1746=
+  fails outright if it does not, and it is the first thing the group loop does.
+
+External objects Stage B reads from the global environment rather than receiving
+as arguments: =NIOTs=, =WIOD_countries=, =years=, =vars=, =plotW=, =plotH=,
+=country_groups=, =all_groups=, =results=, =decomp=.
+This is the coupling that #42 exists to reconsider.
+
+* 6. Assumptions that would break silently rather than error
+
+Ordered by how much damage they do before anyone notices.
+
+| # | Assumption | Consequence if violated |
+|---+------------+-------------------------|
+| 6.1 | sector order agrees between =Fn= and the matrices (2.11) | wrong numbers, no error, no warning |
+| 6.2 | year keys are complete, in order, and identical across slots (2.13) | dates attached to the wrong observations |
+| 6.3 | the first country is representative (1.3, 1.4, 3.8) | failure surfaces far from its cause, or not at all |
+| 6.4 | =lista_Am= and =lista_Z= are not interchanged (2.10) | a plausible, meaningless import content |
+| 6.5 | =Ft= is non-zero for every component and year | =m = M / Ft= is =Inf=; the pipeline continues (=:139=) |
+| 6.6 | the import share lies in [0,1] | negative domestic content; *this is issue #34*, live in 81 of 11700 cells for =E= |
+| 6.7 | one currency and one base year throughout | growth rates conflate price and quantity; *unverifiable from the object* |
+| 6.8 | values are levels, not indices or shares | weights and contributions lose meaning |
+| 6.9 | =m=, =g=, =gm= and the contributions are *fractions, not percentages* | plots and tables off by 100; nothing asserts the unit |
+| 6.10 | =country_groups= names countries that exist in =names(NIOTs)= | =filter(ISO %in% countries)= yields an empty frame and =group_plots()= writes empty figures |
+
+6.7 and 6.8 cannot be checked from the object.
+They are recorded here as assumptions the validator declares and does not test,
+so that a future producer states them rather than inheriting them.
+The current data is deflated to constant 1995 local prices; nothing in Stage B
+verifies or even records that.
+
+* The validator
+
+=code/validate_niots_contract.R=, one function, no side effects:
+
+: validate_niots(obj, strict = TRUE)
+
+It reports the *first* violation and stops, because a candidate that fails a
+structural check makes every later check meaningless.
+=strict = FALSE= skips section 5's hazards (6.5, 6.6, 6.10) and checks only what
+would raise an error.
+The contract it encodes is =NIOTS_CONTRACT= at the top of the file: the five
+slots, the five column names, and the eight countries =country_groups= requires.
+
+Requirements it deliberately does *not* test: 2.10, 6.1, 6.4, 6.7, 6.8 and 6.9 —
+sector order, matrix identity, currency, base year, levels and units.
+None is decidable from the object.
+They are the contract's irreducible trust in the producer, and naming them is the
+most this deliverable can do about them.
+
+* State of the verification
+
+*What was verified.* The validator was exercised against a synthetic object of 8
+countries, 3 years and 7 sectors that satisfies the contract, and against 16
+mutations of it — one per requirement class. All 17 behaved as specified: the
+conforming object passes; each mutation is caught with the correct message; and
+the =[0,1]= violation passes under =strict = FALSE= and fails under
+=strict = TRUE=.
+
+*What is outstanding.* The demonstration ticket #26 requires — the validator
+passing against the current =NIOTs= object — has *not* been run. It needs
+=etc/Modelo/NIOTs_resultados.rdata=, which is on the other machine.
+
+A synthetic object is not a substitute. It was built from this document, so it
+tests that the validator implements the document, not that the document
+describes the real object. Two outcomes on the real data are worth anticipating:
+=strict = TRUE= is *expected to fail* on 6.6, since #34 records 81 cells outside
+=[0,1]=, so the demonstration should be run at =strict = FALSE= first and the
+strict failure recorded as the expected reproduction of #34.
+
+Command to run there:
+
+: setwd("code"); load("../etc/Modelo/NIOTs_resultados.rdata")
+: source("validate_niots_contract.R"); validate_niots(NIOTs, strict = FALSE)
