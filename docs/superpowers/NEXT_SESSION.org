@@ -28,16 +28,23 @@ Everything else needs the data and must wait for the machine that has it.
 
 * Ticket to claim, on a machine WITHOUT the data
 
-*#29, B5: create the new git repository, its layout and its .gitignore*
-https://github.com/gpetrini/Deflating_WIOD_Tables/issues/29
+*#37, B6: design the Zenodo deposit and its file manifest*
+https://github.com/gpetrini/Deflating_WIOD_Tables/issues/37
 Map: #18, migrate Stage-B reporting to a new Zenodo-backed repository.
 
-It is the head of the data-free chain: #38 (Makefile) and #39 (ADRs and findings)
-are both blocked by it, and #37 (Zenodo manifest) blocks #38.
-Claim it first: =gh issue edit 29 --add-assignee gpetrini=.
+Claim it first: =gh issue edit 37 --add-assignee gpetrini=.
 
-If the repository layout is not something to decide today, #37 is the other
-unblocked data-free ticket and settles the deposit manifest instead.
+*#29 is no longer available there.* The author settled on 2026-08-05 that the
+layout inherits from an existing project folder, to be downloaded from the cloud
+to the machine that holds the data.
+That made the layout an inheritance rather than a free decision, so #29 is now
+blocked by #41 and lost its =no-data-required= label.
+Since #38 and #39 are blocked by #29, the whole rest of the chain waits on #41.
+
+#37 is unblocked and independent of all of it.
+If it finishes, map #19 has three data-free tickets: #30, #31 and #32.
+Ticket #26 is also data-free to write, with its validator demonstration left
+outstanding.
 
 * Ticket to claim, on the machine WITH the data
 
@@ -59,10 +66,10 @@ evidence in the body and needs no re-derivation.
 
 * Recommended model
 
-*Opus 5* for #29 and #37.
-Both are decisions whose consequences propagate: the layout decision constrains
-every relative path in the migrated code, and the deposit decision constrains
-what a stranger can reproduce.
+*Opus 5* for #37 and, on the other machine, #41.
+The deposit decision constrains what a stranger can reproduce, and #41 has to
+judge which inherited layout choices conflict with constraints this map already
+recorded.
 #38 and #39 are largely specified and suit a cheaper model once #29 lands.
 
 * Ideal opening prompt
@@ -72,25 +79,24 @@ Continuar o wayfinder map #18, que foi revisado em 2026-08-05: o destino agora �
 um repositório git novo, criado do zero, com os dados no Zenodo e um Makefile
 como ponto de entrada único. Syncthing saiu de cena.
 
-Assumir o ticket #29: criar o repositório, decidir o layout e escrever o
-.gitignore.
+Assumir o ticket #37: desenhar o depósito Zenodo e seu manifesto.
 
 Estou numa máquina SEM os dados em disco, então só tickets com o rótulo
-no-data-required.
+no-data-required. NÃO pegar o #29, que passou a depender do #41.
 
-Decidir o layout declarando o que ele implica para save_figs e para os caminhos
-relativos ../figs, ../tabs, ../objs e ../reports que o código usa hoje de dentro
-de code/.
-NÃO repetir o padrão de .gitignore deste repositório, cuja linha 1 é *.* com
-whitelist de extensões, e que por isso deixa Markdown, PDF e dados fora do
-versionamento.
-Decidir e justificar se figuras e tabelas geradas são versionadas ou regeneradas;
-aqui tabs/*.tex é versionado e figs/ é ignorado, o que é incoerente.
+Decidir o que vai no depósito, se o release externo bruto viaja junto, a
+serialização, o versionamento, a licença e os checksums que o Makefile do #38
+vai conferir. O corpo do ticket já traz os tamanhos dos dois candidatos a objeto
+de fronteira, que diferem em uma ordem de grandeza.
+
+gh resolve o repositório pelo remote, então rodar de dentro do checkout ou usar
+-R gpetrini/Deflating_WIOD_Tables.
 #+end_example
 
 * Context this session needs
 
 - Map #18 body, reescrito em 2026-08-05; a seção Notes registra o que mudou e por quê.
+- Ticket #41, que define de onde o layout é herdado.
 - =docs/adr/=, doze registros, que o #39 vai triar.
 - Este repositório =.gitignore=, como exemplo do que não repetir.
 
@@ -172,6 +178,7 @@ of which exists yet.
 | #17 reporting refinements | *CLOSED 2026-08-05*; #34 and #35 moved to map #18            |
 | #18 Zenodo-backed repo    | *#29*, *#37* data-free; #25, #26 (#26 data-free to write);    |
 |                           | #34 and #35 inherited, both blocked behind #25;               |
+|                           | *#41* gates #29, which gates #38 and #39;                     |
 |                           | #38 blocked by #29 and #37; #39 by #29; #27 by #25 and #26;   |
 |                           | #28 by #27                                                    |
 | #19 retire and inventory  | #30, #31, #32 all data-free; #33 blocked by #32               |

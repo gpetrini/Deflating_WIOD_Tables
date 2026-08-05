@@ -57,6 +57,12 @@ substituting a parse check for the evidence the ticket asked for.
 
 - =gh issue view= *fails here* with a Projects-classic deprecation error.
   Read bodies with =gh api repos/:owner/:repo/issues/N --jq '.body'=.
+- *=gh= resolves the repository from the git remote*, so every =gh= command fails
+  outside the checkout with "No default remote repository has been set for this
+  directory".
+  Either run from inside the repository, or pass the repository explicitly, which
+  works anywhere:
+  =gh issue list -R gpetrini/Deflating_WIOD_Tables --state open --label no-data-required=.
 - Sub-issues:
   =gh api repos/:owner/:repo/issues/<map>/sub_issues -F sub_issue_id=<numeric id>=.
 - Blocking:
