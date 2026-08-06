@@ -1,0 +1,191 @@
+#+title: Handoff to the machine that holds the data
+#+date: 2026-08-05
+#+filetags: :IODefl:handoff:machine:
+
+Written at the end of the third session of 2026-08-05, all of which ran on the
+machine *without* =etc/Modelo/NIOTs_resultados.rdata=.
+It states what waits on the primary machine, in the order it should be done, and
+what must *not* be attempted there.
+
+=docs/superpowers/NEXT_SESSION.org= points here.
+
+* Before anything: get the commits
+
+Six commits were pushed to =origin/reporting/refinements= on 2026-08-05, ending
+at =496b33f=.
+
+: git checkout reporting/refinements && git pull
+
+If the working tree there has uncommitted changes from an earlier session, look
+at them before pulling: the last session on that machine ran the full driver, so
+=figs/=, =tabs/= and =objs/= may hold regenerated output.
+Those directories are git-ignored, so =git status= will not show them.
+
+*Pushing from either machine needs the =gh= credential helper.* =origin= is HTTPS
+with no helper configured, so a bare =git push= fails with
+"could not read Username for https://github.com".
+
+: git -c credential.helper='!gh auth git-credential' push origin reporting/refinements
+
+That form was used for both pushes of 2026-08-05 and does not modify the
+repository configuration.
+=gh= itself also needs =-R gpetrini/Deflating_WIOD_Tables= inside this checkout,
+because an =upstream= remote points at GICN.
+
+* What exists only on the other machine
+
+Two things do not travel, and neither should be recreated on the primary machine.
+
+- *=/HDD/Model_OCDE=*, 338 MB, the source folder: the OECD 2025 raw release, the
+  =ioOECD= package, the Stage-A scripts, and =archive/=. It is not a git
+  repository and is not on the primary machine.
+- *=~/Documents/GrowthDecomposition=*, the target repository created by #29 on
+  2026-08-05. Two commits, no remote, 71 files.
+  *Because it has no remote it cannot be cloned.* Do not run =git init= on the
+  primary machine to reproduce it: that would create a second, divergent history
+  of the same repository. The remote is deliberately absent until the licence and
+  authorship questions are settled with the co-author, which is when this becomes
+  a non-issue.
+
+*Consequence for routing.* Every ticket that reads the model folder — #27, and the
+Stage-A work behind it — belongs to the *other* machine, not this one. The
+primary machine holds =NIOTs_resultados.rdata= and nothing else that matters to
+map #18.
+
+* What waits here, in order
+
+** 1. #26, the demonstration — the smallest and the most blocking
+
+#26 is derived, written and committed; *only the demonstration is missing*, and
+the ticket does not close without it.
+The contract is =docs/superpowers/specs/2026-08-05-stage-b-input-contract.org=
+and the validator is =code/validate_niots_contract.R=.
+
+: setwd("code")
+: load("../etc/Modelo/NIOTs_resultados.rdata")
+: source("validate_niots_contract.R")
+: validate_niots(NIOTs, strict = FALSE)   # must PASS
+: validate_niots(NIOTs, strict = TRUE)    # expected to FAIL on the [0,1] check
+
+*Run the permissive call first.* =strict = FALSE= checks only what would raise an
+error and must pass; if it does not, the contract document is wrong about the real
+object and that is the finding, not a validator bug.
+
+=strict = TRUE= is *expected to fail* on the import-share check, because #34
+records 81 of 11700 cells outside =[0,1]= for the =E= (INVNT) component.
+Record that failure as the expected reproduction of #34, quoting the country and
+year the validator names — that is a datum #34 does not yet have.
+
+Then close #26 with both outputs pasted in.
+
+It gates #27, and #27 gates #28, which gates #42.
+
+** 2. #34, the E (INVNT) import share outside [0,1]
+
+Unblocked by the closure of #25.
+The diagnosis exists: =m_E= leaves =[0,1]= in 81 of 11700 cells because =Ft_E=
+crosses zero, and it drives the three largest sign disagreements between methods.
+See the note at =code/support_functions.R:368-379=.
+What remains is the decision on treatment and its verification, which needs the
+data.
+#35 waits behind it.
+
+** 3. #36, cross-method sign disagreement
+
+Needs the data and nothing else.
+Partial figures already recorded: the two CDX terms disagree in sign in 5.0 per
+cent of country-years, and two thirds of those carry =|CDX| < 0.005=.
+=diagnose_cdx_sign()= in =code/tests.R= is the existing scaffold.
+A *manuscript map* becomes chartable once this reports.
+
+** 4. #40, verify the figure republication launched on 2026-08-05
+
+Needs the data.
+Measured costs to plan around: full reconstruction 27 seconds; one group's
+figures about a minute; *the full driver 66 minutes for 77 groups*.
+Verifying a code change is cheap; only a deliberate republication costs an hour.
+
+* Traps specific to running the driver here
+
+- *=tabulate_period_means()= writes to =../tabs/= on every call*, so an
+  exploratory call contaminates published output. Pass its =tabs= argument.
+  Three stray files from such a call are in =tabs/= by author decision:
+  =Period_Means_Attribution.tex=, =Period_Means_AverageImportContent.tex=,
+  =Period_Means_NetExports.tex=.
+- *The =figs= argument of every plotting function is dead.* =save_figs()= defaults
+  to =../figs/= and no caller passes =figs=, so the =figs = "../figs"= of
+  =generate_reports.R:18= is ignored. #32.
+- *=../reports/= must exist before =group_plots()= runs*: =pdf()= at
+  =support_functions.R:1746= is the first thing the group loop does and fails
+  outright if the directory is absent.
+- *Sourcing =global_variables.R= writes =../objs/country_groups.qs2=*
+  (=:41=), which =Figs_Tabs.org:17= reads back. Sourcing it is a prerequisite of
+  compiling the manuscript. It is =.qs2=, not the =.rds= =CLAUDE.md= names.
+- *Tier-B harness:* =code/verify_reporting_refinements.R=. The =decomp=
+  fingerprint is unchanged at tolerance zero across every ticket of map #17; use
+  it to show a change did not move the numbers.
+
+* State of the tracker
+
+Closed on 2026-08-05: #20 to #24 (map #17), then #37, #41, #25 and #29 on map #18.
+Opened: #42.
+=#26= is open, assigned, and awaiting only the demonstration above.
+
+| Map                      | Frontier                                                    |
+|--------------------------+-------------------------------------------------------------|
+| #18 Zenodo-backed repo   | *#26* (demonstration only), *#34*, *#38*, *#39*; #27 blocked  |
+|                          | by #26; #28 by #27; #35 by #34; #42 by #28                   |
+| #19 retire and inventory | *#30*, *#31*, *#32*; #33 blocked by #32                       |
+| (no map)                 | *#36*, *#40* — both need the data                            |
+
+Of the frontier, *#26, #34, #36 and #40 run here*.
+#38 and #39 do not need the data but do need the new repository, so they belong to
+the other machine.
+#30, #31 and #32 on map #19 run anywhere.
+
+* Waiting on the author or the co-author
+
+- *The licence contradiction*: =ioOECD/DESCRIPTION= declares MIT against GPL-3 in
+  ADR-0008, and there is no LICENSE file anywhere. =Authors@R= is the placeholder
+  =person("Andre", email = "andre@example.com")=. Both block creating the remote.
+- *The name of the repository on GitHub*, reserved by the author. The directory
+  name =GrowthDecomposition= does not commit it.
+- *The four =*_original= spreadsheets* of =archive/legacy_data/=: keep roughly
+  700 KB and deposit them, or correct the #37 manifest, which currently calls
+  four altered files unaltered external releases.
+- *The OECD National IOTs licence statement*, unread: the page returns HTTP 403.
+  If it is more restrictive than CC BY 4.0, =data-raw/= leaves the deposit.
+
+* Facts established on 2026-08-05 that this machine has not seen
+
+** From #25
+
+- *No script builds a =NIOTs= object from the 2025 release.* The only working
+  builders are =archive/legacy_scripts/compilacao.R= and =compilacao_ICIO.R=,
+  CSV-based, composing the fourteen slots in =base/salva_dados.R=.
+  =ioOECD::parse_niot_tables()= returns 3 of 14 slots; =load_io_tables()= cannot
+  run at all.
+- *The 2025 vintage is 28 years (1995–2022), 81 country slices, 50 sectors* — a
+  strict superset of the 2023 edition. New: AGO, ARE, COD, MMR, STP, TWN, ROW.
+  *50 sectors, not 45*: splits C24A/C24B, C301/C302T309, H49–H53,
+  J58T60/J61/J62_63, plus an =IMP_OTHER= row with no domestic counterpart.
+  Every 45-sector assumption in =ioOECD= is incompatible, including the 7-sector
+  aggregator.
+- 2021 and 2022 are discarded because *deflators stop at 2020*.
+- *=archive/= is retained*; the deletion decided earlier the same day was
+  reversed once it emerged that it holds the only =NIOTs= builder. Its only copy
+  is on =/HDD= on the other machine.
+
+** From #26
+
+- *Stage B reads five of the fourteen slots*: =Ft=, =Fn=, =Fm=, =lista_Am=,
+  =lista_Z=. A producer emitting only those five satisfies it completely.
+- The vocabulary: =C←HFCE=, =I←GFCF=, =G←GGFC=, =X←EXPO=, *=E←INVNT=*.
+  =E= is inventories, not exports.
+- *Ten assumptions break silently rather than error*, the worst being that the
+  sector order of =Fn= must match the rows and columns of =Am= and =Z=: the
+  product is positional and a mismatch yields plausible wrong numbers.
+  *Six of the ten are not decidable from the object.*
+- =country_groups= of the model folder is *identical* to this repository's; the
+  roughly 77 groups are =all_groups=, derived at =global_variables.R:44-47=.
+  An earlier claim of divergence was withdrawn on #29.
